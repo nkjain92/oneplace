@@ -6,11 +6,21 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 import { getUserProfile } from '../lib/auth';
 
+// Define profile interface based on profiles table
+interface Profile {
+  id: string;
+  name?: string;
+  email?: string;
+  created_at?: string;
+  updated_at?: string;
+  // Add any other fields from your profiles table
+}
+
 // Define the context state shape
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: any | null; // Type should match your profiles table schema
+  profile: Profile | null; // Type should match your profiles table schema
   loading: boolean;
 }
 

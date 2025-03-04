@@ -28,8 +28,9 @@ export default function Login() {
       await signIn(formData.email, formData.password);
       // Redirect to home page after successful login
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Invalid email or password');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Invalid email or password';
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -90,7 +91,7 @@ export default function Login() {
       </form>
 
       <p className='mt-6 text-center text-gray-600'>
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href='/signup' className='text-blue-600 hover:underline'>
           Sign up
         </Link>

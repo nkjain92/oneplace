@@ -29,8 +29,9 @@ export default function SignUp() {
       await signUp(formData.name, formData.email, formData.password);
       // Redirect to home page after successful signup
       router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during sign up');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during sign up';
+      setError(errorMessage);
       setLoading(false);
     }
   };
