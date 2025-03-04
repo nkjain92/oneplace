@@ -1,0 +1,13 @@
+---
+description: Making the whole app
+globs: 
+alwaysApply: false
+---
+
+# Your rule content
+
+- We are using nextjs 15 with app router. Ensure we use the project folder structure effectively as suggseted by nextjs docs.
+- In the src folder, we will use both lib (business logic) and utils (utilities) folders. Example of business logic would be summar generation, summary caching logic, cron logic while utilities will be url formatter etc
+- Add a comment about path of each file at the top of each file
+- Ensure while writing code, you add description of what the code does in comments
+
