@@ -76,8 +76,10 @@ Key features include:
 
 ### 4.1. Persistent Login & Session Management
 
-- Use Supabase Auth to manage sessions.
-- Implement client-side persistence via cookies (for server-validated sessions) and local storage (for temporary summary history when not logged in).
+- Use Supabase’s client-side auth (PKCE) to manage user sessions.
+  Sessions will be stored in local storage by default, with the option to use secure cookies for enhanced security.
+  For anonymous users, store temporary summary history in local storage.
+- Use Next.js middleware to protect routes and handle redirects, enhancing security and user flow.
 
 ### 4.2. State Management
 
