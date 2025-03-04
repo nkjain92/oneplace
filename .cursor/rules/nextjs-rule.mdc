@@ -6,8 +6,19 @@ alwaysApply: false
 
 # Your rule content
 
-- We are using nextjs 15 with app router. Ensure we use the project folder structure effectively as suggseted by nextjs docs.
-- In the src folder, we will use both lib (business logic) and utils (utilities) folders. Example of business logic would be summar generation, summary caching logic, cron logic while utilities will be url formatter etc
-- Add a comment about path of each file at the top of each file
-- Ensure while writing code, you add description of what the code does in comments
+- **Project Structure:** Use Next.js 15 with the App Router. Follow the folder structure recommended by the Next.js documentation, placing routes in src/app, components in src/components, business logic in src/lib, and utilities in src/utils.
+- Segregation:
+  - Use src/lib for business logic, such as summary generation, caching, cron jobs, and API interactions (e.g., Supabase, Vercel AI SDK).
+  - Use src/utils for standalone utility functions like URL formatting or date manipulation that don’t rely on external services.
+- Type Safety: Since Next.js supports TypeScript, use it to define types and interfaces in a src/types folder for better code reliability.
+- Comments:
+  - At the top of each file, include a comment with the file path and a brief description of its purpose (e.g., // src/lib/summary.ts - Handles summary generation and caching).
+  - Add inline comments to explain complex or non-obvious logic, but avoid commenting obvious code to keep it clean.
+- Testing: Write unit tests for critical functions in src/lib to ensure they work as expected.
+- Code Quality: Keep files focused on a single responsibility and modular for easier maintenance
+- Use descriptive variable names
+- Use shadcn, tailwind for ui, remember to use these: npx shadcn@latest init for intialisation
+- State Management - Use Zustand for managing global state (e.g. for User authentication status, Subscription data, Q&A conversation context)
+- Data Validation - Use Zod for schema validation to ensure data integrity across the application, including but limited to User inputs (e.g., signup and login forms), Data from external APIs (e.g., YouTube Data API, YouTube-transcript-api, Data before storing in Supabase
+
 
