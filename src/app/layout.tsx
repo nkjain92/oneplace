@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '../context/AuthProvider';
-import Header from '@/components/Header';
+import Navbar from '@/components/Navbar';
 
 // Initialize the Inter font according to styling guidelines
 const inter = Inter({
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang='en' className={`${inter.variable}`}>
       <body className='min-h-screen bg-gray-50 font-sans'>
         <AuthProvider>
-          <Header />
+          <Navbar />
           <main className='container mx-auto px-4 pt-20'>{children}</main>
         </AuthProvider>
       </body>
