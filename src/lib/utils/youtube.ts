@@ -1,16 +1,11 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+// src/lib/utils/youtube.ts - Utilities for YouTube URL validation and metadata extraction
 
 /**
  * Extracts the YouTube video ID from various YouTube URL formats
  * @param url YouTube URL to extract ID from
  * @returns The video ID if valid, null otherwise
  */
-export function extractVideoId(url: string): string | null {
+export function extractYouTubeVideoId(url: string): string | null {
   if (!url) return null;
 
   // Handle standard watch URLs
@@ -58,9 +53,35 @@ export function isValidYouTubeUrl(url: string): boolean {
     new URL(url);
 
     // Check if it's a YouTube URL and has a video ID
-    return extractVideoId(url) !== null;
+    return extractYouTubeVideoId(url) !== null;
   } catch (error) {
     // URL is malformed
     return false;
   }
+}
+
+/**
+ * Interface for YouTube metadata
+ */
+export interface YouTubeMetadata {
+  videoId: string;
+  videoUrl: string;
+  embedUrl: string;
+}
+
+/**
+ * Extracts metadata from a YouTube URL
+ * @param url YouTube URL
+ * @returns Object with video ID and formatted URLs, or null if invalid
+ */
+export function extractYouTubeMetadata(url: string): YouTubeMetadata | null {
+  const videoId = extractYouTubeVideoId(url);
+
+  if (!videoId) return null;
+
+  return {
+    videoId,
+    videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+    embedUrl: `https://www.youtube.com/embed/${videoId}`,
+  };
 }

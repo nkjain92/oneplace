@@ -114,11 +114,129 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 25% 98%;
+    --foreground: 224 71% 4%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 46%;
+
+    --accent: 221 83% 53%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
+  }
+}
+
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
+}
+
+/* Clean UI Elements */
+.gradient-text {
+  @apply text-primary;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-r from-blue-500/80 to-purple-500/80;
+}
+
+.gradient-card {
+  @apply bg-gradient-to-r from-blue-100/80 to-purple-100/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/50;
+}
+
+.clean-card {
+  @apply bg-white rounded-xl shadow-md border border-gray-100;
+}
+
+.primary-button {
+  @apply bg-primary hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded-md transition-all duration-200;
+}
+
+.login-card {
+  @apply bg-gradient-to-r from-blue-400/30 to-purple-400/30 backdrop-blur-sm rounded-xl shadow-xl px-8 py-10;
+}
+
+.login-input {
+  @apply bg-white/90 border-white/50 focus:border-blue-300 focus:ring-1 focus:ring-blue-300 rounded-md;
+}
+
+.hero-section {
+  @apply relative overflow-hidden py-16 md:py-20;
+}
+
+.hero-gradient {
+  @apply absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 -z-10;
+}
+
+.input-field {
+  @apply bg-white border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md px-4 py-2;
+}
+
+/* Premium UI Elements */
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent;
+}
+
+.premium-card {
+  @apply bg-muted/70 backdrop-blur-sm border border-accent/30 rounded-xl shadow-xl;
+}
+
+.premium-button {
+  @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-2.5 rounded-md transition-all duration-200 shadow-lg hover:shadow-blue-500/25;
+}
+
+.glow {
+  @apply relative;
+}
+
+.glow::before {
+  content: '';
+  @apply absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-30 -z-10 transition-all duration-200;
+}
+
+.glow:hover::before {
+  @apply opacity-50 blur-md;
+}
+
+.subtle-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Focus and active states */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-background;
 }
