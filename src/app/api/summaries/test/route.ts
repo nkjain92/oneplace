@@ -1,21 +1,29 @@
-// src/app/api/summaries/route.ts - Handles summary generation and retrieval for YouTube videos
+// src/app/api/summaries/test/route.ts - TEST ONLY VERSION that bypasses authentication
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/supabaseServer';
+import { createClient } from '@supabase/supabase-js';
 import { extractYouTubeVideoId } from '@/lib/utils/youtube';
 import fetchYouTubeTranscript from '@/lib/youtubeTranscript';
 import fetchYouTubeChannelDetails from '@/lib/youtubeChannel';
 import OpenAI from 'openai';
-import { SUMMARY_PROMPT } from '@/lib/prompts';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// IMPORTANT: This is a special test endpoint that uses admin privileges.
+// This would never be used in production as it bypasses authentication.
 export async function POST(request: Request) {
   try {
-    // Extract the URL from the request body
-    const { url } = await request.json();
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Test endpoint not available in production' },
+        { status: 403 },
+      );
+    }
+
+    // Extract the URL from the request body and possible test user ID
+    const { url, testUserId } = await request.json();
 
     // Extract video ID from the YouTube URL
     const videoId = extractYouTubeVideoId(url);
@@ -23,26 +31,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid YouTube URL' }, { status: 400 });
     }
 
-    // Create regular Supabase client
-    const supabase = await createSupabaseServerClient();
+    // Create a direct Supabase client with service role to bypass RLS
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: 'Missing Supabase environment variables for test endpoint' },
+        { status: 500 },
+      );
+    }
 
-    // Check authentication status and get user ID if logged in
-    const { data: sessionData } = await supabase.auth.getSession();
-    const isAuthenticated = !!sessionData?.session?.user;
-    const userId = sessionData?.session?.user?.id;
-
-    // Choose the appropriate client based on authentication
-    const dbClient = isAuthenticated ? supabase : await createSupabaseServiceClient();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          persistSession: false,
+        },
+      },
+    );
 
     // Check if summary already exists for this video
-    const { data, error } = await dbClient
+    const { data, error } = await supabase
       .from('summaries')
       .select('id, title, summary, tags, featured_names, publisher_name, content_created_at')
       .eq('content_id', videoId)
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 is the error code for "no rows returned" in Supabase
       throw new Error(`Supabase query error: ${error.message}`);
     }
 
@@ -53,7 +67,6 @@ export async function POST(request: Request) {
       summaryId = data.id;
       summaryData = data;
     } else {
-      // No existing summary found - fetch channel details and transcript
       try {
         // Fetch channel details from YouTube
         const { channelId, name, description, videoTitle } = await fetchYouTubeChannelDetails(
@@ -61,15 +74,19 @@ export async function POST(request: Request) {
         );
 
         // Check if channel already exists in our database
-        const { data: existingChannel } = await dbClient
+        const { data: existingChannel, error: channelError } = await supabase
           .from('channels')
           .select('id')
           .eq('id', channelId)
           .single();
 
-        // If channel doesn't exist, insert it using the appropriate client
+        if (channelError && channelError.code !== 'PGRST116') {
+          throw new Error(`Error checking for existing channel: ${channelError.message}`);
+        }
+
+        // If channel doesn't exist, insert it
         if (!existingChannel) {
-          const { error: insertChannelError } = await dbClient.from('channels').insert([
+          const { error: insertChannelError } = await supabase.from('channels').insert([
             {
               id: channelId,
               name: name,
@@ -106,8 +123,8 @@ export async function POST(request: Request) {
         // Fetch transcript from YouTube
         const transcript = await fetchYouTubeTranscript(videoId);
 
-        // Insert a new record into the summaries table with channel details
-        const { data: insertedData, error: insertError } = await dbClient
+        // Insert a new record into the summaries table
+        const { data: insertedData, error: insertError } = await supabase
           .from('summaries')
           .insert([
             {
@@ -134,8 +151,14 @@ export async function POST(request: Request) {
 
         summaryId = insertedData[0].id;
 
-        // Generate a summary using OpenAI directly
-        const prompt = SUMMARY_PROMPT.replace('{transcript}', transcript);
+        // Generate a summary
+        const prompt = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
+
+Summary: [summary text]
+Tags: tag1, tag2
+People: person1, person2
+
+Transcript: ${transcript}`;
 
         // Call the AI model to generate the summary
         const response = await openai.chat.completions.create({
@@ -184,7 +207,7 @@ export async function POST(request: Request) {
         }
 
         // Update the record with the generated summary, tags, and people
-        const { error: updateError } = await dbClient
+        const { error: updateError } = await supabase
           .from('summaries')
           .update({
             summary: summary,
@@ -218,8 +241,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Record user interaction if user is logged in
-    if (isAuthenticated && userId && summaryId) {
+    // Record user interaction if a test user ID was provided
+    const userId = testUserId;
+    if (userId && summaryId) {
       try {
         // Use upsert to avoid duplicates - on conflict do nothing
         const { error: userSummaryError } = await supabase.from('user_generated_summaries').upsert(
@@ -243,11 +267,12 @@ export async function POST(request: Request) {
           console.log(`Recorded user ${userId} interaction with summary ${summaryId}`);
         }
       } catch (userSummaryError) {
+        // Log but don't fail the request
         console.error('Error recording user interaction:', userSummaryError);
       }
     }
 
-    // Return the summary data with user ID if present
+    // Return success response with the summary data
     return NextResponse.json(
       {
         ...summaryData,
