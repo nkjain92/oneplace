@@ -37,9 +37,9 @@ export default function SignUp() {
     try {
       await signUp(name, email, password);
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup error:', error);
-      setError(error.message || 'Failed to sign up');
+      setError(error instanceof Error ? error.message : 'Failed to sign up');
     } finally {
       setIsLoading(false);
     }

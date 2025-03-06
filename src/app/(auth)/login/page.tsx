@@ -30,9 +30,9 @@ export default function Login() {
     try {
       await signIn(email, password);
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      setError(error.message || 'Failed to sign in');
+      setError(error instanceof Error ? error.message : 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +101,7 @@ export default function Login() {
           </form>
 
           <div className='mt-6 text-center text-sm'>
-            <span className='text-gray-600'>Don't have an account?</span>{' '}
+            <span className='text-gray-600'>Don&apos;t have an account?</span>{' '}
             <Link href='/signup' className='text-[#4263eb] hover:text-[#3b5bdb] font-medium'>
               Sign up
             </Link>

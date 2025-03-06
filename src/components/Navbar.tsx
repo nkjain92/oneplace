@@ -22,27 +22,21 @@ import {
   SheetFooter,
   SheetHeader,
 } from '@/components/ui/sheet';
-import { Menu, ChevronDown, X } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
   const { user, profile, loading } = useAuthStore();
   const pathname = usePathname();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Handle logout action
   const handleLogout = async () => {
     try {
       await signOut();
-      // Close dropdown after logout
-      setIsDropdownOpen(false);
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
-
-  // Check if a path is the current active path
-  const isActive = (path: string) => pathname === path;
 
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm'>

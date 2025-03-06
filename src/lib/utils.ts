@@ -59,7 +59,7 @@ export function isValidYouTubeUrl(url: string): boolean {
 
     // Check if it's a YouTube URL and has a video ID
     return extractVideoId(url) !== null;
-  } catch (error) {
+  } catch (_) {
     // URL is malformed
     return false;
   }
