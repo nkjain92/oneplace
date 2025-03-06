@@ -4,6 +4,7 @@ export default async function fetchYouTubeChannelDetails(videoId: string): Promi
   channelId: string;
   name: string;
   description: string | null;
+  videoTitle: string;
 }> {
   if (!process.env.YOUTUBE_API_KEY) {
     throw new Error('YOUTUBE_API_KEY environment variable is not set');
@@ -29,6 +30,7 @@ export default async function fetchYouTubeChannelDetails(videoId: string): Promi
     }
 
     const channelId = videoData.items[0].snippet.channelId;
+    const videoTitle = videoData.items[0].snippet.title;
 
     if (!channelId) {
       throw new Error(`Channel ID not found for video: ${videoId}`);
@@ -57,6 +59,7 @@ export default async function fetchYouTubeChannelDetails(videoId: string): Promi
       channelId,
       name: channelData.items[0].snippet.title,
       description: channelData.items[0].snippet.description || null,
+      videoTitle,
     };
   } catch (error) {
     throw new Error(
