@@ -1,37 +1,32 @@
+// src/store/authStore.ts - Zustand store for authentication state
 import { create } from 'zustand';
-import { getSupabaseClient } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { getUserProfile } from '@/lib/auth';
 import { User, Session } from '@supabase/supabase-js';
 
-// Define profile interface based on profiles table
 interface Profile {
   id: string;
   name?: string;
   email?: string;
   created_at?: string;
   updated_at?: string;
-  // Add any other fields from your profiles table
 }
 
-// What our "notebook" will hold
 type AuthState = {
-  user: User | null; // Who's logged in (from Supabase)
-  session: Session | null; // Login session (token stuff)
-  profile: Profile | null; // User's name, etc.
-  loading: boolean; // Are we still checking?
-  initialize: () => Promise<void>; // Start checking who's logged in
+  user: User | null;
+  session: Session | null;
+  profile: Profile | null;
+  loading: boolean;
+  initialize: () => Promise<void>;
 };
 
-// Make the store
 export const useAuthStore = create<AuthState>(set => ({
   user: null,
   session: null,
   profile: null,
   loading: true,
 
-  // Function to check login when the app starts
   initialize: async () => {
-    const supabase = getSupabaseClient();
     try {
       const {
         data: { session },
@@ -45,7 +40,6 @@ export const useAuthStore = create<AuthState>(set => ({
         console.log('No one logged in');
       }
 
-      // Listen for login/logout changes
       supabase.auth.onAuthStateChange(async (event, session) => {
         if (session) {
           const profile = await getUserProfile(session.user.id);

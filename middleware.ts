@@ -1,20 +1,30 @@
-// middleware.ts - Route protection middleware based on authentication status
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+// src/middleware.ts - Route protection middleware using Supabase SSR
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define which routes should be protected (require authentication)
 const protectedRoutes = ['/subscriptions'];
-
-// Define routes that should only be accessible by non-authenticated users
 const authRoutes = ['/login', '/signup'];
 
 export async function middleware(req: NextRequest) {
-  // Create a Supabase client for the middleware
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set() {
+          // No-op: Middleware doesn't set cookies
+        },
+        remove() {
+          // No-op: Middleware doesn't remove cookies
+        },
+      },
+    },
+  );
 
-  // Get the current session
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -30,21 +40,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  return res;
+  return NextResponse.next();
 }
 
-// Specify which routes the middleware should be applied to
 export const config = {
-  // Apply to all routes except api routes, static files, and _next
   matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images and other static assets
-     * - api routes
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api).*)',
   ],
 };
