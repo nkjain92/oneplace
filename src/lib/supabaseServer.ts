@@ -1,14 +1,17 @@
 // src/lib/supabaseServer.ts - Server-side Supabase client utilities
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
   throw new Error('Missing Supabase environment variables');
 }
 
+// Regular server client for authenticated users
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
@@ -23,6 +26,16 @@ export async function createSupabaseServerClient() {
       remove(name: string, options: CookieOptions): void {
         cookieStore.set({ name, value: '', ...options });
       },
+    },
+  });
+}
+
+// Service role client for anonymous users (bypasses RLS)
+export async function createSupabaseServiceClient() {
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
   });
 }
