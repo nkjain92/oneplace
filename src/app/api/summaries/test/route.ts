@@ -22,8 +22,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract the URL from the request body
-    const { url } = await request.json();
+    // Extract the URL from the request body and possible test user ID
+    const { url, testUserId } = await request.json();
 
     // Extract video ID from the YouTube URL
     const videoId = extractYouTubeVideoId(url);
@@ -60,9 +60,12 @@ export async function POST(request: Request) {
       throw new Error(`Supabase query error: ${error.message}`);
     }
 
+    let summaryId, summaryData;
+
     if (data) {
       // Return existing summary
-      return NextResponse.json(data, { status: 200 });
+      summaryId = data.id;
+      summaryData = data;
     } else {
       try {
         // Fetch channel details from YouTube
@@ -146,7 +149,7 @@ export async function POST(request: Request) {
           throw new Error('Failed to get ID of inserted transcript');
         }
 
-        const summaryId = insertedData[0].id;
+        summaryId = insertedData[0].id;
 
         // Generate a summary
         const prompt = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
@@ -218,20 +221,16 @@ Transcript: ${transcript}`;
           throw new Error(`Error updating summary: ${updateError.message}`);
         }
 
-        // Return success response with the summary data
-        return NextResponse.json(
-          {
-            id: summaryId,
-            title: videoTitle,
-            summary: summary,
-            tags: tags,
-            people: people,
-            publisher_id: channelId,
-            publisher_name: name,
-            content_created_at: publishedAt,
-          },
-          { status: 200 },
-        );
+        summaryData = {
+          id: summaryId,
+          title: videoTitle,
+          summary: summary,
+          tags: tags,
+          featured_names: people,
+          publisher_id: channelId,
+          publisher_name: name,
+          content_created_at: publishedAt,
+        };
       } catch (transcriptError) {
         console.error('Error fetching or storing transcript:', transcriptError);
         throw new Error(
@@ -241,6 +240,46 @@ Transcript: ${transcript}`;
         );
       }
     }
+
+    // Record user interaction if a test user ID was provided
+    const userId = testUserId;
+    if (userId && summaryId) {
+      try {
+        // Use upsert to avoid duplicates - on conflict do nothing
+        const { error: userSummaryError } = await supabase.from('user_generated_summaries').upsert(
+          [
+            {
+              user_id: userId,
+              summary_id: summaryId,
+              generated_at: new Date().toISOString(),
+            },
+          ],
+          {
+            onConflict: 'user_id, summary_id',
+            ignoreDuplicates: true,
+          },
+        );
+
+        if (userSummaryError) {
+          console.error('Error recording user interaction:', userSummaryError);
+          // Don't throw, just log the error - we don't want to fail the whole request
+        } else {
+          console.log(`Recorded user ${userId} interaction with summary ${summaryId}`);
+        }
+      } catch (userSummaryError) {
+        // Log but don't fail the request
+        console.error('Error recording user interaction:', userSummaryError);
+      }
+    }
+
+    // Return success response with the summary data
+    return NextResponse.json(
+      {
+        ...summaryData,
+        userId: userId || null,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error('Error processing summary request:', error);
     return NextResponse.json(
