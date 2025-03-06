@@ -1,6 +1,6 @@
-// src/app/api/summaries/route.ts - Handles summary generation and retrieval for YouTube videos
+// src/app/api/summaries/test/route.ts - TEST ONLY VERSION that bypasses authentication
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createClient } from '@supabase/supabase-js';
 import { extractYouTubeVideoId } from '@/lib/utils/youtube';
 import fetchYouTubeTranscript from '@/lib/youtubeTranscript';
 import fetchYouTubeChannelDetails from '@/lib/youtubeChannel';
@@ -11,8 +11,17 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// IMPORTANT: This is a special test endpoint that uses admin privileges.
+// This would never be used in production as it bypasses authentication.
 export async function POST(request: Request) {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Test endpoint not available in production' },
+        { status: 403 },
+      );
+    }
+
     // Extract the URL from the request body
     const { url } = await request.json();
 
@@ -22,18 +31,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid YouTube URL' }, { status: 400 });
     }
 
-    // Create Supabase client
-    const supabase = await createSupabaseServerClient();
-
-    // Check authentication status
-    const { data: sessionData } = await supabase.auth.getSession();
-    const isAuthenticated = !!sessionData?.session?.user;
-
-    if (!isAuthenticated) {
-      console.log('User not authenticated. Using demo flow for testing only.');
-      // In a real app, we might require authentication or handle this differently
-      // For now, we'll proceed, but in production we'd handle this properly
+    // Create a direct Supabase client with service role to bypass RLS
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: 'Missing Supabase environment variables for test endpoint' },
+        { status: 500 },
+      );
     }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: {
+          persistSession: false,
+        },
+      },
+    );
 
     // Check if summary already exists for this video
     const { data, error } = await supabase
@@ -43,7 +57,6 @@ export async function POST(request: Request) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      // PGRST116 is the error code for "no rows returned" in Supabase
       throw new Error(`Supabase query error: ${error.message}`);
     }
 
@@ -51,26 +64,11 @@ export async function POST(request: Request) {
       // Return existing summary
       return NextResponse.json(data, { status: 200 });
     } else {
-      // No existing summary found - fetch transcript and store it
       try {
         // Fetch transcript from YouTube
         const transcript = await fetchYouTubeTranscript(videoId);
 
-        // For demo purposes, check if we're in a development environment
-        // In production, we would implement proper authentication checks
-        if (!isAuthenticated) {
-          return NextResponse.json(
-            {
-              message:
-                'Transcript fetched but not stored due to authentication requirements. In a production environment, users would need to be logged in.',
-              videoId,
-              transcriptPreview: transcript.substring(0, 100) + '...',
-            },
-            { status: 403 },
-          );
-        }
-
-        // Fetch the actual video title from YouTube
+        // Fetch the actual video title and channel details from YouTube
         const {
           videoTitle,
           channelId,
@@ -104,8 +102,7 @@ export async function POST(request: Request) {
 
         const summaryId = insertedData[0].id;
 
-        // Generate a summary using OpenAI directly
-        // Note: In a production implementation, we would use the Vercel AI SDK as specified
+        // Generate a summary
         const prompt = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
 
 Summary: [summary text]
@@ -175,7 +172,7 @@ Transcript: ${transcript}`;
           throw new Error(`Error updating summary: ${updateError.message}`);
         }
 
-        // Return the summary data
+        // Return success response with the summary data
         return NextResponse.json(
           {
             id: summaryId,
