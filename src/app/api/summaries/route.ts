@@ -51,8 +51,60 @@ export async function POST(request: Request) {
       // Return existing summary
       return NextResponse.json(data, { status: 200 });
     } else {
-      // No existing summary found - fetch transcript and store it
+      // No existing summary found - fetch channel details and transcript
       try {
+        // Fetch channel details from YouTube
+        const { channelId, name, description, videoTitle } = await fetchYouTubeChannelDetails(
+          videoId,
+        );
+
+        // Check if channel already exists in our database
+        const { data: existingChannel, error: channelError } = await supabase
+          .from('channels')
+          .select('id')
+          .eq('id', channelId)
+          .single();
+
+        if (channelError && channelError.code !== 'PGRST116') {
+          throw new Error(`Error checking for existing channel: ${channelError.message}`);
+        }
+
+        // If channel doesn't exist, insert it
+        if (!existingChannel) {
+          const { error: insertChannelError } = await supabase.from('channels').insert([
+            {
+              id: channelId,
+              name: name,
+              description: description,
+              rss_feed_url: null,
+              tags: [],
+            },
+          ]);
+
+          if (insertChannelError) {
+            throw new Error(`Error inserting channel: ${insertChannelError.message}`);
+          }
+
+          console.log(`Channel ${name} (${channelId}) added to database`);
+        }
+
+        // Get video details including published date
+        const videoResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${process.env.YOUTUBE_API_KEY}`,
+        );
+
+        if (!videoResponse.ok) {
+          throw new Error(
+            `Error fetching video details: ${videoResponse.status} ${videoResponse.statusText}`,
+          );
+        }
+
+        const videoData = await videoResponse.json();
+        const publishedAt =
+          videoData.items && videoData.items.length > 0
+            ? videoData.items[0].snippet.publishedAt
+            : null;
+
         // Fetch transcript from YouTube
         const transcript = await fetchYouTubeTranscript(videoId);
 
@@ -70,14 +122,7 @@ export async function POST(request: Request) {
           );
         }
 
-        // Fetch the actual video title from YouTube
-        const {
-          videoTitle,
-          channelId,
-          name: channelName,
-        } = await fetchYouTubeChannelDetails(videoId);
-
-        // Insert a new record into the summaries table
+        // Insert a new record into the summaries table with channel details
         const { data: insertedData, error: insertError } = await supabase
           .from('summaries')
           .insert([
@@ -87,7 +132,8 @@ export async function POST(request: Request) {
               source_url: url,
               title: videoTitle,
               publisher_id: channelId,
-              publisher_name: channelName,
+              publisher_name: name,
+              content_created_at: publishedAt,
               transcript: transcript,
               status: 'processing',
             },
@@ -105,7 +151,6 @@ export async function POST(request: Request) {
         const summaryId = insertedData[0].id;
 
         // Generate a summary using OpenAI directly
-        // Note: In a production implementation, we would use the Vercel AI SDK as specified
         const prompt = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
 
 Summary: [summary text]
@@ -175,13 +220,17 @@ Transcript: ${transcript}`;
           throw new Error(`Error updating summary: ${updateError.message}`);
         }
 
-        // Return the summary data
+        // Return the summary data with channel details
         return NextResponse.json(
           {
             id: summaryId,
+            title: videoTitle,
             summary: summary,
             tags: tags,
             people: people,
+            publisher_id: channelId,
+            publisher_name: name,
+            content_created_at: publishedAt,
           },
           { status: 200 },
         );
