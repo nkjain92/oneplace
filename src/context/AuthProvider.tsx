@@ -79,11 +79,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+        console.log('Initial session:', session); // Debug log
 
         if (mounted) {
           if (session) {
             // If logged in, fetch and add the user profile data with retry
             const profile = await fetchProfileWithRetry(session.user.id);
+            console.log('Initial user:', session.user, 'Profile:', profile); // Debug log
 
             setState({
               user: session.user,
@@ -118,6 +120,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session); // Debug log
+
       if (mounted) {
         if (session) {
           // Fetch user profile when auth state changes, with retry for signup events

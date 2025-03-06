@@ -191,3 +191,197 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 $$
+
+---
+
+[
+{
+"schemaname": "public",
+"tablename": "subscriptions",
+"policyname": "Users can delete their own subscriptions",
+"polroles": "{public}",
+"polcmd": "DELETE",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "subscriptions",
+"policyname": "Users can insert their own subscriptions",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() = user_id)"
+},
+{
+"schemaname": "public",
+"tablename": "subscriptions",
+"policyname": "Users can view their own subscriptions",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "profiles",
+"policyname": "Allow insertion into profiles for new users",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() IS NOT NULL)"
+},
+{
+"schemaname": "public",
+"tablename": "profiles",
+"policyname": "Users can update their own profile",
+"polroles": "{public}",
+"polcmd": "UPDATE",
+"polqual": "(auth.uid() = id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "profiles",
+"policyname": "Users can view their own profile",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "(auth.uid() = id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "summaries",
+"policyname": "Summaries can be updated by authenticated users",
+"polroles": "{public}",
+"polcmd": "UPDATE",
+"polqual": "(auth.uid() IS NOT NULL)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "summaries",
+"policyname": "Summaries can be inserted by authenticated users",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() IS NOT NULL)"
+},
+{
+"schemaname": "public",
+"tablename": "summaries",
+"policyname": "Summaries are viewable by everyone",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "true",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "summaries",
+"policyname": "Summaries are viewable by all users",
+"polroles": "{authenticated}",
+"polcmd": "SELECT",
+"polqual": "true",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "user_generated_summaries",
+"policyname": "User generated summaries can be deleted by the user who created",
+"polroles": "{public}",
+"polcmd": "DELETE",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "user_generated_summaries",
+"policyname": "User generated summaries can be inserted by authenticated users",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() = user_id)"
+},
+{
+"schemaname": "public",
+"tablename": "user_generated_summaries",
+"policyname": "User generated summaries are viewable by the user who created t",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "user_generated_summaries",
+"policyname": "Users can insert their own generated summaries",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() = user_id)"
+},
+{
+"schemaname": "public",
+"tablename": "user_generated_summaries",
+"policyname": "Users can view their own generated summaries",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "channels",
+"policyname": "Channels can be updated by authenticated users",
+"polroles": "{public}",
+"polcmd": "UPDATE",
+"polqual": "(auth.uid() IS NOT NULL)",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "channels",
+"policyname": "Channels can be inserted by authenticated users",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() IS NOT NULL)"
+},
+{
+"schemaname": "public",
+"tablename": "channels",
+"policyname": "Channels are viewable by everyone",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "true",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "channels",
+"policyname": "Channels are viewable by all users",
+"polroles": "{authenticated}",
+"polcmd": "SELECT",
+"polqual": "true",
+"polwithcheck": null
+},
+{
+"schemaname": "public",
+"tablename": "chat_history",
+"policyname": "Users can insert their own chat history",
+"polroles": "{public}",
+"polcmd": "INSERT",
+"polqual": null,
+"polwithcheck": "(auth.uid() = user_id)"
+},
+{
+"schemaname": "public",
+"tablename": "chat_history",
+"policyname": "Users can view their own chat history",
+"polroles": "{public}",
+"polcmd": "SELECT",
+"polqual": "(auth.uid() = user_id)",
+"polwithcheck": null
+}
+]
