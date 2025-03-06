@@ -7,7 +7,7 @@ import { ArrowRight, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { extractVideoId, isValidYouTubeUrl } from '@/lib/utils';
-import { useAuth } from '@/context/AuthProvider';
+import { useAuthStore } from '@/store/authStore';
 import HeroImage from '@/components/HeroImage';
 import SummaryCard from '@/components/SummaryCard';
 
@@ -29,7 +29,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

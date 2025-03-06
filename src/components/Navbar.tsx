@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthProvider';
+import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +25,7 @@ import {
 import { Menu, ChevronDown, X } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading } = useAuthStore();
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/context/AuthProvider';
 import Navbar from '@/components/Navbar';
+import { AuthWrapper } from '@/components/AuthWrapper';
 
 // Initialize the Inter font according to styling guidelines
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -16,10 +16,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en' className={`${inter.variable}`}>
       <body className='font-sans bg-[#f8f9ff]'>
-        <AuthProvider>
+        <AuthWrapper>
           <Navbar />
           <main className='container mx-auto px-4 pt-20'>{children}</main>
-        </AuthProvider>
+        </AuthWrapper>
       </body>
     </html>
   );
