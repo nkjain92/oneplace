@@ -13,15 +13,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-  SheetTitle,
-  SheetFooter,
-  SheetHeader,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetFooter, SheetHeader } from '@/components/ui/sheet';
 import { Menu, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
