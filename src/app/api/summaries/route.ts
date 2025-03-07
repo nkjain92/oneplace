@@ -257,6 +257,7 @@ export async function POST(request: Request) {
       {
         ...summaryData,
         userId: userId || null,
+        channelId: 'publisher_id' in summaryData ? summaryData.publisher_id : null,
       },
       { status: 200 },
     );

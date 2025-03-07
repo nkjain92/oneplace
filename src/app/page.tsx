@@ -18,6 +18,7 @@ interface SummaryData {
   tags: string[];
   featured_names: string[];
   publisher_name: string;
+  publisher_id: string;
   content_created_at: string;
   videoId?: string;
   content_id?: string;
@@ -59,6 +60,7 @@ export default function Home() {
         tags: Array.isArray(data.tags) ? data.tags : [],
         featured_names: Array.isArray(data.featured_names) ? data.featured_names : [],
         publisher_name: data.publisher_name || 'Unknown Channel',
+        publisher_id: data.publisher_id || data.channelId || '',
         content_created_at: data.content_created_at || new Date().toISOString(),
         videoId: data.content_id || contentId || '',
       };
@@ -141,6 +143,7 @@ export default function Home() {
                 title={summaryData.title}
                 date={summaryData.content_created_at}
                 channelName={summaryData.publisher_name}
+                channelId={summaryData.publisher_id}
                 isSubscribed={false}
                 summary={summaryData.summary}
                 tags={summaryData.tags}

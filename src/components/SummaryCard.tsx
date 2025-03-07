@@ -9,6 +9,7 @@ interface SummaryCardProps {
   title: string;
   date: string;
   channelName: string;
+  channelId: string;
   isSubscribed: boolean;
   summary: string;
   tags: string[];
@@ -20,6 +21,7 @@ export default function SummaryCard({
   title,
   date,
   channelName,
+  channelId,
   isSubscribed = false,
   summary,
   tags = [],
@@ -50,7 +52,10 @@ export default function SummaryCard({
           <h2 className='text-xl font-semibold text-gray-800 mb-1'>{title}</h2>
           <div className='flex items-center justify-between'>
             <div className='flex items-center text-sm text-gray-600'>
-              <span>{channelName}</span>
+              {/* Link channel name to Channel page */}
+              <span>
+                <Link href={`/channels/${channelId}`}>{channelName}</Link>
+              </span>
               <span className='mx-2'>•</span>
               <span>{formattedDate}</span>
             </div>
