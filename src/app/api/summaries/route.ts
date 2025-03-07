@@ -31,6 +31,10 @@ export async function POST(request: Request) {
     const isAuthenticated = !!sessionData?.session?.user;
     const userId = sessionData?.session?.user?.id;
 
+    console.log('Session Data:', sessionData);
+    console.log('Is Authenticated:', isAuthenticated);
+    console.log('User ID:', userId);
+
     // Choose the appropriate client based on authentication
     const dbClient = isAuthenticated ? supabase : await createSupabaseServiceClient();
 
