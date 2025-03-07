@@ -25,7 +25,11 @@ export default async function fetchYouTubeTranscript(videoId: string): Promise<s
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch transcript: ${response.status} ${response.statusText}`);
+      // Read the error response body to get detailed error information
+      const errorBody = await response.text();
+      throw new Error(
+        `Failed to fetch transcript: ${response.status} ${response.statusText} - ${errorBody}`,
+      );
     }
 
     const data = await response.json();
