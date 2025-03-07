@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tag, Users } from 'lucide-react';
+import { SubscribeButton } from '@/components/SubscribeButton';
 
 interface SummaryCardProps {
   title: string;
@@ -34,16 +35,6 @@ export default function SummaryCard({
     year: 'numeric',
   });
 
-  const handleSubscribe = () => {
-    // This will be implemented later
-    console.log('Subscribe to', channelName);
-  };
-
-  const handleUnsubscribe = () => {
-    // This will be implemented later
-    console.log('Unsubscribe from', channelName);
-  };
-
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden max-w-4xl w-full'>
       <div className='p-6'>
@@ -59,17 +50,7 @@ export default function SummaryCard({
               <span className='mx-2'>•</span>
               <span>{formattedDate}</span>
             </div>
-            <Button
-              variant={isSubscribed ? 'outline' : 'default'}
-              size='sm'
-              onClick={isSubscribed ? handleUnsubscribe : handleSubscribe}
-              className={
-                isSubscribed
-                  ? 'text-gray-600 border-gray-300 hover:bg-gray-50'
-                  : 'bg-[#4263eb] hover:bg-[#3b5bdb] text-white'
-              }>
-              {isSubscribed ? 'Unsubscribe' : '+Subscribe'}
-            </Button>
+            <SubscribeButton channelId={channelId} />
           </div>
         </div>
 
