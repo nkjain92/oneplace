@@ -1,12 +1,12 @@
 // src/lib/localStorage.ts - Utilities for managing content IDs in local storage for anonymous users
 
 /**
- * Retrieves the list of generated content IDs from local storage
+ * Retrieves the list of generated content IDs from local storage for anonymous users
  * @returns Array of content IDs or empty array if none found or if localStorage is unavailable
  */
-export function getGeneratedContentIds(): string[] {
+export function getAnonymousGeneratedContentIds(): string[] {
   try {
-    const data = localStorage.getItem('generatedContentIds');
+    const data = localStorage.getItem('user_summaries');
     return data ? JSON.parse(data) : [];
   } catch {
     return [];
@@ -14,15 +14,15 @@ export function getGeneratedContentIds(): string[] {
 }
 
 /**
- * Adds a new content ID to the list in local storage if it doesn't already exist
+ * Adds a new content ID to the list in local storage for anonymous users if it doesn't already exist
  * @param contentId The content ID to add
  */
-export function addGeneratedContentId(contentId: string): void {
+export function addAnonymousGeneratedContentId(contentId: string): void {
   try {
-    const ids = getGeneratedContentIds();
+    const ids = getAnonymousGeneratedContentIds();
     if (!ids.includes(contentId)) {
       ids.push(contentId);
-      localStorage.setItem('generatedContentIds', JSON.stringify(ids));
+      localStorage.setItem('user_summaries', JSON.stringify(ids));
     }
   } catch {
     // Silently fail

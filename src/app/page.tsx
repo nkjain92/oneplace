@@ -1,10 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { YoutubeUrlInput } from '@/components/YoutubeUrlInput';
 import SummaryCard from '@/components/SummaryCard';
 import { useAuthStore } from '@/store/authStore';
 import { extractYouTubeVideoId } from '@/lib/utils/youtube';
+import {
+  addAnonymousGeneratedContentId,
+  getAnonymousGeneratedContentIds,
+} from '@/lib/localStorage';
+import { supabase } from '@/lib/supabaseClient';
 import HeroImage from '@/components/HeroImage';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -26,9 +31,66 @@ interface SummaryData {
 
 export default function Home() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
+  const [recentSummaries, setRecentSummaries] = useState<SummaryData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
+
+  // Fetch the most recent summaries for anonymous users on initial load
+  useEffect(() => {
+    async function fetchRecentSummaries() {
+      try {
+        // Only fetch for anonymous users
+        if (!user) {
+          const contentIds = getAnonymousGeneratedContentIds();
+
+          // If there are previously generated summaries
+          if (contentIds.length > 0) {
+            // Get the 5 most recent content IDs (or all if fewer than 5)
+            const recentContentIds = contentIds.slice(-5).reverse();
+
+            // Fetch the summaries from the database
+            const { data, error } = await supabase
+              .from('summaries')
+              .select('*')
+              .in('content_id', recentContentIds)
+              .order('content_created_at', { ascending: false });
+
+            if (error) {
+              console.error('Error fetching recent summaries:', error);
+              return;
+            }
+
+            if (data && data.length > 0) {
+              // Format the data to match the SummaryCard props
+              const formattedSummaries = data.map(item => ({
+                id: item.id,
+                title: item.title || 'YouTube Video',
+                summary: item.summary || 'No summary available',
+                tags: Array.isArray(item.tags) ? item.tags : [],
+                featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
+                publisher_name: item.publisher_name || 'Unknown Channel',
+                publisher_id: item.publisher_id || '',
+                content_created_at: item.content_created_at || new Date().toISOString(),
+                videoId: item.content_id || '',
+                content_id: item.content_id,
+              }));
+
+              // Set the most recent summary as the main summary
+              setSummaryData(formattedSummaries[0]);
+
+              // Set all summaries for the recent list
+              setRecentSummaries(formattedSummaries);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading recent summaries:', err);
+      }
+    }
+
+    fetchRecentSummaries();
+  }, [user]); // Re-run if user status changes
 
   const handleSubmit = async (url: string) => {
     setIsLoading(true);
@@ -70,12 +132,8 @@ export default function Home() {
       // For anonymous users, store content_id in local storage
       if (!user && contentId) {
         try {
-          const storedSummaries = JSON.parse(localStorage.getItem('user_summaries') || '[]');
-          if (!storedSummaries.includes(contentId)) {
-            storedSummaries.push(contentId);
-            localStorage.setItem('user_summaries', JSON.stringify(storedSummaries));
-            console.log('Added to local storage history:', contentId);
-          }
+          addAnonymousGeneratedContentId(contentId);
+          console.log('Added to local storage history:', contentId);
         } catch (storageError) {
           console.error('Error storing in local storage:', storageError);
         }
@@ -150,6 +208,42 @@ export default function Home() {
                 peopleMentioned={summaryData.featured_names}
                 videoId={summaryData.videoId || summaryData.content_id || ''}
               />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Recent Summaries Section for Anonymous Users */}
+      {!user && recentSummaries.length > 1 && (
+        <section className='py-12 px-4 bg-gray-50'>
+          <div className='max-w-7xl mx-auto'>
+            <h2 className='text-2xl font-bold text-gray-900 mb-6'>Your Recent Summaries</h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {recentSummaries.slice(1).map(summary => (
+                <div
+                  key={summary.id}
+                  className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
+                  <h3 className='text-lg font-semibold mb-2 line-clamp-2'>{summary.title}</h3>
+                  <p className='text-gray-600 text-sm mb-2'>
+                    {summary.publisher_name} •{' '}
+                    {new Date(summary.content_created_at).toLocaleDateString()}
+                  </p>
+                  <p className='text-gray-700 mb-3 line-clamp-3'>{summary.summary}</p>
+                  <Link
+                    href={`/summaries/${summary.content_id}`}
+                    className='text-blue-600 hover:text-blue-800 text-sm font-medium'>
+                    View full summary
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <div className='mt-6 text-center'>
+              <Link href='/history'>
+                <Button variant='outline' className='mt-4'>
+                  View All History
+                  <ArrowRight className='ml-2 h-4 w-4' />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>

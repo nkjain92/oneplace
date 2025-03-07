@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/lib/supabaseClient';
 import SummaryCard from '@/components/SummaryCard';
-import { getGeneratedContentIds } from '@/lib/localStorage';
+import { getAnonymousGeneratedContentIds } from '@/lib/localStorage';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +16,39 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 
+// Define interface for summary object
+interface Summary {
+  id: string;
+  title: string;
+  content_created_at: string;
+  publisher_name: string;
+  publisher_id: string;
+  summary: string;
+  content_id: string;
+  tags?: string[];
+  featured_names?: string[];
+}
+
+// Helper function to safely validate a summary object
+function isSummary(obj: unknown): obj is Summary {
+  if (!obj || typeof obj !== 'object') return false;
+
+  const requiredProps = [
+    'id',
+    'title',
+    'content_created_at',
+    'publisher_name',
+    'publisher_id',
+    'summary',
+    'content_id',
+  ];
+
+  return requiredProps.every(prop => prop in obj);
+}
+
 export default function HistoryPage() {
   const { user } = useAuthStore();
-  const [summaries, setSummaries] = useState<any[]>([]);
+  const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'generated' | 'all'>('all');
@@ -59,7 +89,15 @@ export default function HistoryPage() {
               throw new Error(`Error fetching generated summaries: ${fetchError.message}`);
             }
 
-            const formattedSummaries = data?.map(item => item.summaries) || [];
+            // Safely extract the summary objects from the data structure
+            const formattedSummaries: Summary[] = [];
+            if (data) {
+              for (const item of data) {
+                if (item && item.summaries && isSummary(item.summaries)) {
+                  formattedSummaries.push(item.summaries);
+                }
+              }
+            }
             setSummaries(formattedSummaries);
           } else {
             // Fetch both generated summaries and summaries from subscribed channels
@@ -86,7 +124,7 @@ export default function HistoryPage() {
             const channelIds = subscriptionsData?.map(sub => sub.channel_id) || [];
 
             // 3. Get summaries from subscribed channels if there are any
-            let channelSummaries: any[] = [];
+            let channelSummaries: Summary[] = [];
             if (channelIds.length > 0) {
               const { data: channelData, error: channelError } = await supabase
                 .from('summaries')
@@ -98,11 +136,23 @@ export default function HistoryPage() {
                 throw new Error(`Error fetching channel summaries: ${channelError.message}`);
               }
 
-              channelSummaries = channelData || [];
+              // Safely convert the channel data to Summary[]
+              if (channelData) {
+                channelSummaries = channelData.filter(isSummary);
+              }
             }
 
             // 4. Combine and deduplicate summaries
-            const generatedSummaries = generatedData?.map(item => item.summaries) || [];
+            // Safely extract the summary objects from generated data
+            const generatedSummaries: Summary[] = [];
+            if (generatedData) {
+              for (const item of generatedData) {
+                if (item && item.summaries && isSummary(item.summaries)) {
+                  generatedSummaries.push(item.summaries);
+                }
+              }
+            }
+
             const allSummaries = [...generatedSummaries, ...channelSummaries];
 
             // Deduplicate by id
@@ -121,7 +171,7 @@ export default function HistoryPage() {
           }
         } else {
           // For anonymous users, get summaries from localStorage
-          const contentIds = getGeneratedContentIds();
+          const contentIds = getAnonymousGeneratedContentIds();
 
           if (contentIds.length > 0) {
             const { data, error: fetchError } = await supabase
@@ -134,7 +184,8 @@ export default function HistoryPage() {
               throw new Error(`Error fetching summaries: ${fetchError.message}`);
             }
 
-            setSummaries(data || []);
+            // Safely convert to Summary[]
+            setSummaries(data ? data.filter(isSummary) : []);
           } else {
             setSummaries([]);
           }

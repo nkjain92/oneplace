@@ -9,13 +9,26 @@ import { SubscribeButton } from '@/components/SubscribeButton';
 import SummaryCard from '@/components/SummaryCard';
 import { useAuthStore } from '@/store/authStore';
 
+// Define interface for summary object
+interface Summary {
+  id: string;
+  title: string;
+  content_created_at: string;
+  publisher_name: string;
+  publisher_id: string;
+  summary: string;
+  content_id: string;
+  tags?: string[];
+  featured_names?: string[];
+}
+
 export default function ChannelPage() {
   const params = useParams();
   const channelId = params.channelId as string;
   const { user } = useAuthStore();
 
   const [channel, setChannel] = useState<{ name: string; description: string | null } | null>(null);
-  const [summaries, setSummaries] = useState<any[]>([]);
+  const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
