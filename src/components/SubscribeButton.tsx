@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,13 @@ interface SubscribeButtonProps {
   channelId: string;
 }
 
-export function SubscribeButton({ channelId }: SubscribeButtonProps) {
+const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
   const { user } = useAuthStore();
-  const { subscribedChannels, subscribe, unsubscribe, isLoading } = useSubscriptionStore();
+  const { subscribedChannels, subscribe, unsubscribe, isChannelLoading, error } =
+    useSubscriptionStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const isSubscribed = subscribedChannels.includes(channelId);
+  const isLoading = isChannelLoading(channelId);
 
   const handleClick = async () => {
     if (!user) {
@@ -39,8 +41,9 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
         onClick={handleClick}
         disabled={isLoading}
         className='bg-[#4263eb] hover:bg-[#3b5bdb] text-white'>
-        {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+        {isLoading ? 'Processing...' : isSubscribed ? 'Unsubscribe' : 'Subscribe'}
       </Button>
+      {error && !isLoading && <p className='text-red-500 text-sm mt-1'>{error}</p>}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className='bg-white rounded-xl border border-gray-100'>
           <DialogHeader>
@@ -63,4 +66,7 @@ export function SubscribeButton({ channelId }: SubscribeButtonProps) {
       </Dialog>
     </>
   );
-}
+});
+
+SubscribeButton.displayName = 'SubscribeButton';
+export { SubscribeButton };
