@@ -98,8 +98,8 @@ Top Navigation Bar: - On the left, we have the logo on the left. - On the right,
 
 - After reading a summary, users should be able to **chat** with the video or podcast, asking very specific questions. (this button is already there on all summary cards. we just have to make it clickable)
 - An **integrated LLM (gpt 4o mini for now)** should provide answers based on the content of the transcript.
-- User should be able to ask follow up questions. [ensure context for followup questions is transcript + previous question and answer]
 - When user clicks on talk to this video button, we should open a new page with summary card of the video and a chat interface. User should be able to write their questions there and send the message and then see the answer.
+- User should be able to ask follow up questions. [ensure context for followup questions is transcript + previous question and answer]
 - Answer should stream in chat like interface (get this interface from vercel ai sdk)
 - We will use a system prompt to guide the LLM to answer the questions in a way that is helpful and engaging for the user. Store that system prompt in prompts file that we already have.
 
