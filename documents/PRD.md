@@ -96,11 +96,12 @@ Top Navigation Bar: - On the left, we have the logo on the left. - On the right,
 
 ## 5. Interactive Q&A with Transcript
 
-- After reading a summary, users should be able to **chat** with the video or podcast, asking very specific questions.
-- An **integrated LLM** should provide answers based on the content of the transcript.
-- User should be able to ask question on the summary card itself. Once the question is asked, we should show a chat interface on a separate new page (QnA page) with the question and the answer. Video name should be at the top of the page with chanel name.
-- The QnA should be only on the transcript of the video
+- After reading a summary, users should be able to **chat** with the video or podcast, asking very specific questions. (this button is already there on all summary cards. we just have to make it clickable)
+- An **integrated LLM (gpt 4o mini for now)** should provide answers based on the content of the transcript.
 - User should be able to ask follow up questions. [ensure context for followup questions is transcript + previous question and answer]
+- When user clicks on talk to this video button, we should open a new page with summary card of the video and a chat interface. User should be able to write their questions there and send the message and then see the answer.
+- Answer should stream in chat like interface (get this interface from vercel ai sdk)
+- We will use a system prompt to guide the LLM to answer the questions in a way that is helpful and engaging for the user. Store that system prompt in prompts file that we already have.
 
 ## 6. Tags Functionality
 
