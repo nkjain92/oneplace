@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const isAuthenticated = !!sessionData?.session?.user;
     const userId = sessionData?.session?.user?.id;
 
-    console.log('Session Data:', sessionData);
+    console.log('Session Data:', JSON.stringify(sessionData, null, 2));
     console.log('Is Authenticated:', isAuthenticated);
     console.log('User ID:', userId);
 
