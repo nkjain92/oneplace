@@ -86,12 +86,13 @@ export async function POST(request: Request) {
 
         // If channel doesn't exist, insert it
         if (!existingChannel) {
+          const rssFeedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
           const { error: insertChannelError } = await supabase.from('channels').insert([
             {
               id: channelId,
               name: name,
               description: description,
-              rss_feed_url: null,
+              rss_feed_url: rssFeedUrl,
               tags: [],
             },
           ]);
