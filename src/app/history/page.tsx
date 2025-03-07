@@ -260,7 +260,6 @@ export default function HistoryPage() {
                 date={summary.content_created_at}
                 channelName={summary.publisher_name}
                 channelId={summary.publisher_id}
-                isSubscribed={!!subscriptions[summary.publisher_id]}
                 summary={summary.summary}
                 tags={summary.tags || []}
                 peopleMentioned={summary.featured_names || []}
