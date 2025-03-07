@@ -48,8 +48,10 @@ export default function ChatPage() {
           content_created_at: data.content_created_at,
           videoId: data.content_id,
         });
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching the summary');
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'An error occurred while fetching the summary';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -74,7 +76,6 @@ export default function ChatPage() {
           date={summaryData.content_created_at}
           channelName={summaryData.publisher_name}
           channelId={summaryData.publisher_id}
-          isSubscribed={false}
           summary={summaryData.summary}
           tags={summaryData.tags}
           peopleMentioned={summaryData.featured_names}

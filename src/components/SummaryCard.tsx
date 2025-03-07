@@ -11,7 +11,6 @@ interface SummaryCardProps {
   date: string;
   channelName: string;
   channelId: string;
-  isSubscribed: boolean;
   summary: string;
   tags: string[];
   peopleMentioned: string[];
@@ -23,7 +22,6 @@ export default function SummaryCard({
   date,
   channelName,
   channelId,
-  isSubscribed = false,
   summary,
   tags = [],
   peopleMentioned = [],
