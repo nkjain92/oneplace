@@ -4,13 +4,10 @@ import { createSupabaseServerClient, createSupabaseServiceClient } from '@/lib/s
 import { extractYouTubeVideoId } from '@/lib/utils/youtube';
 import fetchYouTubeTranscript from '@/lib/youtubeTranscript';
 import fetchYouTubeChannelDetails from '@/lib/youtubeChannel';
-import OpenAI from 'openai';
+// Vercel AI SDK for summary generation
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 import { SUMMARY_PROMPT } from '@/lib/prompts';
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export async function POST(request: Request) {
   try {
@@ -143,14 +140,14 @@ export async function POST(request: Request) {
         const prompt = SUMMARY_PROMPT.replace('{transcript}', transcript);
 
         // Call the AI model to generate the summary
-        const response = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+        const result = await generateText({
+          model: openai('gpt-4o-mini'),
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
         });
 
         // Get the full text response
-        const fullSummary = response.choices[0].message.content || '';
+        const fullSummary = result.text || '';
 
         // Parse the response to extract summary, tags, and people
         let summary = '';
