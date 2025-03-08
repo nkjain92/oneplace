@@ -202,7 +202,6 @@ export default function Home() {
                 date={summaryData.content_created_at}
                 channelName={summaryData.publisher_name}
                 channelId={summaryData.publisher_id}
-                isSubscribed={false}
                 summary={summaryData.summary}
                 tags={summaryData.tags}
                 peopleMentioned={summaryData.featured_names}
