@@ -1,13 +1,12 @@
 'use client';
 
-// src/app/channels/[channelId]/page.tsx - Displays all summaries for a specific channel
-
+// src/app/channels/[channelId]/page.tsx
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import SummaryCard from '@/components/SummaryCard';
-import { useAuthStore } from '@/store/authStore';
+import { useSubscriptionStore } from '@/store/subscriptionStore';
 
 // Define interface for summary object
 interface Summary {
@@ -25,13 +24,15 @@ interface Summary {
 export default function ChannelPage() {
   const params = useParams();
   const channelId = params.channelId as string;
-  const { user } = useAuthStore();
+
+  // Get subscription status from the store
+  const { subscribedChannels } = useSubscriptionStore();
+  const isSubscribed = subscribedChannels.includes(channelId);
 
   const [channel, setChannel] = useState<{ name: string; description: string | null } | null>(null);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
     async function fetchChannelData() {
@@ -47,39 +48,19 @@ export default function ChannelPage() {
           .eq('id', channelId)
           .single();
 
-        if (channelError) {
-          throw new Error(`Error fetching channel: ${channelError.message}`);
-        }
+        if (channelError) throw new Error(`Error fetching channel: ${channelError.message}`);
 
-        // Fetch summaries for this channel
+        // Fetch summaries
         const { data: summariesData, error: summariesError } = await supabase
           .from('summaries')
           .select('*')
           .eq('publisher_id', channelId)
           .order('content_created_at', { ascending: false });
 
-        if (summariesError) {
-          throw new Error(`Error fetching summaries: ${summariesError.message}`);
-        }
-
-        // Check if user is subscribed to this channel
-        let subscriptionStatus = false;
-        if (user) {
-          const { data: subscriptionData, error: subscriptionError } = await supabase
-            .from('subscriptions')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('channel_id', channelId)
-            .maybeSingle();
-
-          if (!subscriptionError && subscriptionData) {
-            subscriptionStatus = true;
-          }
-        }
+        if (summariesError) throw new Error(`Error fetching summaries: ${summariesError.message}`);
 
         setChannel(channelData);
         setSummaries(summariesData || []);
-        setIsSubscribed(subscriptionStatus);
         setError(null);
       } catch (err) {
         console.error('Error fetching channel data:', err);
@@ -90,15 +71,12 @@ export default function ChannelPage() {
     }
 
     fetchChannelData();
-  }, [channelId, user]);
+  }, [channelId]);
 
   if (loading) {
     return (
       <div className='p-6 max-w-7xl mx-auto'>
-        {/* Skeleton loader for channel header */}
         <div className='h-10 w-80 bg-gray-200 rounded-md mb-8 animate-pulse'></div>
-
-        {/* Skeleton loaders for summary cards */}
         <div className='grid grid-cols-1 gap-6'>
           {[...Array(3)].map((_, i) => (
             <div key={i} className='h-48 bg-gray-200 rounded-lg animate-pulse'></div>
@@ -119,10 +97,17 @@ export default function ChannelPage() {
   return (
     <div className='p-6 bg-gray-50 min-h-screen'>
       <div className='max-w-7xl mx-auto'>
-        {/* Channel header */}
+        {/* Channel header with subscription status */}
         <div className='p-6 mb-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm'>
           <div className='flex items-center justify-between'>
-            <h1 className='text-2xl font-bold text-gray-900'>{channel?.name}</h1>
+            <div className='flex items-center space-x-2'>
+              <h1 className='text-2xl font-bold text-gray-900'>{channel?.name}</h1>
+              {isSubscribed && (
+                <span className='text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full'>
+                  Subscribed
+                </span>
+              )}
+            </div>
             <SubscribeButton channelId={channelId} />
           </div>
           {channel?.description && <p className='mt-2 text-gray-600'>{channel.description}</p>}
@@ -138,7 +123,6 @@ export default function ChannelPage() {
                 date={summary.content_created_at}
                 channelName={channel?.name || summary.publisher_name}
                 channelId={channelId}
-                isSubscribed={isSubscribed}
                 summary={summary.summary}
                 tags={summary.tags || []}
                 peopleMentioned={summary.featured_names || []}
