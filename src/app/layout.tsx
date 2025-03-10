@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import { AuthWrapper } from '@/components/AuthWrapper';
+import { Analytics } from '@vercel/analytics/next';
 
 // Initialize the Inter font according to styling guidelines
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
           <main className='container mx-auto px-4 pt-20'>{children}</main>
         </AuthWrapper>
+        <Analytics />
       </body>
     </html>
   );
