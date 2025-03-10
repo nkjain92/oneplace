@@ -1,6 +1,6 @@
-# GetSmart Database Schema Design
+# OnePlace Database Schema Design
 
-This document provides a comprehensive overview of the GetSmart application's database schema, including table definitions, relationships, indexes, functions, triggers, and Row Level Security (RLS) policies.
+This document provides a comprehensive overview of the OnePlace application's database schema, including table definitions, relationships, indexes, functions, triggers, and Row Level Security (RLS) policies.
 
 ## Database Tables
 

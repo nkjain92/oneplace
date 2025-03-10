@@ -1,4 +1,4 @@
-# GetSmart
+# OnePlace
 
 A modern Next.js application built with TypeScript, Tailwind CSS, and ESLint.
 

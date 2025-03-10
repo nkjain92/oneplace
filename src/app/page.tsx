@@ -251,7 +251,7 @@ export default function Home() {
       {/* Features Section */}
       <section className='py-16 px-4 bg-white'>
         <div className='max-w-7xl mx-auto'>
-          <h2 className='text-3xl font-bold text-center mb-12'>Why Choose GetSmart?</h2>
+          <h2 className='text-3xl font-bold text-center mb-12'>Why Choose OnePlace?</h2>
 
           <div className='grid md:grid-cols-3 gap-8'>
             <div className='bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl'>

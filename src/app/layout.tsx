@@ -8,8 +8,9 @@ import { AuthWrapper } from '@/components/AuthWrapper';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'GetSmart - YouTube Summary Platform',
-  description: 'Generate intelligent summaries for YouTube videos and podcasts.',
+  title: 'OnePlace - AI-powered platform for knowledge',
+  description:
+    'Generate intelligent summaries for YouTube videos and get new ones in your inbox daily.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
