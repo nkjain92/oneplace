@@ -1,6 +1,6 @@
 // src/app/api/chat/route.ts - Handles streaming Q&A responses for video transcripts
 import { openai } from '@ai-sdk/openai';
-import { streamText, Message } from 'ai';
+import { streamText } from 'ai';
 import { createSupabaseServiceClient, createSupabaseServerClient } from '@/lib/supabaseServer';
 import { QNA_SYSTEM_PROMPT } from '@/lib/prompts';
 
@@ -8,7 +8,7 @@ import { QNA_SYSTEM_PROMPT } from '@/lib/prompts';
 export const maxDuration = 30;
 
 // Helper function to extract just the text from a response
-function extractTextContent(response: any): string {
+function extractTextContent(response: unknown): string {
   // If the response is a string, assume it's the text content
   if (typeof response === 'string') {
     return response;
@@ -16,12 +16,13 @@ function extractTextContent(response: any): string {
 
   // If it's an object, try to extract the text field
   if (typeof response === 'object' && response !== null) {
-    if (response.text) {
-      return response.text;
+    const responseObj = response as Record<string, unknown>;
+    if (typeof responseObj.text === 'string') {
+      return responseObj.text;
     }
     // If there's no text field, check if it's a JSON string in a string field
-    if (typeof response.content === 'string') {
-      return response.content;
+    if (typeof responseObj.content === 'string') {
+      return responseObj.content;
     }
   }
 
@@ -30,7 +31,7 @@ function extractTextContent(response: any): string {
 }
 
 export async function POST(req: Request) {
-  const { videoId, messages, sessionId } = await req.json();
+  const { videoId, messages } = await req.json();
 
   // Use service client to fetch transcript (bypasses RLS)
   const supabaseService = await createSupabaseServiceClient();

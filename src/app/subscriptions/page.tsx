@@ -15,7 +15,7 @@ export default function SubscriptionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [channels, setChannels] = useState<Channel[]>([]);
   const { user } = useAuthStore();
-  const { subscribedChannels, fetchSubscriptions } = useSubscriptionStore();
+  const { fetchSubscriptions } = useSubscriptionStore();
   const dataFetchedRef = useRef(false);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function SubscriptionsPage() {
         </div>
       ) : (
         <div className='text-center py-8 text-gray-600'>
-          You haven’t subscribed to any channels yet.
+          You haven&apos;t subscribed to any channels yet.
         </div>
       )}
     </div>
