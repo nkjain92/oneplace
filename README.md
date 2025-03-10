@@ -13,8 +13,10 @@ OnePlace is a comprehensive YouTube/Podcast Summary Platform that enables users 
 ## Tech Stack
 
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS
-- **Backend:** Supabase for authentication and database
+- **Backend:** Hosted Supabase for authentication and database
+- **Hosting:** Vercel
 - **AI Integration:** Vercel AI SDK with OpenAI
+- **AI SDK:** Vercel AI SDK
 - **State Management:** Zustand
 - **Form Validation:** Zod
 - **Styling:** Tailwind CSS with shadcn/ui components
