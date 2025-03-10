@@ -28,3 +28,36 @@ export function addAnonymousGeneratedContentId(contentId: string): void {
     // Silently fail
   }
 }
+
+/**
+ * Chat session ID management
+ */
+
+const CHAT_SESSION_KEY = 'chat_session_id';
+
+/**
+ * Generates a random session ID for anonymous users
+ * @returns A unique random session ID
+ */
+function generateChatSessionId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+}
+
+/**
+ * Gets the current chat session ID from localStorage or creates a new one if none exists
+ * @returns The chat session ID for anonymous users
+ */
+export function getChatSessionId(): string | null {
+  try {
+    if (typeof window === 'undefined') return null;
+
+    let sessionId = localStorage.getItem(CHAT_SESSION_KEY);
+    if (!sessionId) {
+      sessionId = generateChatSessionId();
+      localStorage.setItem(CHAT_SESSION_KEY, sessionId);
+    }
+    return sessionId;
+  } catch {
+    return null;
+  }
+}
