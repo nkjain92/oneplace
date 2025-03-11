@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { YoutubeUrlInput } from '@/components/YoutubeUrlInput';
 import SummaryCard from '@/components/SummaryCard';
+import { SummaryProgressLoader } from '@/components/SummaryProgressLoader';
 import { useAuthStore } from '@/store/authStore';
 import { extractYouTubeVideoId } from '@/lib/utils/youtube';
 import {
@@ -11,10 +12,12 @@ import {
   getAnonymousGeneratedContentIds,
 } from '@/lib/localStorage';
 import { supabase } from '@/lib/supabaseClient';
-import HeroImage from '@/components/HeroImage';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GlowButton } from '@/components/ui/glow-button';
+import { Input } from '@/components/ui/input';
+import { ChannelCard } from '@/components/ChannelCard';
 
 // Define the interface for summary data based on SummaryCard props
 interface SummaryData {
@@ -30,76 +33,188 @@ interface SummaryData {
   content_id?: string;
 }
 
+// Sample podcast videos for quick access
+const samplePodcasts = [
+  {
+    title: 'Lex Fridman #375 - Sam Altman',
+    url: 'https://www.youtube.com/watch?v=jvqFAi7vkBc',
+  },
+  {
+    title: 'Huberman Lab - Master Your Sleep',
+    url: 'https://www.youtube.com/watch?v=km1X0DUYSOY',
+  },
+  {
+    title: 'Tim Ferriss - Naval Ravikant',
+    url: 'https://www.youtube.com/watch?v=HiYo14wylQw',
+  },
+];
+
+// Sample channels for subscription CTA
+const featuredChannels = [
+  {
+    id: 'UCSHZKyawb77ixDdsGog4iWA',
+    name: 'Lex Fridman',
+    description: "Deep conversations with the world's most interesting people",
+    image: '/images/channels/lex-fridman.jpg',
+    subscriberCount: 4200000,
+    contentCount: 375,
+  },
+  {
+    id: 'UC2D2CMWXMOVWx7giW1n3LIg',
+    name: 'Huberman Lab',
+    description: 'Science-based tools for everyday life',
+    image: '/images/channels/huberman-lab.jpg',
+    subscriberCount: 3700000,
+    contentCount: 156,
+  },
+  {
+    id: 'UCznv7Vf9nBdJYvBagFdAHWw',
+    name: 'Tim Ferriss',
+    description: 'Interviews with world-class performers',
+    image: '/images/channels/tim-ferriss.jpg',
+    subscriberCount: 1100000,
+    contentCount: 680,
+  },
+];
+
 export default function Home() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [recentSummaries, setRecentSummaries] = useState<SummaryData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingNew, setIsGeneratingNew] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const { user } = useAuthStore();
 
   // Fetch the most recent summaries for anonymous users on initial load
   useEffect(() => {
-    async function fetchRecentSummaries() {
-      try {
-        // Only fetch for anonymous users
-        if (!user) {
-          const contentIds = getAnonymousGeneratedContentIds();
-
-          // If there are previously generated summaries
-          if (contentIds.length > 0) {
-            // Get the 5 most recent content IDs (or all if fewer than 5)
-            const recentContentIds = contentIds.slice(-5).reverse();
-
-            // Fetch the summaries from the database
-            const { data, error } = await supabase
-              .from('summaries')
-              .select('*')
-              .in('content_id', recentContentIds)
-              .order('content_created_at', { ascending: false });
-
-            if (error) {
-              console.error('Error fetching recent summaries:', error);
-              return;
-            }
-
-            if (data && data.length > 0) {
-              // Format the data to match the SummaryCard props
-              const formattedSummaries = data.map(item => ({
-                id: item.id,
-                title: item.title || 'YouTube Video',
-                summary: item.summary || 'No summary available',
-                tags: Array.isArray(item.tags) ? item.tags : [],
-                featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-                publisher_name: item.publisher_name || 'Unknown Channel',
-                publisher_id: item.publisher_id || '',
-                content_created_at: item.content_created_at || new Date().toISOString(),
-                videoId: item.content_id || '',
-                content_id: item.content_id,
-              }));
-
-              // Set the most recent summary as the main summary
-              setSummaryData(formattedSummaries[0]);
-
-              // Set all summaries for the recent list
-              setRecentSummaries(formattedSummaries);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error loading recent summaries:', err);
-      }
-    }
-
     fetchRecentSummaries();
   }, [user]); // Re-run if user status changes
+
+  async function fetchRecentSummaries() {
+    try {
+      // Get content IDs from storage
+      const contentIds = getAnonymousGeneratedContentIds();
+      console.log('Local storage content IDs:', contentIds);
+
+      if (contentIds.length > 0) {
+        // Get the 5 most recent content IDs
+        const recentContentIds = contentIds.slice(-5).reverse();
+        console.log('Using recent content IDs:', recentContentIds);
+
+        // Fetch the summaries from the database
+        const { data, error } = await supabase
+          .from('summaries')
+          .select('*')
+          .in('content_id', recentContentIds)
+          .order('content_created_at', { ascending: false })
+          .limit(5);
+
+        if (error) {
+          console.error('Error fetching recent summaries:', error);
+          return;
+        }
+
+        console.log('Fetched summaries from DB:', data?.length || 0);
+
+        if (data && data.length > 0) {
+          // Format the data to match the SummaryCard props
+          const formattedSummaries = data.map(item => ({
+            id: item.id,
+            title: item.title || 'YouTube Video',
+            summary: item.summary || 'No summary available',
+            tags: Array.isArray(item.tags) ? item.tags : [],
+            featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
+            publisher_name: item.publisher_name || 'Unknown Channel',
+            publisher_id: item.publisher_id || '',
+            content_created_at: item.content_created_at || new Date().toISOString(),
+            videoId: item.content_id || '',
+            content_id: item.content_id,
+          }));
+
+          console.log('Formatted summaries:', formattedSummaries.length);
+
+          // Set the most recent summary as the main summary if none is selected
+          if (!summaryData) {
+            setSummaryData(formattedSummaries[0]);
+          }
+
+          // Set all summaries for the recent list
+          setRecentSummaries(formattedSummaries);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading recent summaries:', err);
+    }
+  }
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setYoutubeUrl(e.target.value);
+  };
+
+  const handleSampleClick = async (url: string) => {
+    setYoutubeUrl(url);
+    await handleSubmit(url);
+  };
 
   const handleSubmit = async (url: string) => {
     setIsLoading(true);
     setError(null);
+    setIsGeneratingNew(false);
 
     try {
       // Extract video ID for local storage (for anonymous users)
       const contentId = extractYouTubeVideoId(url);
+
+      // First, check if we already have this summary
+      if (contentId) {
+        const { data: existingData } = await supabase
+          .from('summaries')
+          .select('*')
+          .eq('content_id', contentId)
+          .single();
+
+        if (existingData) {
+          // If we already have the summary, use it directly
+          const formattedData: SummaryData = {
+            id: existingData.id,
+            title: existingData.title || 'YouTube Video',
+            summary: existingData.summary || 'No summary available',
+            tags: Array.isArray(existingData.tags) ? existingData.tags : [],
+            featured_names: Array.isArray(existingData.featured_names)
+              ? existingData.featured_names
+              : [],
+            publisher_name: existingData.publisher_name || 'Unknown Channel',
+            publisher_id: existingData.publisher_id || '',
+            content_created_at: existingData.content_created_at || new Date().toISOString(),
+            videoId: existingData.content_id || contentId || '',
+            content_id: existingData.content_id,
+          };
+
+          setSummaryData(formattedData);
+
+          // For anonymous users, store content_id in local storage
+          if (!user && contentId) {
+            try {
+              addAnonymousGeneratedContentId(contentId);
+              console.log('Added to local storage history:', contentId);
+              // Refresh recent summaries after adding a new one
+              fetchRecentSummaries();
+            } catch (storageError) {
+              console.error('Error storing in local storage:', storageError);
+            }
+          }
+
+          setIsLoading(false);
+          return;
+        } else {
+          // We need to generate a new summary
+          setIsGeneratingNew(true);
+        }
+      } else {
+        // If we can't extract a content ID, assume we need to generate a new summary
+        setIsGeneratingNew(true);
+      }
 
       // Call the API to get the summary
       const response = await fetch('/api/summaries', {
@@ -126,6 +241,7 @@ export default function Home() {
         publisher_id: data.publisher_id || data.channelId || '',
         content_created_at: data.content_created_at || new Date().toISOString(),
         videoId: data.content_id || contentId || '',
+        content_id: data.content_id || contentId,
       };
 
       setSummaryData(formattedData);
@@ -135,6 +251,8 @@ export default function Home() {
         try {
           addAnonymousGeneratedContentId(contentId);
           console.log('Added to local storage history:', contentId);
+          // Refresh recent summaries after adding a new one
+          fetchRecentSummaries();
         } catch (storageError) {
           console.error('Error storing in local storage:', storageError);
         }
@@ -144,6 +262,7 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
       setSummaryData(null);
     } finally {
+      setIsGeneratingNew(false);
       setIsLoading(false);
     }
   };
@@ -151,180 +270,233 @@ export default function Home() {
   return (
     <main className='flex flex-col min-h-[calc(100vh-64px)]'>
       {/* Hero Section */}
-      <section className='flex-1 flex flex-col lg:flex-row px-4 md:px-6 pt-8 pb-12 md:pt-12 md:pb-24 bg-gradient-to-br from-blue-50 to-purple-50'>
-        <div className='flex-1 flex flex-col justify-center max-w-3xl mx-auto lg:mx-0 text-center lg:text-left'>
-          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6'>
-            Get <span className='text-[#4263eb]'>Smart</span> with YouTube Content
+      <section className='py-16 px-3 md:px-6 bg-gradient-to-br from-blue-50 to-purple-50 text-center'>
+        <div className='max-w-4xl mx-auto'>
+          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4'>
+            Podcast Summaries in Your Inbox
           </h1>
-          <p className='text-xl text-gray-600 mb-8 md:pr-12'>
-            Transform lengthy videos into concise, digestible summaries. Save time and extract key
-            insights in seconds.
+          <p className='text-xl md:text-2xl text-gray-600 mb-8'>
+            Summaries of Your Top Channels, Every Day
           </p>
 
-          <div className='w-full max-w-2xl mx-auto lg:mx-0 mb-8'>
-            <YoutubeUrlInput
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              placeholder='Paste YouTube URL'
-              buttonText='Generate Summary'
-            />
-            {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
+          {/* YouTube URL Input */}
+          <div className='w-full max-w-2xl mx-auto mb-6'>
+            <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
           </div>
 
-          <div className='flex flex-wrap justify-center lg:justify-start gap-4 mt-2'>
-            <Link href={user ? '/discover' : '/signup'}>
-              <Button variant='outline' className='border-gray-200 hover:bg-gray-50'>
-                {user ? 'Discover Content' : 'Create Free Account'}
-                <ArrowRight className='ml-2 h-4 w-4' />
-              </Button>
-            </Link>
-            <Link href='/about'>
-              <Button
-                variant='ghost'
-                className='text-gray-600 hover:text-[#4263eb] hover:bg-blue-50'>
-                Learn More
-              </Button>
-            </Link>
-          </div>
-        </div>
+          {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
 
-        <div className='flex-1 mt-12 lg:mt-0 flex justify-center lg:justify-end items-center'>
-          <HeroImage />
+          {/* Progress Loader */}
+          <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
+
+          {/* Sample Podcasts */}
+          {!isLoading && (
+            <div className='mt-4 mb-12'>
+              <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
+              <div className='flex flex-wrap justify-center gap-2'>
+                {samplePodcasts.map((podcast, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSampleClick(podcast.url)}
+                    className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200
+                             hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
+                    {podcast.title}
+                    <ExternalLink size={14} className='ml-1' />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Summary Card Section */}
+      {/* Summary Section */}
       {summaryData && (
-        <section className='py-16 px-4 bg-white'>
+        <section className='py-10 px-1 md:px-4 bg-white'>
           <div className='max-w-7xl mx-auto'>
-            <div className='flex justify-center'>
-              <SummaryCard
-                title={summaryData.title}
-                date={summaryData.content_created_at}
-                channelName={summaryData.publisher_name}
-                channelId={summaryData.publisher_id}
-                summary={summaryData.summary}
-                tags={summaryData.tags}
-                peopleMentioned={summaryData.featured_names}
-                videoId={summaryData.videoId || summaryData.content_id || ''}
-              />
-            </div>
+            <SummaryCard
+              title={summaryData.title}
+              date={summaryData.content_created_at}
+              channelName={summaryData.publisher_name}
+              channelId={summaryData.publisher_id}
+              summary={summaryData.summary}
+              tags={summaryData.tags}
+              peopleMentioned={summaryData.featured_names}
+              videoId={summaryData.videoId || summaryData.content_id || ''}
+            />
           </div>
         </section>
       )}
 
-      {/* Recent Summaries Section for Anonymous Users */}
-      {!user && recentSummaries.length > 1 && (
-        <section className='py-12 px-4 bg-gray-50'>
+      {/* Recent Summaries Section */}
+      {recentSummaries.length > 0 && (
+        <section className='py-10 px-1 md:px-4 bg-gray-50'>
           <div className='max-w-7xl mx-auto'>
-            <h2 className='text-2xl font-bold text-gray-900 mb-6'>Your Recent Summaries</h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {recentSummaries.slice(1).map(summary => (
-                <div
-                  key={summary.id}
-                  className='bg-white rounded-lg shadow-sm border border-gray-100 p-4'>
-                  <h3 className='text-lg font-semibold mb-2 line-clamp-2'>{summary.title}</h3>
-                  <p className='text-gray-600 text-sm mb-2'>
-                    {summary.publisher_name} •{' '}
-                    {new Date(summary.content_created_at).toLocaleDateString()}
-                  </p>
-                  <p className='text-gray-700 mb-3 line-clamp-3'>{summary.summary}</p>
-                  <Link
-                    href={`/summaries/${summary.content_id}`}
-                    className='text-blue-600 hover:text-blue-800 text-sm font-medium'>
-                    View full summary
-                  </Link>
-                </div>
-              ))}
+            <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mb-6'>
+              Your Recent Summaries
+            </h2>
+            <div className='flex flex-col gap-6'>
+              {recentSummaries
+                .filter(summary => summary.id !== summaryData?.id)
+                .slice(0, 4)
+                .map(summary => (
+                  <SummaryCard
+                    key={summary.id}
+                    title={summary.title}
+                    date={summary.content_created_at}
+                    channelName={summary.publisher_name}
+                    channelId={summary.publisher_id}
+                    summary={summary.summary}
+                    tags={summary.tags}
+                    peopleMentioned={summary.featured_names}
+                    videoId={summary.videoId || summary.content_id || ''}
+                  />
+                ))}
             </div>
-            <div className='mt-6 text-center'>
-              <Link href='/history'>
-                <Button variant='outline' className='mt-4'>
-                  View All History
-                  <ArrowRight className='ml-2 h-4 w-4' />
-                </Button>
-              </Link>
-            </div>
+
+            {recentSummaries.length > 5 && (
+              <div className='mt-6 text-center'>
+                <Link href='/history'>
+                  <Button variant='outline' className='mt-4'>
+                    View All History
+                    <ArrowRight className='ml-2 h-4 w-4' />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* Features Section */}
+      {/* How It Works Section */}
       <section className='py-16 px-4 bg-white'>
-        <div className='max-w-7xl mx-auto'>
-          <h2 className='text-3xl font-bold text-center mb-12'>Why Choose OnePlace?</h2>
+        <div className='max-w-6xl mx-auto'>
+          <h2 className='text-3xl font-bold text-gray-900 text-center mb-12'>How It Works</h2>
 
-          <div className='grid md:grid-cols-3 gap-8'>
-            <div className='bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl'>
-              <div className='w-12 h-12 bg-[#4263eb] rounded-full flex items-center justify-center mb-4'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='24'
-                  height='24'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='white'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'>
-                  <circle cx='12' cy='12' r='10'></circle>
-                  <line x1='12' y1='16' x2='12' y2='12'></line>
-                  <line x1='12' y1='8' x2='12.01' y2='8'></line>
-                </svg>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+            <div className='bg-blue-50 p-8 rounded-2xl text-center'>
+              <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6'>
+                <ExternalLink size={24} className='text-blue-600' />
+              </div>
+              <h3 className='text-xl font-semibold mb-3'>Paste a Link</h3>
+              <p className='text-gray-600'>Paste any YouTube podcast link you want to summarize</p>
+            </div>
+
+            <div className='bg-indigo-50 p-8 rounded-2xl text-center'>
+              <div className='w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6'>
+                <Bookmark size={24} className='text-indigo-600' />
+              </div>
+              <h3 className='text-xl font-semibold mb-3'>Get a Summary</h3>
+              <p className='text-gray-600'>
+                Receive a concise, detailed summary of the podcast content
+              </p>
+            </div>
+
+            <div className='bg-purple-50 p-8 rounded-2xl text-center'>
+              <div className='w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6'>
+                <Bell size={24} className='text-purple-600' />
+              </div>
+              <h3 className='text-xl font-semibold mb-3'>Subscribe for Updates</h3>
+              <p className='text-gray-600'>
+                Get daily summaries of new content from your favorite channels
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subscribe Channels Section */}
+      <section className='py-16 px-4 bg-gray-50'>
+        <div className='max-w-6xl mx-auto'>
+          <h2 className='text-3xl font-bold text-gray-900 text-center mb-4'>
+            Subscribe To Your Channels
+          </h2>
+          <p className='text-xl text-gray-600 text-center mb-10'>
+            Get daily summaries from your favorite creators
+          </p>
+
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
+            {featuredChannels.map(channel => (
+              <ChannelCard
+                key={channel.id}
+                id={channel.id}
+                name={channel.name}
+                description={channel.description}
+                image={channel.image}
+                subscriberCount={channel.subscriberCount}
+              />
+            ))}
+          </div>
+
+          <div className='text-center'>
+            <Link href='/discover'>
+              <GlowButton
+                glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+                glowMode='static'
+                glowBlur='soft'>
+                Discover More Channels
+              </GlowButton>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className='py-16 px-4 bg-white'>
+        <div className='max-w-6xl mx-auto'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+            <div className='text-center'>
+              <div className='w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <Clock size={28} className='text-amber-500' />
               </div>
               <h3 className='text-xl font-semibold mb-2'>Save Time</h3>
               <p className='text-gray-600'>
-                Get the key points from hour-long videos in just minutes, helping you consume
-                content efficiently.
+                Get the key points without listening to hours of content
               </p>
             </div>
 
-            <div className='bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl'>
-              <div className='w-12 h-12 bg-[#4263eb] rounded-full flex items-center justify-center mb-4'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='24'
-                  height='24'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='white'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'>
-                  <polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'></polygon>
-                </svg>
+            <div className='text-center'>
+              <div className='w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <Bell size={28} className='text-emerald-500' />
               </div>
-              <h3 className='text-xl font-semibold mb-2'>Enhanced Comprehension</h3>
+              <h3 className='text-xl font-semibold mb-2'>Stay Updated</h3>
               <p className='text-gray-600'>
-                Our AI extracts the most important information, making complex topics easier to
-                understand.
+                Never miss important insights from your favorite creators
               </p>
             </div>
 
-            <div className='bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-xl'>
-              <div className='w-12 h-12 bg-[#4263eb] rounded-full flex items-center justify-center mb-4'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  width='24'
-                  height='24'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='white'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'>
-                  <path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'></path>
-                </svg>
+            <div className='text-center'>
+              <div className='w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <Bookmark size={28} className='text-blue-500' />
               </div>
-              <h3 className='text-xl font-semibold mb-2'>Secure & Private</h3>
-              <p className='text-gray-600'>
-                Your viewing history and summaries are private and secure, with optional account
-                features for saving content.
-              </p>
+              <h3 className='text-xl font-semibold mb-2'>Choose What to Hear</h3>
+              <p className='text-gray-600'>Decide which episodes are worth your full attention</p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className='py-10 px-4 bg-gray-50 border-t border-gray-100'>
+        <div className='max-w-6xl mx-auto text-center'>
+          <p className='text-gray-600 flex items-center justify-center mb-3'>
+            Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> by
+            Nishank Jain
+          </p>
+          <div className='flex items-center justify-center gap-4 text-sm text-gray-500'>
+            <a href='mailto:founder@getoneplace.com' className='hover:text-blue-600'>
+              founder@getoneplace.com
+            </a>
+            <a
+              href='https://wa.me/919820963946'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='hover:text-green-600'>
+              WhatsApp: +91 9820963946
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

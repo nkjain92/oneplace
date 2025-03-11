@@ -10,6 +10,9 @@ interface Channel {
   id: string;
   name: string;
   description: string;
+  image?: string;
+  subscriberCount?: number;
+  contentCount?: number;
 }
 
 export default function DiscoverPage() {
@@ -36,15 +39,46 @@ export default function DiscoverPage() {
     if (user) fetchSubscriptions();
   }, [user, fetchSubscriptions]);
 
-  if (isLoading) return <div className='text-center py-8 text-gray-600'>Loading...</div>;
-  if (error) return <div className='text-center py-8 text-red-500'>Error: {error}</div>;
+  if (isLoading) {
+    return (
+      <div className='container mx-auto px-4 py-8'>
+        <h1 className='text-3xl font-bold text-gray-900 mb-6'>Discover Channels</h1>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {[1, 2, 3, 4, 5, 6].map((_, index) => (
+            <div key={index} className='h-64 bg-gray-100 rounded-xl animate-pulse'></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='container mx-auto px-4 py-8'>
+        <h1 className='text-3xl font-bold text-gray-900 mb-6'>Discover Channels</h1>
+        <div className='bg-red-50 text-red-600 p-4 rounded-md'>Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className='container mx-auto px-4 py-8'>
-      <h1 className='text-3xl font-bold text-gray-900 mb-6'>Discover Channels</h1>
+      <h1 className='text-3xl font-bold text-gray-900 mb-3'>Discover Channels</h1>
+      <p className='text-lg text-gray-600 mb-8'>
+        Find and subscribe to your favorite content creators
+      </p>
+
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {channels.map(channel => (
-          <ChannelCard key={channel.id} {...channel} />
+          <ChannelCard
+            key={channel.id}
+            id={channel.id}
+            name={channel.name}
+            description={channel.description}
+            image={channel.image}
+            subscriberCount={channel.subscriberCount}
+            contentCount={channel.contentCount}
+          />
         ))}
       </div>
     </div>

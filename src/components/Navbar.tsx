@@ -1,105 +1,161 @@
-// src/components/Navbar.tsx - Navigation component with responsive design and authentication state handling
+// src/components/Navbar.tsx - Navigation component with Vellum-inspired design and authentication handling
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTitle, SheetFooter, SheetHeader } from '@/components/ui/sheet';
-import { Menu, ChevronDown } from 'lucide-react';
+  ChevronDown,
+  X,
+  Menu,
+  History,
+  Compass,
+  Home,
+  LogOut,
+  User,
+  BookOpen,
+  MessageSquareDashed,
+  BoxSelect,
+} from 'lucide-react';
+
+// Define navigation links and dropdown menus
+const navLinks = [
+  {
+    title: 'Home',
+    href: '/',
+    icon: Home,
+  },
+  {
+    title: 'Discover',
+    href: '/discover',
+    icon: Compass,
+  },
+  {
+    title: 'History',
+    href: '/history',
+    icon: History,
+  },
+];
 
 export default function Navbar() {
   const { user, profile, loading } = useAuthStore();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close profile dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Handle logout action
   const handleLogout = async () => {
     try {
       await signOut();
+      setProfileDropdownOpen(false);
+      setIsMobileMenuOpen(false);
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
+  // Disable body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isMobileMenuOpen]);
+
   return (
-    <nav className='fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm'>
-      <div className='container mx-auto px-4'>
-        <div className='flex h-16 items-center justify-between'>
-          {/* Logo */}
+    <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-transparent backdrop-blur-sm'>
+      <div className='max-w-screen-xl mx-auto'>
+        {/* Desktop navbar */}
+        <div className='glass-card rounded-full px-4 py-2 flex items-center justify-between shadow-md'>
           <Link href='/' className='flex items-center space-x-2'>
-            <span className='text-xl font-bold text-[#4263eb]'>OnePlace</span>
+            <div className='rounded-full flex items-center justify-center'>
+              <BoxSelect size={18} className='text-gray-700' />
+            </div>
+            <span className='text-xl text-gray-700 font-medium'>OnePlace</span>
           </Link>
 
-          {/* Navigation Links */}
-          <div className='hidden md:flex space-x-8'>
-            <Link
-              href='/'
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/' ? 'text-[#4263eb]' : 'text-gray-600 hover:text-[#4263eb]'
-              }`}>
-              Home
-            </Link>
-            <Link
-              href='/discover'
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/discover' ? 'text-[#4263eb]' : 'text-gray-600 hover:text-[#4263eb]'
-              }`}>
-              Discover
-            </Link>
-            <Link
-              href='/history'
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/history' ? 'text-[#4263eb]' : 'text-gray-600 hover:text-[#4263eb]'
-              }`}>
-              History
-            </Link>
+          {/* Desktop navigation links */}
+          <div className='hidden md:flex items-center space-x-8'>
+            {navLinks.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors flex items-center space-x-1 ${
+                  pathname === link.href ? 'text-primary' : 'text-gray-600 hover:text-primary'
+                }`}>
+                <link.icon size={16} className='opacity-70' />
+                <span>{link.title}</span>
+              </Link>
+            ))}
           </div>
 
-          {/* Authentication Buttons */}
+          {/* Auth / CTA buttons */}
           <div className='flex items-center space-x-4'>
-            {/* Show skeleton loaders during auth state check */}
             {loading ? (
-              <div className='flex space-x-4'>
-                <div className='h-9 w-20 bg-gray-100 animate-pulse rounded-md'></div>
-                <div className='h-9 w-20 bg-gray-100 animate-pulse rounded-md'></div>
-              </div>
+              <div className='h-9 w-24 bg-gray-200 animate-pulse rounded-full'></div>
             ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='outline' className='border-gray-200 hover:bg-gray-50'>
-                    <span className='mr-2'>Hi, {profile?.name || user.email}</span>
-                    <ChevronDown className='h-4 w-4' />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
-                  <DropdownMenuItem>
-                    <Link href='/subscriptions' className='flex w-full'>
+              <div className='relative' ref={profileDropdownRef}>
+                <Button
+                  variant='outline'
+                  className='rounded-full bg-white border-gray-200 hover:bg-gray-50 flex items-center'
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}>
+                  <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
+                  <ChevronDown className='h-4 w-4' />
+                </Button>
+
+                {/* Profile dropdown */}
+                {profileDropdownOpen && (
+                  <div className='absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-lg py-2 z-50'>
+                    <Link
+                      href='/subscriptions'
+                      className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
+                      onClick={() => setProfileDropdownOpen(false)}>
+                      <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
                       My Subscriptions
                     </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <button
+                      onClick={handleLogout}
+                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50'>
+                      <LogOut className='mr-2 h-4 w-4' />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <Link href='/login'>
-                  <Button variant='outline' className='border-gray-200 hover:bg-gray-50'>
+                  <Button
+                    variant='outline'
+                    className='rounded-full border-gray-200 hover:bg-gray-50'>
                     Login
                   </Button>
                 </Link>
-                <Link href='/signup'>
-                  <Button className='bg-[#4263eb] hover:bg-[#3b5bdb] text-white'>Sign Up</Button>
+                <Link href='/signup' className='hidden md:block'>
+                  <Button className='elegant-button'>Sign Up</Button>
                 </Link>
               </>
             )}
@@ -108,79 +164,90 @@ export default function Navbar() {
             <Button
               variant='outline'
               size='icon'
-              className='md:hidden border-gray-200'
+              className='md:hidden rounded-full border-gray-200 bg-white'
               onClick={() => setIsMobileMenuOpen(true)}>
-              <Menu className='h-6 w-6' />
+              <Menu className='h-5 w-5' />
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side='right'>
-          <SheetHeader>
-            <SheetTitle className='text-[#4263eb]'>Menu</SheetTitle>
-          </SheetHeader>
-          <div className='grid gap-4 py-4'>
-            <Link
-              href='/'
-              className={`px-4 py-2 rounded-md ${
-                pathname === '/' ? 'bg-blue-50 text-[#4263eb]' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}>
-              Home
-            </Link>
-            <Link
-              href='/discover'
-              className={`px-4 py-2 rounded-md ${
-                pathname === '/discover' ? 'bg-blue-50 text-[#4263eb]' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}>
-              Discover
-            </Link>
-            <Link
-              href='/history'
-              className={`px-4 py-2 rounded-md ${
-                pathname === '/history' ? 'bg-blue-50 text-[#4263eb]' : 'hover:bg-gray-50'
-              }`}
-              onClick={() => setIsMobileMenuOpen(false)}>
-              History
-            </Link>
-            {user && (
+        {/* Mobile menu overlay */}
+        {isMobileMenuOpen && (
+          <div className='fixed inset-0 bg-white z-50 overflow-y-auto'>
+            <div className='flex justify-between items-center p-4 border-b border-gray-100'>
               <Link
-                href='/subscriptions'
-                className={`px-4 py-2 rounded-md ${
-                  pathname === '/subscriptions' ? 'bg-blue-50 text-[#4263eb]' : 'hover:bg-gray-50'
-                }`}
+                href='/'
+                className='flex items-center space-x-2'
                 onClick={() => setIsMobileMenuOpen(false)}>
-                My Subscriptions
+                <div className='rounded-full flex items-center justify-center'>
+                  <BoxSelect size={18} className='text-gray-700' />
+                </div>
+                <span className='text-xl text-gray-700 font-medium'>OnePlace</span>
               </Link>
-            )}
-          </div>
-          <SheetFooter>
-            {!user && (
-              <div className='flex flex-col space-y-2 w-full'>
-                <Link href='/login' onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className='w-full' variant='outline'>
-                    Login
-                  </Button>
-                </Link>
-                <Link href='/signup' onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className='w-full bg-[#4263eb] hover:bg-[#3b5bdb] text-white'>
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
-            )}
-            {user && (
-              <Button variant='destructive' className='w-full' onClick={handleLogout}>
-                Logout
+              <Button
+                variant='outline'
+                size='icon'
+                className='rounded-full border-gray-200'
+                onClick={() => setIsMobileMenuOpen(false)}>
+                <X className='h-5 w-5' />
               </Button>
-            )}
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+            </div>
+
+            <div className='px-4 py-8'>
+              <ul className='space-y-6'>
+                {navLinks.map(link => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={`flex items-center text-lg font-medium ${
+                        pathname === link.href ? 'text-primary' : 'text-gray-700'
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}>
+                      <link.icon className='mr-3 h-5 w-5' />
+                      {link.title}
+                    </Link>
+                  </li>
+                ))}
+
+                {user && (
+                  <li>
+                    <Link
+                      href='/subscriptions'
+                      className='flex items-center text-lg font-medium text-gray-700'
+                      onClick={() => setIsMobileMenuOpen(false)}>
+                      <BookOpen className='mr-3 h-5 w-5' />
+                      My Subscriptions
+                    </Link>
+                  </li>
+                )}
+              </ul>
+
+              <div className='mt-12'>
+                {user ? (
+                  <Button
+                    variant='destructive'
+                    className='w-full rounded-lg flex items-center justify-center'
+                    onClick={handleLogout}>
+                    <LogOut className='mr-2 h-4 w-4' />
+                    Logout
+                  </Button>
+                ) : (
+                  <div className='flex flex-col space-y-3'>
+                    <Link href='/login' onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className='w-full rounded-lg' variant='outline'>
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href='/signup' onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className='w-full elegant-button'>Sign Up</Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }
