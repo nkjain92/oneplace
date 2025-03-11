@@ -1,3 +1,4 @@
+// src/lib/utils.ts - General utility functions used throughout the application
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

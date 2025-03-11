@@ -1,3 +1,4 @@
+// src/app/discover/page.tsx - Discovery page for exploring available channels
 'use client';
 
 import { useState, useEffect } from 'react';

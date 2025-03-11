@@ -1,3 +1,4 @@
+// src/app/api/subscriptions/route.ts - API endpoints for managing user channel subscriptions
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
 

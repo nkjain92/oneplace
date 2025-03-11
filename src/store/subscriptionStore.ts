@@ -1,3 +1,4 @@
+// src/store/subscriptionStore.ts - Zustand store for managing channel subscriptions
 import { create } from 'zustand';
 
 interface SubscriptionState {

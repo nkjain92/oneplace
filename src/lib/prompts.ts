@@ -1,3 +1,4 @@
+// src/lib/prompts.ts - Collection of prompt templates used for AI generation tasks
 export const SUMMARY_PROMPT = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
 
 Summary: [summary text]

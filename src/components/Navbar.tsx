@@ -1,3 +1,4 @@
+// src/components/Navbar.tsx - Navigation component with responsive design and authentication state handling
 'use client';
 
 import Link from 'next/link';

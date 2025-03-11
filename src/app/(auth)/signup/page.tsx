@@ -1,3 +1,4 @@
+// src/app/(auth)/signup/page.tsx - User registration page with form validation
 'use client';
 
 import React, { useState } from 'react';

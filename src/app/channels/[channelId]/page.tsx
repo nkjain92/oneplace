@@ -1,6 +1,6 @@
 'use client';
 
-// src/app/channels/[channelId]/page.tsx
+// src/app/channels/[channelId]/page.tsx - Channel-specific page displaying channel details and summaries
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';

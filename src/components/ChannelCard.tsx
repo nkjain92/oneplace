@@ -1,3 +1,4 @@
+// src/components/ChannelCard.tsx - Component for displaying channel information with subscription button
 import { SubscribeButton } from '@/components/SubscribeButton';
 import Link from 'next/link';
 

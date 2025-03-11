@@ -1,3 +1,4 @@
+// src/components/SummaryCard.tsx - Component for displaying video summary information with tags and channel details
 'use client';
 
 import React from 'react';

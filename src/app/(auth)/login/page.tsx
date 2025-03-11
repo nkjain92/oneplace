@@ -1,3 +1,4 @@
+// src/app/(auth)/login/page.tsx - Login page with email and password authentication
 'use client';
 
 import React, { useState } from 'react';

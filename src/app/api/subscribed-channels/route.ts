@@ -1,3 +1,4 @@
+// src/app/api/subscribed-channels/route.ts - API endpoint for fetching details of subscribed channels
 import { createSupabaseServiceClient } from '@/lib/supabaseServer';
 import { NextRequest, NextResponse } from 'next/server';
 

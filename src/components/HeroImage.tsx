@@ -1,3 +1,4 @@
+// src/components/HeroImage.tsx - Component that displays an illustrative SVG for the homepage hero section
 import React from 'react';
 
 export default function HeroImage() {

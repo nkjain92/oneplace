@@ -1,6 +1,6 @@
-'use client';
-
 // src/app/history/page.tsx - Displays user's summary history with filtering
+
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';

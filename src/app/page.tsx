@@ -1,3 +1,4 @@
+// src/app/page.tsx - Home page component that handles YouTube URL submissions and displays summaries
 'use client';
 
 import { useState, useEffect } from 'react';

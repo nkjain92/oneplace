@@ -1,3 +1,4 @@
+// src/app/subscriptions/page.tsx - User subscriptions page displaying subscribed channels
 'use client';
 
 import { useState, useEffect, useRef } from 'react';

@@ -1,3 +1,4 @@
+// src/components/AuthWrapper.tsx - Component that initializes authentication state for the application
 'use client';
 
 import { useEffect } from 'react';

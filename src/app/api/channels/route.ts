@@ -1,3 +1,4 @@
+// src/app/api/channels/route.ts - API endpoint for fetching all available channels
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
 

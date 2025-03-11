@@ -1,3 +1,4 @@
+// src/app/layout.tsx - Root layout component that defines the overall structure for all pages
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
