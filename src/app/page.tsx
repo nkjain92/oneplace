@@ -88,61 +88,116 @@ export default function Home() {
   // Use useCallback to memoize the fetchRecentSummaries function
   const fetchRecentSummaries = useCallback(async () => {
     try {
-      // Get content IDs from storage
-      const contentIds = getAnonymousGeneratedContentIds();
-      console.log('Local storage content IDs:', contentIds);
+      if (user) {
+        const { data: userSummaries, error: userSummariesError } = await supabase
+          .from('user_generated_summaries')
+          .select('summary_id')
+          .eq('user_id', user.id);
+        if (userSummariesError) {
+          console.error('Error fetching user generated summaries:', userSummariesError);
+          return;
+        }
+        const userSummaryIds = userSummaries.map(us => us.summary_id);
 
-      if (contentIds.length > 0) {
-        // Get the 5 most recent content IDs
-        const recentContentIds = contentIds.slice(-5).reverse();
-        console.log('Using recent content IDs:', recentContentIds);
+        const { data: subscriptions, error: subscriptionsError } = await supabase
+          .from('subscriptions')
+          .select('channel_id')
+          .eq('user_id', user.id);
+        if (subscriptionsError) {
+          console.error('Error fetching subscriptions:', subscriptionsError);
+          return;
+        }
+        const subscribedChannelIds = subscriptions.map(sub => sub.channel_id);
 
-        // Fetch the summaries from the database
-        const { data, error } = await supabase
+        const { data: summaries, error: summariesError } = await supabase
           .from('summaries')
           .select('*')
-          .in('content_id', recentContentIds)
+          .or(
+            `id.in.(${userSummaryIds.join(',')}),publisher_id.in.(${subscribedChannelIds.join(
+              ',',
+            )})`,
+          )
           .order('content_created_at', { ascending: false })
           .limit(5);
-
-        if (error) {
-          console.error('Error fetching recent summaries:', error);
+        if (summariesError) {
+          console.error('Error fetching summaries:', summariesError);
           return;
         }
 
-        console.log('Fetched summaries from DB:', data?.length || 0);
+        const formattedSummaries = summaries.map(item => ({
+          id: item.id,
+          title: item.title || 'YouTube Video',
+          summary: item.summary || 'No summary available',
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
+          publisher_name: item.publisher_name || 'Unknown Channel',
+          publisher_id: item.publisher_id || '',
+          content_created_at: item.content_created_at || new Date().toISOString(),
+          videoId: item.content_id || '',
+          content_id: item.content_id,
+          status: item.status || 'unknown',
+        }));
+        setRecentSummaries(formattedSummaries);
+        if (!summaryData && formattedSummaries.length > 0) {
+          setSummaryData(formattedSummaries[0]);
+        }
+      } else {
+        // Get content IDs from storage
+        const contentIds = getAnonymousGeneratedContentIds();
+        console.log('Local storage content IDs:', contentIds);
 
-        if (data && data.length > 0) {
-          // Format the data to match the SummaryCard props
-          const formattedSummaries = data.map(item => ({
-            id: item.id,
-            title: item.title || 'YouTube Video',
-            summary: item.summary || 'No summary available',
-            tags: Array.isArray(item.tags) ? item.tags : [],
-            featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-            publisher_name: item.publisher_name || 'Unknown Channel',
-            publisher_id: item.publisher_id || '',
-            content_created_at: item.content_created_at || new Date().toISOString(),
-            videoId: item.content_id || '',
-            content_id: item.content_id,
-            status: item.status || 'unknown',
-          }));
+        if (contentIds.length > 0) {
+          // Get the 5 most recent content IDs
+          const recentContentIds = contentIds.slice(-5).reverse();
+          console.log('Using recent content IDs:', recentContentIds);
 
-          console.log('Formatted summaries:', formattedSummaries.length);
+          // Fetch the summaries from the database
+          const { data, error } = await supabase
+            .from('summaries')
+            .select('*')
+            .in('content_id', recentContentIds)
+            .order('content_created_at', { ascending: false })
+            .limit(5);
 
-          // Set the most recent summary as the main summary if none is selected
-          if (!summaryData) {
-            setSummaryData(formattedSummaries[0]);
+          if (error) {
+            console.error('Error fetching recent summaries:', error);
+            return;
           }
 
-          // Set all summaries for the recent list
-          setRecentSummaries(formattedSummaries);
+          console.log('Fetched summaries from DB:', data?.length || 0);
+
+          if (data && data.length > 0) {
+            // Format the data to match the SummaryCard props
+            const formattedSummaries = data.map(item => ({
+              id: item.id,
+              title: item.title || 'YouTube Video',
+              summary: item.summary || 'No summary available',
+              tags: Array.isArray(item.tags) ? item.tags : [],
+              featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
+              publisher_name: item.publisher_name || 'Unknown Channel',
+              publisher_id: item.publisher_id || '',
+              content_created_at: item.content_created_at || new Date().toISOString(),
+              videoId: item.content_id || '',
+              content_id: item.content_id,
+              status: item.status || 'unknown',
+            }));
+
+            console.log('Formatted summaries:', formattedSummaries.length);
+
+            // Set the most recent summary as the main summary if none is selected
+            if (!summaryData) {
+              setSummaryData(formattedSummaries[0]);
+            }
+
+            // Set all summaries for the recent list
+            setRecentSummaries(formattedSummaries);
+          }
         }
       }
     } catch (err) {
       console.error('Error loading recent summaries:', err);
     }
-  }, [summaryData]); // Add summaryData as a dependency
+  }, [user, summaryData]); // Add user as a dependency
 
   // Fetch the most recent summaries for anonymous users on initial load
   useEffect(() => {

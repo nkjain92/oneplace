@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import SummaryCard from '@/components/SummaryCard';
 import { useChat } from '@ai-sdk/react';
-import { Button } from '@/components/ui/button';
+import { ArrowUp } from 'lucide-react';
 import { getChatSessionId } from '@/lib/localStorage';
 
 interface SummaryData {
@@ -29,11 +29,12 @@ export default function ChatPage() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [textareaHeight, setTextareaHeight] = useState('auto');
 
   // Ref for the messages container to handle scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Ref for the input field to maintain focus
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Initialize chat functionality
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
@@ -62,9 +63,25 @@ export default function ChatPage() {
   useEffect(() => {
     // When loading state changes from true to false, refocus the input
     if (!isLoading) {
-      inputRef.current?.focus();
+      textareaRef.current?.focus();
     }
   }, [isLoading]);
+
+  // Handle textarea height adjustment
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleInputChange(e);
+
+    // Reset height to auto to get the correct scrollHeight
+    setTextareaHeight('auto');
+
+    // Calculate new height based on content (with max height of 3 lines)
+    const lineHeight = 24; // Approximate line height in pixels
+    const maxHeight = lineHeight * 3; // Max height for 3 lines
+    const scrollHeight = e.target.scrollHeight;
+
+    // Set new height, capped at maxHeight
+    setTextareaHeight(`${Math.min(scrollHeight, maxHeight)}px`);
+  };
 
   useEffect(() => {
     async function fetchSummary() {
@@ -101,10 +118,12 @@ export default function ChatPage() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSubmit(e);
+    // Reset textarea height after submission
+    setTextareaHeight('auto');
     // Immediately attempt to refocus - the useEffect will also help when streaming completes
     setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
+      if (textareaRef.current) {
+        textareaRef.current.focus();
       }
     }, 10);
   };
@@ -115,7 +134,8 @@ export default function ChatPage() {
 
   return (
     <div className='flex flex-col min-h-screen bg-gray-50'>
-      <div className='p-6'>
+      <div className='p-6 max-w-7xl mx-auto w-full'>
+        {/* Summary Card */}
         <SummaryCard
           title={summaryData.title}
           date={summaryData.content_created_at}
@@ -126,41 +146,57 @@ export default function ChatPage() {
           peopleMentioned={summaryData.featured_names}
           videoId={summaryData.videoId}
         />
-      </div>
-      <div className='flex-1 p-6'>
-        <div className='max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-4'>
-          <div className='space-y-4 mb-4 max-h-[50vh] overflow-y-auto' id='chat-messages'>
+
+        {/* Integrated Chat Interface - No fixed height container */}
+        <div className='mt-4 bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden w-full'>
+          {/* Chat Messages - No max-height or overflow */}
+          <div className='p-4 space-y-4'>
             {messages.map(m => (
               <div
                 key={m.id}
-                className={`p-3 rounded-lg ${
-                  m.role === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                }`}>
-                <strong>{m.role === 'user' ? 'You: ' : 'Assistant: '}</strong>
-                {m.content}
+                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[85%] p-3 rounded-2xl ${
+                    m.role === 'user'
+                      ? 'bg-[#4263eb] text-white rounded-tr-none'
+                      : 'bg-gray-100 text-gray-800 rounded-tl-none'
+                  }`}>
+                  {m.content}
+                </div>
               </div>
             ))}
             {/* Empty div at the end for scrolling target */}
             <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={onSubmit} className='flex gap-2'>
-            <input
-              ref={inputRef}
-              type='text'
-              value={input}
-              onChange={handleInputChange}
-              placeholder='Ask a question about the video...'
-              className='flex-1 p-2 border border-gray-200 rounded focus:outline-none focus:border-[#4263eb]'
-              // Keep input enabled even during loading
-              autoFocus
-            />
-            <Button
-              type='submit'
-              disabled={isLoading}
-              className='bg-[#4263eb] hover:bg-[#3b5bdb] text-white'>
-              {isLoading ? 'Generating...' : 'Send'}
-            </Button>
-          </form>
+
+          {/* Chat Input */}
+          <div className='p-4 border-t border-gray-100 bg-white'>
+            <form onSubmit={onSubmit} className='flex items-center gap-2'>
+              <div className='flex-1 relative'>
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={handleTextareaChange}
+                  placeholder='Ask a question about the video...'
+                  className='w-full p-3 pl-4 pr-10 bg-gray-50 text-gray-800 rounded-full border border-gray-200 focus:outline-none focus:border-[#4263eb] focus:ring-1 focus:ring-[#4263eb] resize-none overflow-hidden'
+                  style={{ height: textareaHeight }}
+                  rows={1}
+                  autoFocus
+                />
+              </div>
+              <button
+                type='submit'
+                disabled={isLoading || !input.trim()}
+                className={`p-3 rounded-full ${
+                  isLoading || !input.trim()
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#4263eb] text-white hover:bg-[#3b5bdb]'
+                } transition-colors duration-200`}
+                aria-label='Send message'>
+                <ArrowUp size={20} />
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
