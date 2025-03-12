@@ -153,7 +153,7 @@ export default function Navbar() {
               <div className='relative' ref={profileDropdownRef}>
                 <Button
                   variant='outline'
-                  className='rounded-full bg-white border-gray-200 hover:bg-gray-50 flex items-center'
+                  className='rounded-full hover:bg-gray-50 flex items-center hover:cursor-pointer'
                   onClick={handleProfileDropdownToggle}>
                   <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className='h-4 w-4' />
@@ -164,14 +164,14 @@ export default function Navbar() {
                   <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50'>
                     <Link
                       href='/subscriptions'
-                      className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
+                      className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
                       onClick={handleDropdownItemClick}>
                       <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
                       My Subscriptions
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50'>
+                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:cursor-pointer'>
                       <LogOut className='mr-2 h-4 w-4' />
                       Logout
                     </button>
@@ -209,12 +209,12 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[200]'>
+            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[200] border-0'>
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
+                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
                 <link.icon className='mr-2 h-4 w-4 text-primary/70' />
                 {link.title}
@@ -224,7 +224,7 @@ export default function Navbar() {
             {user && (
               <Link
                 href='/subscriptions'
-                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
+                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
                 <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
                 My Subscriptions
@@ -234,7 +234,7 @@ export default function Navbar() {
             {user && (
               <button
                 onClick={handleLogout}
-                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50'>
+                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:cursor-pointer'>
                 <LogOut className='mr-2 h-4 w-4' />
                 Logout
               </button>

@@ -44,7 +44,7 @@ const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
         disabled={isLoading}
         variant={isSubscribed ? 'outline' : 'default'}
         size='sm'
-        className={`rounded-full px-4 py-1 h-9 transition-all duration-200 ${
+        className={`rounded-full px-4 py-1 h-9 transition-all duration-200 hover:cursor-pointer ${
           isSubscribed
             ? 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300'
             : 'bg-[#4263eb] hover:bg-[#3b5bdb] text-white shadow-sm'

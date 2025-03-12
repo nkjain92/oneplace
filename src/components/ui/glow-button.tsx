@@ -171,7 +171,7 @@ export function GlowButton({
       />
       <Button
         className={cn(
-          'relative z-10 rounded-full px-5 py-2 text-white bg-black hover:bg-gray-800 border-none shadow-md flex items-center justify-center gap-2 group-hover:translate-y-[-1px] transition-transform',
+          'relative z-10 rounded-full px-5 py-2 text-white bg-black hover:bg-gray-800 border-none shadow-md flex items-center justify-center gap-2 group-hover:translate-y-[-1px] transition-transform hover:cursor-pointer',
           className,
         )}
         {...props}>
