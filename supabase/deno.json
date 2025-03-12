@@ -1,0 +1,16 @@
+{
+    "tasks": {
+        "dev": "deno run --allow-net --allow-env --allow-read --watch index.ts"
+    },
+    "imports": {
+        "std/": "https://deno.land/std@0.168.0/",
+        "supabase": "https://esm.sh/@supabase/supabase-js@2"
+    },
+    "compilerOptions": {
+        "allowJs": true,
+        "lib": [
+            "deno.window",
+            "dom"
+        ]
+    }
+}

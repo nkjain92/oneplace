@@ -1,0 +1,30 @@
+name: Schedule Check New Videos
+
+on:
+  schedule:
+    # Run every 30 minutes
+    - cron: '*/30 * * * *'
+  # Allow manual triggering for testing
+  workflow_dispatch:
+
+jobs:
+  trigger-edge-function:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # Set a reasonable timeout
+    
+    steps:
+      - name: Trigger Supabase Edge Function
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: ${{ secrets.SUPABASE_FUNCTION_URL }}
+          method: 'POST'
+          headers: '{"Authorization": "Bearer ${{ secrets.CRON_SECRET }}", "Content-Type": "application/json"}'
+          timeout: 60000  # 60 seconds timeout, matching your function's internal timeout
+      
+      - name: Log Success
+        if: success()
+        run: echo "Successfully triggered check-new-videos function"
+      
+      - name: Log Failure
+        if: failure()
+        run: echo "Failed to trigger check-new-videos function" 
