@@ -1,8 +1,6 @@
 // src/components/SummarySkeleton.tsx - Loading skeleton for the summary card
 'use client';
 
-import { motion } from 'framer-motion';
-
 export function SummarySkeleton() {
   return (
     <div className='w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6'>

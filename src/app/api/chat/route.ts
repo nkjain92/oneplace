@@ -94,38 +94,48 @@ export async function POST(req: Request) {
     console.error('Error creating chat history record:', error);
   }
 
-  // Stream the response to the client
-  const result = await streamText({
-    model: openai('gpt-4o-mini'),
-    messages: fullMessages,
-    onFinish: async completeAnswer => {
-      // After streaming is complete, update the record with the full answer
-      if (recordId) {
-        try {
-          // Extract just the text content from the response
-          const answerText = extractTextContent(completeAnswer);
+  // Stream the response to the client with improved error handling and performance
+  try {
+    const result = await streamText({
+      model: openai('gpt-4o-mini'),
+      messages: fullMessages,
+      temperature: 0.7, // Add some creativity but keep responses focused
+      maxTokens: 1000, // Limit response length for faster streaming
+      onFinish: async completeAnswer => {
+        // After streaming is complete, update the record with the full answer
+        if (recordId) {
+          try {
+            // Extract just the text content from the response
+            const answerText = extractTextContent(completeAnswer);
 
-          console.log(
-            'Saving answer text:',
-            typeof answerText === 'string' ? answerText.substring(0, 100) + '...' : 'Not a string',
-          );
+            console.log(
+              'Saving answer text:',
+              typeof answerText === 'string'
+                ? answerText.substring(0, 100) + '...'
+                : 'Not a string',
+            );
 
-          const { error } = await supabaseService
-            .from('chat_history')
-            .update({ answer: answerText })
-            .eq('id', recordId);
+            const { error } = await supabaseService
+              .from('chat_history')
+              .update({ answer: answerText })
+              .eq('id', recordId);
 
-          if (error) {
-            console.error('Failed to update chat history with answer:', error);
-          } else {
-            console.log('Chat history answer updated successfully');
+            if (error) {
+              console.error('Failed to update chat history with answer:', error);
+            } else {
+              console.log('Chat history answer updated successfully');
+            }
+          } catch (error) {
+            console.error('Error updating chat history answer:', error);
           }
-        } catch (error) {
-          console.error('Error updating chat history answer:', error);
         }
-      }
-    },
-  });
+      },
+    });
 
-  return result.toDataStreamResponse();
+    // Use the correct method to convert the stream to a response
+    return result.toDataStreamResponse();
+  } catch (error) {
+    console.error('Error streaming response:', error);
+    return new Response('Error generating response', { status: 500 });
+  }
 }
