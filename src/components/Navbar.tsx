@@ -86,12 +86,12 @@ export default function Navbar() {
   }, [isMobileMenuOpen]);
 
   // Handle dropdown toggle without interfering with navigation
-  const handleProfileDropdownToggle = (e: React.MouseEvent) => {
+  const handleProfileDropdownToggle = () => {
     setProfileDropdownOpen(!profileDropdownOpen);
   };
 
   // Handle mobile menu toggle
-  const handleMobileMenuToggle = (e: React.MouseEvent) => {
+  const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
