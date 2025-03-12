@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: 'OnePlace - AI-powered platform for knowledge',
   description:
     'Generate intelligent summaries for YouTube videos and get new ones in your inbox daily.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
