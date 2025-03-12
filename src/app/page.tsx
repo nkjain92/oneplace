@@ -30,6 +30,7 @@ interface SummaryData {
   content_created_at: string;
   videoId?: string;
   content_id?: string;
+  status?: string;
 }
 
 // Sample podcast videos for quick access
@@ -124,6 +125,7 @@ export default function Home() {
             content_created_at: item.content_created_at || new Date().toISOString(),
             videoId: item.content_id || '',
             content_id: item.content_id,
+            status: item.status || 'unknown',
           }));
 
           console.log('Formatted summaries:', formattedSummaries.length);
@@ -168,8 +170,8 @@ export default function Home() {
           .eq('content_id', contentId)
           .single();
 
-        if (existingData) {
-          // If we already have the summary, use it directly
+        if (existingData && existingData.summary && existingData.status === 'completed') {
+          // If we already have the summary and it's completed, use it directly
           const formattedData: SummaryData = {
             id: existingData.id,
             title: existingData.title || 'YouTube Video',
@@ -202,8 +204,15 @@ export default function Home() {
           setIsLoading(false);
           return;
         } else {
-          // We need to generate a new summary
+          // We need to generate a new summary (either doesn't exist, is empty, or is still processing)
           setIsGeneratingNew(true);
+
+          // If we have an existing record, log the status
+          if (existingData) {
+            console.log(
+              `Regenerating summary for video ID: ${contentId}, current status: ${existingData.status}`,
+            );
+          }
         }
       } else {
         // If we can't extract a content ID, assume we need to generate a new summary
@@ -236,6 +245,7 @@ export default function Home() {
         content_created_at: data.content_created_at || new Date().toISOString(),
         videoId: data.content_id || contentId || '',
         content_id: data.content_id || contentId,
+        status: data.status || 'completed',
       };
 
       setSummaryData(formattedData);

@@ -9,6 +9,9 @@ import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { SUMMARY_PROMPT } from '@/lib/prompts';
 
+// Allow longer processing time for summary generation
+export const maxDuration = 20;
+
 export async function POST(request: Request) {
   try {
     console.log('Starting summary generation process...');

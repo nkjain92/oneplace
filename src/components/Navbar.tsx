@@ -65,6 +65,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await signOut();
+      // Close dropdowns after logout is processed
       setProfileDropdownOpen(false);
       setIsMobileMenuOpen(false);
     } catch (error) {
@@ -83,6 +84,32 @@ export default function Navbar() {
       document.body.style.overflow = 'auto';
     };
   }, [isMobileMenuOpen]);
+
+  // Handle dropdown toggle without interfering with navigation
+  const handleProfileDropdownToggle = (e: React.MouseEvent) => {
+    setProfileDropdownOpen(!profileDropdownOpen);
+  };
+
+  // Handle mobile menu toggle
+  const handleMobileMenuToggle = (e: React.MouseEvent) => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  // Handle dropdown menu item click
+  const handleDropdownItemClick = (e: React.MouseEvent) => {
+    // Only stop propagation to prevent the dropdown from closing
+    // but don't prevent default to allow navigation
+    e.stopPropagation();
+    setProfileDropdownOpen(false);
+  };
+
+  // Handle mobile menu item click
+  const handleMobileMenuItemClick = (e: React.MouseEvent) => {
+    // Only stop propagation to prevent the menu from closing
+    // but don't prevent default to allow navigation
+    e.stopPropagation();
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-transparent backdrop-blur-sm'>
@@ -127,7 +154,7 @@ export default function Navbar() {
                 <Button
                   variant='outline'
                   className='rounded-full bg-white border-gray-200 hover:bg-gray-50 flex items-center'
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}>
+                  onClick={handleProfileDropdownToggle}>
                   <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className='h-4 w-4' />
                 </Button>
@@ -138,7 +165,7 @@ export default function Navbar() {
                     <Link
                       href='/subscriptions'
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
-                      onClick={() => setProfileDropdownOpen(false)}>
+                      onClick={handleDropdownItemClick}>
                       <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
                       My Subscriptions
                     </Link>
@@ -172,7 +199,7 @@ export default function Navbar() {
               size='icon'
               aria-label='Toggle mobile menu'
               className='md:hidden rounded-full border-gray-200 bg-white'
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              onClick={handleMobileMenuToggle}>
               {isMobileMenuOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
             </Button>
           </div>
@@ -188,7 +215,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
-                onClick={() => setIsMobileMenuOpen(false)}>
+                onClick={handleMobileMenuItemClick}>
                 <link.icon className='mr-2 h-4 w-4 text-primary/70' />
                 {link.title}
               </Link>
@@ -198,7 +225,7 @@ export default function Navbar() {
               <Link
                 href='/subscriptions'
                 className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
-                onClick={() => setIsMobileMenuOpen(false)}>
+                onClick={handleMobileMenuItemClick}>
                 <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
                 My Subscriptions
               </Link>
