@@ -2,22 +2,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import {
-  ChevronDown,
-  X,
-  Menu,
-  History,
-  Compass,
-  Home,
-  LogOut,
-  BookOpen,
-  BoxSelect,
-} from 'lucide-react';
+import { ChevronDown, X, Menu, History, Compass, Home, LogOut, BookOpen } from 'lucide-react';
 
 // Define navigation links and dropdown menus
 const navLinks = [
@@ -100,7 +91,14 @@ export default function Navbar() {
         <div className='glass-card rounded-full px-4 py-2 flex items-center justify-between shadow-md'>
           <Link href='/' className='flex items-center space-x-2'>
             <div className='rounded-full flex items-center justify-center'>
-              <BoxSelect size={18} className='text-gray-700' />
+              <Image
+                src='/images/logo.png'
+                alt='OnePlace Logo'
+                width={24}
+                height={24}
+                className='object-contain'
+                style={{ borderRadius: '50%' }}
+              />
             </div>
             <span className='text-xl text-gray-700 font-medium'>OnePlace</span>
           </Link>
