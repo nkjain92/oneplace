@@ -1,0 +1,6 @@
+{
+    "name": "check-new-videos",
+    "description": "Checks for new videos from YouTube channels and generates summaries",
+    "schedule": "0 0 * * *",
+    "verify_jwt": false
+}
