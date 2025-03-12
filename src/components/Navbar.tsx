@@ -153,7 +153,7 @@ export default function Navbar() {
               <div className='relative' ref={profileDropdownRef}>
                 <Button
                   variant='outline'
-                  className='rounded-full hover:bg-gray-50 flex items-center hover:cursor-pointer'
+                  className='rounded-full bg-white border-gray-200 hover:bg-gray-50 flex items-center hover:cursor-pointer'
                   onClick={handleProfileDropdownToggle}>
                   <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className='h-4 w-4' />
