@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServiceClient();
   const { data, error } = await supabase
     .from('channels')
-    .select('id, name, description')
+    .select('id, name, description, thumbnail')
     .in('id', channelIds);
 
   if (error) {

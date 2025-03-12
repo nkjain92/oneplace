@@ -76,9 +76,8 @@ export async function POST(request: Request) {
       // No existing summary found - fetch channel details and transcript
       try {
         // Fetch channel details from YouTube
-        const { channelId, name, description, videoTitle } = await fetchYouTubeChannelDetails(
-          videoId,
-        );
+        const { channelId, name, description, videoTitle, thumbnailUrl } =
+          await fetchYouTubeChannelDetails(videoId);
 
         // Check if channel already exists in our database
         const { data: existingChannel } = await dbClient
@@ -97,6 +96,7 @@ export async function POST(request: Request) {
               description: description,
               rss_feed_url: rssFeedUrl,
               tags: [],
+              thumbnail: thumbnailUrl,
             },
           ]);
 
@@ -104,7 +104,35 @@ export async function POST(request: Request) {
             throw new Error(`Error inserting channel: ${insertChannelError.message}`);
           }
 
-          console.log(`Channel ${name} (${channelId}) added to database`);
+          console.log(
+            `Channel ${name} (${channelId}) added to database with thumbnail: ${
+              thumbnailUrl || 'none'
+            }`,
+          );
+        } else {
+          // If the channel exists but doesn't have a thumbnail, update it with the new thumbnail
+          if (thumbnailUrl) {
+            const { data: channelData } = await dbClient
+              .from('channels')
+              .select('thumbnail')
+              .eq('id', channelId)
+              .single();
+
+            if (!channelData?.thumbnail) {
+              const { error: updateError } = await dbClient
+                .from('channels')
+                .update({ thumbnail: thumbnailUrl })
+                .eq('id', channelId);
+
+              if (updateError) {
+                console.error(`Error updating channel thumbnail: ${updateError.message}`);
+              } else {
+                console.log(
+                  `Updated channel ${name} (${channelId}) with thumbnail: ${thumbnailUrl}`,
+                );
+              }
+            }
+          }
         }
 
         // Get video details including published date

@@ -11,6 +11,7 @@ interface Channel {
   name: string;
   description: string;
   image?: string;
+  thumbnail?: string;
   subscriberCount?: number;
   contentCount?: number;
 }

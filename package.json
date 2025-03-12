@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "update-rss": "npx tsx src/scripts/update-rss-feeds.ts"
+    "update-rss": "npx tsx src/scripts/update-rss-feeds.ts",
+    "update-thumbnails": "npx tsx src/scripts/update-channel-thumbnails.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.2.1",

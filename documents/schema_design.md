@@ -48,6 +48,7 @@ CREATE TABLE channels (
   name TEXT NOT NULL,
   description TEXT,
   rss_feed_url TEXT,
+  thumbnail TEXT, -- URL to the channel thumbnail image stored in Supabase storage
   tags TEXT[] -- Tags generated from channel metadata or recent content
 );
 ```

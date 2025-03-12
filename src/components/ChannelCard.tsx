@@ -9,6 +9,7 @@ interface ChannelCardProps {
   name: string;
   description: string;
   image?: string;
+  thumbnail?: string;
   subscriberCount?: number;
   contentCount?: number;
 }
@@ -17,23 +18,25 @@ export function ChannelCard({
   id,
   name,
   description,
-  image = '/images/channel-placeholder.jpg',
+  image,
+  thumbnail,
   subscriberCount,
   contentCount,
 }: ChannelCardProps) {
+  // Use thumbnail if available, fallback to provided image, or default to placeholder
+  const imageUrl = thumbnail || image || '/images/channel-placeholder.jpg';
+
   return (
     <div className='overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 bg-white border border-gray-100'>
       {/* Channel Image */}
       <div className='h-40 bg-gradient-to-r from-primary/5 to-accent/5 relative'>
-        {image && (
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className='object-cover'
-            sizes='(max-width: 768px) 100vw, 33vw'
-          />
-        )}
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          className='object-cover'
+          sizes='(max-width: 768px) 100vw, 33vw'
+        />
         <div className='absolute inset-0 bg-gradient-to-t from-black/30 to-transparent'></div>
       </div>
 
