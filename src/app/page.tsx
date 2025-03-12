@@ -1,7 +1,7 @@
 // src/app/page.tsx - Home page component that handles YouTube URL submissions and displays summaries
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { YoutubeUrlInput } from '@/components/YoutubeUrlInput';
 import SummaryCard from '@/components/SummaryCard';
 import { SummaryProgressLoader } from '@/components/SummaryProgressLoader';
@@ -16,7 +16,6 @@ import Link from 'next/link';
 import { ArrowRight, Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlowButton } from '@/components/ui/glow-button';
-import { Input } from '@/components/ui/input';
 import { ChannelCard } from '@/components/ChannelCard';
 
 // Define the interface for summary data based on SummaryCard props
@@ -83,15 +82,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNew, setIsGeneratingNew] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
   const { user } = useAuthStore();
 
-  // Fetch the most recent summaries for anonymous users on initial load
-  useEffect(() => {
-    fetchRecentSummaries();
-  }, [user]); // Re-run if user status changes
-
-  async function fetchRecentSummaries() {
+  // Use useCallback to memoize the fetchRecentSummaries function
+  const fetchRecentSummaries = useCallback(async () => {
     try {
       // Get content IDs from storage
       const contentIds = getAnonymousGeneratedContentIds();
@@ -146,14 +140,14 @@ export default function Home() {
     } catch (err) {
       console.error('Error loading recent summaries:', err);
     }
-  }
+  }, [summaryData]); // Add summaryData as a dependency
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setYoutubeUrl(e.target.value);
-  };
+  // Fetch the most recent summaries for anonymous users on initial load
+  useEffect(() => {
+    fetchRecentSummaries();
+  }, [user, fetchRecentSummaries]); // fetchRecentSummaries is now properly memoized
 
   const handleSampleClick = async (url: string) => {
-    setYoutubeUrl(url);
     await handleSubmit(url);
   };
 
@@ -291,7 +285,7 @@ export default function Home() {
 
           {/* Sample Podcasts */}
           {!isLoading && (
-            <div className='mt-4 mb-12'>
+            <div className='mt-4 mb-1'>
               <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
               <div className='flex flex-wrap justify-center gap-2'>
                 {samplePodcasts.map((podcast, index) => (
@@ -428,7 +422,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div className='text-center'>
+          <div className='text-center w-full flex justify-center'>
             <Link href='/discover'>
               <GlowButton
                 glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Calendar, Tag, Users, Youtube } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
@@ -40,13 +39,13 @@ export default function SummaryCard({
   // Custom renderer for markdown elements
   const customRenderers: Components = {
     // Display paragraphs with appropriate spacing
-    p: ({ node, ...props }) => <div className='mb-4'>{props.children}</div>,
+    p: ({ ...props }) => <div className='mb-4'>{props.children}</div>,
 
     // Display list items with less spacing
-    li: ({ node, ...props }) => <li className='mb-2'>{props.children}</li>,
+    li: ({ ...props }) => <li className='mb-2'>{props.children}</li>,
 
     // Handle blockquotes as regular paragraphs
-    blockquote: ({ node, ...props }) => <div className='mb-4 font-medium'>{props.children}</div>,
+    blockquote: ({ ...props }) => <div className='mb-4 font-medium'>{props.children}</div>,
   };
 
   const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;

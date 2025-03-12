@@ -27,8 +27,7 @@ export default function ChannelPage() {
   const channelId = params.channelId as string;
 
   // Get subscription status from the store
-  const { subscribedChannels } = useSubscriptionStore();
-  const isSubscribed = subscribedChannels.includes(channelId);
+  const {} = useSubscriptionStore();
 
   const [channel, setChannel] = useState<{
     name: string;

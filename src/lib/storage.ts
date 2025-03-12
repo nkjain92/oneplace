@@ -5,7 +5,6 @@ import { createSupabaseServiceClient } from './supabaseServer';
 // Constants for storage configuration
 const STORAGE_BUCKET = 'channel-thumbnails';
 const SUPABASE_STORAGE_ENDPOINT = 'https://ijtwvrzkbnfepbfyfrvc.supabase.co/storage/v1/s3';
-const SUPABASE_REGION = 'ap-south-1';
 
 /**
  * Initialize storage bucket if it doesn't exist
@@ -64,7 +63,7 @@ export async function downloadAndUploadFile(url: string, filename: string): Prom
 
     // Upload to Supabase
     const supabase = await createSupabaseServiceClient();
-    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filename, blob, {
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(filename, blob, {
       cacheControl: '3600',
       upsert: true, // Overwrite if exists
     });

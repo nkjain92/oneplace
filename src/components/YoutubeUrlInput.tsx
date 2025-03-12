@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { isValidYouTubeUrl } from '@/lib/utils/youtube';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, CheckCircle2, Youtube, Link2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Youtube } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface YoutubeUrlInputProps {
@@ -93,7 +93,7 @@ export function YoutubeUrlInput({
               placeholder={placeholder}
               value={url}
               onChange={handleChange}
-              className={`flex-1 border-0 shadow-none bg-white h-12 focus:ring-0 pl-2 pr-4 user-select-text ${
+              className={`flex-1 border-0 shadow-none bg-white h-12 focus:ring-0 pl-2 pr-4 user-select-text selection:bg-blue-100 ${
                 error ? 'text-destructive' : isValid && url ? 'text-primary' : 'text-foreground'
               }`}
               style={{

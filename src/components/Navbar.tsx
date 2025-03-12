@@ -2,7 +2,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
@@ -16,9 +15,7 @@ import {
   Compass,
   Home,
   LogOut,
-  User,
   BookOpen,
-  MessageSquareDashed,
   BoxSelect,
 } from 'lucide-react';
 
@@ -30,7 +27,7 @@ const navLinks = [
     icon: Home,
   },
   {
-    title: 'Discover',
+    title: 'Discover Channels',
     href: '/discover',
     icon: Compass,
   },
@@ -47,6 +44,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to close profile dropdown
   useEffect(() => {
@@ -56,6 +54,16 @@ export default function Navbar() {
         !profileDropdownRef.current.contains(event.target as Node)
       ) {
         setProfileDropdownOpen(false);
+      }
+
+      // Close mobile menu when clicking outside
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        // Don't close if clicking the toggle button
+        !(event.target as Element).closest('button[aria-label="Toggle mobile menu"]')
+      ) {
+        setIsMobileMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -87,7 +95,7 @@ export default function Navbar() {
 
   return (
     <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-transparent backdrop-blur-sm'>
-      <div className='max-w-screen-xl mx-auto'>
+      <div className='max-w-screen-xl mx-auto relative'>
         {/* Desktop navbar */}
         <div className='glass-card rounded-full px-4 py-2 flex items-center justify-between shadow-md'>
           <Link href='/' className='flex items-center space-x-2'>
@@ -128,7 +136,7 @@ export default function Navbar() {
 
                 {/* Profile dropdown */}
                 {profileDropdownOpen && (
-                  <div className='absolute right-0 mt-2 w-48 glass-card rounded-lg shadow-lg py-2 z-50'>
+                  <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50'>
                     <Link
                       href='/subscriptions'
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
@@ -154,7 +162,7 @@ export default function Navbar() {
                     Login
                   </Button>
                 </Link>
-                <Link href='/signup' className='hidden md:block'>
+                <Link href='/signup'>
                   <Button className='elegant-button'>Sign Up</Button>
                 </Link>
               </>
@@ -164,87 +172,48 @@ export default function Navbar() {
             <Button
               variant='outline'
               size='icon'
+              aria-label='Toggle mobile menu'
               className='md:hidden rounded-full border-gray-200 bg-white'
-              onClick={() => setIsMobileMenuOpen(true)}>
-              <Menu className='h-5 w-5' />
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+              {isMobileMenuOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile menu overlay */}
+        {/* Mobile menu dropdown - matching profile dropdown style */}
         {isMobileMenuOpen && (
-          <div className='fixed inset-0 bg-white z-50 overflow-y-auto'>
-            <div className='flex justify-between items-center p-4 border-b border-gray-100'>
+          <div
+            ref={mobileMenuRef}
+            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[200]'>
+            {navLinks.map(link => (
               <Link
-                href='/'
-                className='flex items-center space-x-2'
+                key={link.href}
+                href={link.href}
+                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
                 onClick={() => setIsMobileMenuOpen(false)}>
-                <div className='rounded-full flex items-center justify-center'>
-                  <BoxSelect size={18} className='text-gray-700' />
-                </div>
-                <span className='text-xl text-gray-700 font-medium'>OnePlace</span>
+                <link.icon className='mr-2 h-4 w-4 text-primary/70' />
+                {link.title}
               </Link>
-              <Button
-                variant='outline'
-                size='icon'
-                className='rounded-full border-gray-200'
+            ))}
+
+            {user && (
+              <Link
+                href='/subscriptions'
+                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5'
                 onClick={() => setIsMobileMenuOpen(false)}>
-                <X className='h-5 w-5' />
-              </Button>
-            </div>
+                <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
+                My Subscriptions
+              </Link>
+            )}
 
-            <div className='px-4 py-8'>
-              <ul className='space-y-6'>
-                {navLinks.map(link => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={`flex items-center text-lg font-medium ${
-                        pathname === link.href ? 'text-primary' : 'text-gray-700'
-                      }`}
-                      onClick={() => setIsMobileMenuOpen(false)}>
-                      <link.icon className='mr-3 h-5 w-5' />
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-
-                {user && (
-                  <li>
-                    <Link
-                      href='/subscriptions'
-                      className='flex items-center text-lg font-medium text-gray-700'
-                      onClick={() => setIsMobileMenuOpen(false)}>
-                      <BookOpen className='mr-3 h-5 w-5' />
-                      My Subscriptions
-                    </Link>
-                  </li>
-                )}
-              </ul>
-
-              <div className='mt-12'>
-                {user ? (
-                  <Button
-                    variant='destructive'
-                    className='w-full rounded-lg flex items-center justify-center'
-                    onClick={handleLogout}>
-                    <LogOut className='mr-2 h-4 w-4' />
-                    Logout
-                  </Button>
-                ) : (
-                  <div className='flex flex-col space-y-3'>
-                    <Link href='/login' onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className='w-full rounded-lg' variant='outline'>
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href='/signup' onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button className='w-full elegant-button'>Sign Up</Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
+            {user && (
+              <button
+                onClick={handleLogout}
+                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50'>
+                <LogOut className='mr-2 h-4 w-4' />
+                Logout
+              </button>
+            )}
           </div>
         )}
       </div>
