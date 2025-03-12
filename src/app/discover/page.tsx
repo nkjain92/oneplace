@@ -10,6 +10,10 @@ interface Channel {
   id: string;
   name: string;
   description: string;
+  image?: string;
+  thumbnail?: string;
+  subscriberCount?: number;
+  contentCount?: number;
 }
 
 export default function DiscoverPage() {

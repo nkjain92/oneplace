@@ -5,7 +5,9 @@ import { createSupabaseServerClient } from '@/lib/supabaseServer';
 export async function GET() {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from('channels').select('id, name, description');
+    const { data, error } = await supabase
+      .from('channels')
+      .select('id, name, description, thumbnail');
     if (error) throw error;
     return NextResponse.json(data);
   } catch (error) {

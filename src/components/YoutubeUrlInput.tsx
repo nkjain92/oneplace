@@ -1,14 +1,13 @@
-// src/components/YoutubeUrlInput.tsx - A reusable YouTube URL input component
+// src/components/YoutubeUrlInput.tsx - Elegant YouTube URL input component
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { isValidYouTubeUrl } from '@/lib/utils/youtube';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle2, Youtube } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface YoutubeUrlInputProps {
   onSubmit: (url: string) => void;
@@ -21,28 +20,48 @@ interface YoutubeUrlInputProps {
 export function YoutubeUrlInput({
   onSubmit,
   isLoading = false,
-  placeholder = 'Enter YouTube URL',
-  buttonText = 'Generate Summary',
+  placeholder = 'Paste YouTube URL',
+  buttonText = 'Generate',
   className = '',
 }: YoutubeUrlInputProps) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isValid, setIsValid] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Validate URL whenever it changes
+    if (url) {
+      const valid = isValidYouTubeUrl(url);
+      setIsValid(valid);
+      if (isDirty && !valid) {
+        setError('Please enter a valid YouTube URL');
+      } else {
+        setError(null);
+      }
+    } else {
+      setIsValid(false);
+      if (isDirty) {
+        setError('Please enter a YouTube URL');
+      }
+    }
+  }, [url, isDirty]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Reset error state
-    setError(null);
+    setIsDirty(true);
 
     // Validate URL before submitting
     if (!url) {
       setError('Please enter a YouTube URL');
+      inputRef.current?.focus();
       return;
     }
 
     if (!isValidYouTubeUrl(url)) {
       setError('Please enter a valid YouTube URL');
+      inputRef.current?.focus();
       return;
     }
 
@@ -54,53 +73,83 @@ export function YoutubeUrlInput({
     const newUrl = e.target.value;
     setUrl(newUrl);
     setIsDirty(true);
-
-    // Clear error when user starts typing
-    if (error) setError(null);
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      <form onSubmit={handleSubmit} className='space-y-4'>
-        <div className='space-y-2'>
-          <Label htmlFor='youtube-url' className='text-gray-300'>
-            YouTube URL
-          </Label>
-          <div className='flex flex-col md:flex-row gap-4'>
+    <div className={`space-y-2 ${className}`}>
+      <form onSubmit={handleSubmit}>
+        <div className='relative bg-white rounded-full p-1.5 shadow-md border border-gray-100 hover:border-blue-200 transition-all duration-300'>
+          <div className='flex items-center'>
+            {/* YouTube icon */}
+            <div className='pl-3'>
+              <Youtube size={20} className='text-primary/70' />
+            </div>
+
+            {/* Input field */}
             <Input
+              ref={inputRef}
               id='youtube-url'
-              type='url'
+              type='text'
               placeholder={placeholder}
               value={url}
               onChange={handleChange}
-              className='flex-1 bg-muted border-accent/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-gray-500'
+              className={`flex-1 border-0 shadow-none bg-white h-12 focus:ring-0 pl-2 pr-4 user-select-text selection:bg-blue-100 ${
+                error ? 'text-destructive' : isValid && url ? 'text-primary' : 'text-foreground'
+              }`}
+              style={{
+                boxShadow: 'none',
+                WebkitUserSelect: 'text',
+                userSelect: 'text',
+              }}
               aria-invalid={!!error}
               aria-describedby={error ? 'youtube-url-error' : undefined}
               required
             />
+
+            {/* Status indicator */}
+            <AnimatePresence mode='wait'>
+              {url && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className='mr-2'>
+                  {isValid ? (
+                    <CheckCircle2 className='h-5 w-5 text-green-500' />
+                  ) : (
+                    <AlertCircle className='h-5 w-5 text-amber-500' />
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Submit button */}
             <Button
               type='submit'
-              disabled={isLoading || (!url && isDirty)}
-              className='premium-button'>
-              {isLoading ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Processing...
-                </>
-              ) : (
-                buttonText
-              )}
+              disabled={isLoading || (!isValid && isDirty)}
+              className='elegant-button'>
+              {isLoading ? 'Processing...' : buttonText}
             </Button>
           </div>
         </div>
       </form>
 
-      {error && (
-        <Alert variant='destructive' className='bg-destructive/20 border-destructive/50 text-white'>
-          <AlertCircle className='h-4 w-4' />
-          <AlertDescription id='youtube-url-error'>{error}</AlertDescription>
-        </Alert>
-      )}
+      {/* Error message - now a simple text below the input */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.2 }}
+            className='px-4'>
+            <div className='flex items-center text-sm text-red-500' id='youtube-url-error'>
+              <AlertCircle className='h-3.5 w-3.5 mr-1.5' />
+              <span>{error}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

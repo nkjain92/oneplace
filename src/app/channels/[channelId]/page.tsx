@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import SummaryCard from '@/components/SummaryCard';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
+import Image from 'next/image';
 
 // Define interface for summary object
 interface Summary {
@@ -26,10 +27,13 @@ export default function ChannelPage() {
   const channelId = params.channelId as string;
 
   // Get subscription status from the store
-  const { subscribedChannels } = useSubscriptionStore();
-  const isSubscribed = subscribedChannels.includes(channelId);
+  const {} = useSubscriptionStore();
 
-  const [channel, setChannel] = useState<{ name: string; description: string | null } | null>(null);
+  const [channel, setChannel] = useState<{
+    name: string;
+    description: string | null;
+    thumbnail?: string;
+  } | null>(null);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +48,7 @@ export default function ChannelPage() {
         // Fetch channel details
         const { data: channelData, error: channelError } = await supabase
           .from('channels')
-          .select('name, description')
+          .select('name, description, thumbnail')
           .eq('id', channelId)
           .single();
 
@@ -98,19 +102,19 @@ export default function ChannelPage() {
     <div className='p-6 bg-gray-50 min-h-screen'>
       <div className='max-w-7xl mx-auto'>
         {/* Channel header with subscription status */}
-        <div className='p-6 mb-8 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center space-x-2'>
-              <h1 className='text-2xl font-bold text-gray-900'>{channel?.name}</h1>
-              {isSubscribed && (
-                <span className='text-sm text-green-600 bg-green-100 px-2 py-1 rounded-full'>
-                  Subscribed
-                </span>
-              )}
+        <div className='bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-lg shadow-md mb-6 relative overflow-hidden'>
+          {channel?.thumbnail && (
+            <div className='absolute inset-0 opacity-20'>
+              <Image src={channel.thumbnail} alt={channel.name} fill className='object-cover' />
             </div>
+          )}
+          <div className='relative z-10'>
+            <h1 className='text-3xl font-bold'>{channel?.name}</h1>
+            {channel?.description && <p className='mt-2 text-white/80'>{channel.description}</p>}
+          </div>
+          <div className='mt-4 flex justify-end relative z-10'>
             <SubscribeButton channelId={channelId} />
           </div>
-          {channel?.description && <p className='mt-2 text-gray-600'>{channel.description}</p>}
         </div>
 
         {/* Summaries list */}

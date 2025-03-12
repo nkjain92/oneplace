@@ -10,6 +10,10 @@ interface Channel {
   id: string;
   name: string;
   description: string;
+  image?: string;
+  thumbnail?: string;
+  subscriberCount?: number;
+  contentCount?: number;
 }
 
 export default function SubscriptionsPage() {
@@ -66,6 +70,10 @@ export default function SubscriptionsPage() {
               id={channel.id}
               name={channel.name}
               description={channel.description}
+              image={channel.image}
+              thumbnail={channel.thumbnail}
+              subscriberCount={channel.subscriberCount}
+              contentCount={channel.contentCount}
             />
           ))}
         </div>

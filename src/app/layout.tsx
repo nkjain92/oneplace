@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className='font-sans bg-[#f8f9ff]'>
         <AuthWrapper>
           <Navbar />
-          <main className='container mx-auto px-4 pt-20'>{children}</main>
+          <main className='container mx-auto px-4 pt-8'>{children}</main>
         </AuthWrapper>
         <SpeedInsights />
         <Analytics />

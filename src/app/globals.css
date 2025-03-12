@@ -5,31 +5,31 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: 0 0% 100%;
+  --foreground: 224 71% 4%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71% 4%;
+  --primary: 250 95% 64%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 255 92% 76%;
+  --secondary-foreground: 250 95% 64%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 8% 46%;
+  --accent: 234 89% 74%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 359 69% 50%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 250 95% 64%;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -41,25 +41,25 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --background: 224 71% 4%;
+  --foreground: 210 20% 98%;
+  --card: 224 71% 4%;
+  --card-foreground: 210 20% 98%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 250 95% 64%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 215 27% 16%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 215 28% 17%;
+  --muted-foreground: 217 19% 67%;
+  --accent: 215 27% 16%;
+  --accent-foreground: 210 20% 98%;
+  --destructive: 359 69% 55%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 215 28% 17%;
+  --input: 215 28% 17%;
+  --ring: 250 95% 64%;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -117,41 +117,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  :root {
-    --background: 240 25% 98%;
-    --foreground: 224 71% 4%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 46%;
-
-    --accent: 221 83% 53%;
-    --accent-foreground: 210 40% 98%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
-
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 221 83% 53%;
-
-    --radius: 0.5rem;
-  }
-}
 
 @layer base {
   * {
@@ -239,4 +204,47 @@
 /* Focus and active states */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-background;
+}
+
+/* Elegant button styles */
+.elegant-button {
+  @apply relative bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 py-2 shadow-md;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+}
+
+.elegant-button:hover {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)));
+}
+
+/* Glass card effect */
+.glass-card {
+  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+}
+
+/* Professional gradients */
+.bg-elegant-gradient {
+  background: linear-gradient(135deg, hsl(250, 95%, 64%, 0.05), hsl(234, 89%, 74%, 0.05));
+}
+
+.bg-hero-gradient {
+  background: linear-gradient(135deg, hsl(250, 95%, 64%, 0.1), hsl(234, 89%, 74%, 0.1));
+}
+
+/* Input highlights */
+.input-highlight {
+  @apply border-2 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20;
+}
+
+/* Subtle section backgrounds */
+.section-bg-light {
+  background-color: hsl(250, 95%, 98%);
+}
+
+.section-bg-medium {
+  background-color: hsl(245, 85%, 96%);
+}
+
+/* Error state styles */
+.error-state {
+  @apply bg-destructive/10 border-destructive/30 text-destructive;
 }
