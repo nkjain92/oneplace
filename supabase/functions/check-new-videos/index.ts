@@ -48,7 +48,7 @@ People: John Doe, Jane Smith
 
 Transcript: {transcript}`;
 // Function to extract YouTube video ID from URL
-function extractYouTubeVideoId(url) {
+function extractYouTubeVideoId(url: string) {
   if (!url) return null;
   console.log(`Extracting video ID from URL: ${url}`);
   // Handle standard watch URLs
@@ -88,7 +88,11 @@ function extractYouTubeVideoId(url) {
   return null;
 }
 // Fetch with timeout
-async function fetchWithTimeout(url, options = {}, timeout = FETCH_TIMEOUT_MS) {
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout: number = FETCH_TIMEOUT_MS,
+) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -104,7 +108,7 @@ async function fetchWithTimeout(url, options = {}, timeout = FETCH_TIMEOUT_MS) {
   }
 }
 // Function to fetch YouTube transcript
-async function fetchYouTubeTranscript(videoId) {
+async function fetchYouTubeTranscript(videoId: string) {
   if (!RAPIDAPI_KEY) {
     console.error('RAPIDAPI_KEY environment variable is not set or empty');
     throw new Error('RAPIDAPI_KEY environment variable is not set or empty');
@@ -135,7 +139,9 @@ async function fetchYouTubeTranscript(videoId) {
       throw new Error('Invalid transcript format received from API');
     }
     // Combine all transcript segments into a single string
-    const transcriptText = data.transcript.map(segment => segment.text).join(' ');
+    const transcriptText = data.transcript
+      .map((segment: { text: string }) => segment.text)
+      .join(' ');
     console.log(
       `Successfully fetched transcript for ${videoId} (${transcriptText.length} characters)`,
     );
@@ -154,7 +160,7 @@ async function fetchYouTubeTranscript(videoId) {
   }
 }
 // Function to generate summary using OpenAI
-async function generateSummary(transcript) {
+async function generateSummary(transcript: string) {
   if (!OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY environment variable is not set or empty');
     throw new Error('OPENAI_API_KEY environment variable is not set or empty');
@@ -190,8 +196,8 @@ async function generateSummary(transcript) {
     console.log(`Successfully generated summary (${fullSummary.length} characters)`);
     // Parse the response to extract summary, tags, and people using improved parsing
     let summary = '';
-    let tags = [];
-    let people = [];
+    let tags: string[] = [];
+    let people: string[] = [];
     let inSummarySection = false;
     const lines = fullSummary.split('\n');
     for (let i = 0; i < lines.length; i++) {
@@ -206,15 +212,15 @@ async function generateSummary(transcript) {
         const tagsString = line.substring('Tags:'.length).trim();
         tags = tagsString
           .split(',')
-          .map(tag => tag.trim())
-          .filter(tag => tag.length > 0);
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
       } else if (line.startsWith('People:')) {
         inSummarySection = false;
         const peopleString = line.substring('People:'.length).trim();
         people = peopleString
           .split(',')
-          .map(person => person.trim())
-          .filter(person => person.length > 0);
+          .map((person: string) => person.trim())
+          .filter((person: string) => person.length > 0);
       } else if (inSummarySection) {
         // Preserve line breaks in markdown by adding proper newlines
         if (summary.length > 0) {
@@ -247,7 +253,7 @@ async function generateSummary(transcript) {
   }
 }
 // Helper function to safely extract text content from XML node
-function getTextContent(obj, nodeName) {
+function getTextContent(obj: any, nodeName: string) {
   if (!obj) return '';
   // If the node exists directly
   if (obj[nodeName] && typeof obj[nodeName] === 'string') {
@@ -260,7 +266,7 @@ function getTextContent(obj, nodeName) {
   return '';
 }
 // Helper function to safely get attribute from XML node
-function getAttribute(obj, nodeName, attrName) {
+function getAttribute(obj: any, nodeName: string, attrName: string) {
   if (!obj || !obj[nodeName]) return '';
   // If the node has attributes
   if (obj[nodeName]['@attributes'] && obj[nodeName]['@attributes'][attrName]) {
@@ -269,7 +275,7 @@ function getAttribute(obj, nodeName, attrName) {
   return '';
 }
 // Helper function to safely extract video link from entry
-function extractVideoLink(entry) {
+function extractVideoLink(entry: any) {
   if (!entry) return '';
   // Debug the entry structure
   console.log(`Entry structure: ${JSON.stringify(entry, null, 2).substring(0, 500)}...`);
@@ -320,7 +326,7 @@ function extractVideoLink(entry) {
   return '';
 }
 // Main function to handle the request
-async function handleRequest(req) {
+async function handleRequest(req: Request) {
   // Set a timeout to ensure the function doesn't run too long
   const timeoutId = setTimeout(() => {
     console.error('Function timed out after', PROCESS_TIMEOUT_MS, 'ms');
@@ -389,7 +395,7 @@ async function handleRequest(req) {
       `Processing ${channelsToProcess.length} of ${allChannels.length} channels, prioritized by last checked date`,
     );
     // Log the channels being processed with their last checked date
-    channelsToProcess.forEach(channel => {
+    channelsToProcess.forEach((channel: any) => {
       console.log(`Channel: ${channel.name}, Last checked: ${channel.last_checked || 'Never'}`);
     });
     // Calculate the timestamp for the specified number of days ago
@@ -400,7 +406,7 @@ async function handleRequest(req) {
       `Checking for videos newer than ${cutoffDate.toISOString()} (${DAYS_TO_CHECK} days ago)`,
     );
     // Add a function to normalize dates that might be in the future
-    function normalizeDate(dateStr) {
+    function normalizeDate(dateStr: string) {
       const date = new Date(dateStr);
       // For YouTube feeds with future dates (2025), we'll treat them as valid
       // This is because YouTube sometimes uses future dates in their RSS feeds
