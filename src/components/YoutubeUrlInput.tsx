@@ -78,11 +78,11 @@ export function YoutubeUrlInput({
   return (
     <div className={`space-y-2 ${className}`}>
       <form onSubmit={handleSubmit}>
-        <div className='relative bg-white rounded-full p-1.5 shadow-md border border-gray-100 hover:border-blue-200 transition-all duration-300'>
+        <div className='relative bg-gray-900 rounded-lg p-1.5 shadow-md border border-gray-800 hover:border-blue-700/50 transition-all duration-300'>
           <div className='flex items-center'>
             {/* YouTube icon */}
             <div className='pl-3'>
-              <Youtube size={20} className='text-primary/70' />
+              <Youtube size={20} className='text-blue-400' />
             </div>
 
             {/* Input field */}
@@ -93,8 +93,8 @@ export function YoutubeUrlInput({
               placeholder={placeholder}
               value={url}
               onChange={handleChange}
-              className={`flex-1 border-0 shadow-none bg-white h-12 focus:ring-0 pl-2 pr-4 user-select-text selection:bg-blue-100 ${
-                error ? 'text-destructive' : isValid && url ? 'text-primary' : 'text-foreground'
+              className={`flex-1 border-0 shadow-none bg-transparent h-12 focus:ring-0 pl-2 pr-4 user-select-text selection:bg-blue-900/50 text-white placeholder:text-gray-500 ${
+                error ? 'text-red-400' : isValid && url ? 'text-blue-400' : 'text-white'
               }`}
               style={{
                 boxShadow: 'none',
@@ -127,7 +127,7 @@ export function YoutubeUrlInput({
             <Button
               type='submit'
               disabled={isLoading || (!isValid && isDirty)}
-              className='elegant-button'>
+              className='bg-blue-600 hover:bg-blue-700 text-white rounded-md'>
               {isLoading ? 'Processing...' : buttonText}
             </Button>
           </div>
@@ -143,7 +143,7 @@ export function YoutubeUrlInput({
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.2 }}
             className='px-4'>
-            <div className='flex items-center text-sm text-red-500' id='youtube-url-error'>
+            <div className='flex items-center text-sm text-red-400' id='youtube-url-error'>
               <AlertCircle className='h-3.5 w-3.5 mr-1.5' />
               <span>{error}</span>
             </div>

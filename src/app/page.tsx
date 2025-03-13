@@ -214,7 +214,7 @@ export default function Home() {
       if (contentId && (await checkExistingSummary(contentId))) return;
 
       setIsGeneratingNew(true);
-      await generateNewSummary(url, contentId);
+      await generateNewSummary(url, contentId || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setSummaryData(null);
@@ -274,30 +274,49 @@ export default function Home() {
   };
 
   return (
-    <main className='flex flex-col min-h-[calc(100vh-64px)]'>
-      {/* Hero Section */}
-      <div className='max-w-4xl mx-auto'>
-        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4'>
-          Podcast Summaries in Your Inbox
+    <main className='flex flex-col min-h-[calc(100vh-64px)] bg-black text-white'>
+      {/* Hero Section - Vercel-inspired with grid background */}
+      <div className='relative max-w-5xl mx-auto px-6 pt-16 pb-24 z-10 overflow-hidden'>
+        {/* Grid background */}
+        <div className='absolute inset-0 bg-grid-small-white/[0.2] -z-10' />
+        {/* Gradient overlay */}
+        <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-black to-black -z-10' />
+
+        {/* Floating gradient orbs - Vercel style */}
+        <div className='absolute top-20 -left-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob'></div>
+        <div className='absolute top-40 -right-64 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob animation-delay-2000'></div>
+        <div className='absolute -bottom-40 left-64 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob animation-delay-4000'></div>
+
+        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight'>
+          Podcast Summaries <br className='hidden md:block' />
+          <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600'>
+            in Your Inbox
+          </span>
         </h1>
-        <p className='text-xl md:text-2xl text-gray-600 mb-8'>
+        <p className='text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl'>
           Summaries of Your Top Channels, Every Day
         </p>
-        <div className='max-w-2xl mx-auto mb-6'>
+        <div className='max-w-2xl mb-10'>
           <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
         </div>
-        {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
+        {error && <p className='mt-2 text-red-400 text-sm'>{error}</p>}
         <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
         {!isLoading && (
-          <div className='mt-4'>
-            <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
-            <div className='flex flex-wrap justify-center gap-2'>
+          <div className='mt-8'>
+            <p className='text-gray-400 mb-4 text-sm uppercase tracking-wider font-medium'>
+              Try These Podcasts:
+            </p>
+            <div className='flex flex-wrap gap-3'>
               {samplePodcasts.map((podcast, i) => (
                 <button
                   key={i}
                   onClick={() => handleSubmit(podcast.url)}
-                  className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
-                  {podcast.title} <ExternalLink size={14} />
+                  className='bg-gray-900 text-gray-200 px-4 py-2 rounded-md text-sm border border-gray-800 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-md flex items-center gap-1.5 group'>
+                  {podcast.title}
+                  <ExternalLink
+                    size={14}
+                    className='group-hover:translate-x-0.5 transition-transform'
+                  />
                 </button>
               ))}
             </div>
@@ -307,7 +326,7 @@ export default function Home() {
 
       {/* Summary Section */}
       {summaryData && (
-        <div className='max-w-7xl mx-auto'>
+        <div className='max-w-7xl mx-auto px-6 pb-16 -mt-8 relative z-20'>
           <SummaryCard
             title={summaryData.title}
             date={summaryData.content_created_at}
@@ -323,9 +342,12 @@ export default function Home() {
 
       {/* Recent Summaries Section */}
       {recentSummaries.length > 0 && (
-        <section className='py-10 px-1 md:px-4 bg-gray-50'>
+        <section className='py-16 px-6 bg-gradient-to-b from-black to-gray-900 relative z-10'>
+          {/* Subtle grid overlay */}
+          <div className='absolute inset-0 bg-grid-small-white/[0.1] -z-10' />
+
           <div className='max-w-7xl mx-auto'>
-            <h2 className='text-2xl md:text-3xl font-bold text-gray-900 mb-6'>
+            <h2 className='text-2xl md:text-3xl font-bold text-white mb-8 tracking-tight'>
               Your Recent Summaries
             </h2>
             <div className='flex flex-col gap-6'>
@@ -347,7 +369,7 @@ export default function Home() {
                 ))}
             </div>
             {recentSummaries.length > 4 && (
-              <div className='mt-6 text-center w-full flex justify-center'>
+              <div className='mt-10 text-center w-full flex justify-center'>
                 <Link href='/history'>
                   <GlowButton
                     glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
@@ -363,50 +385,65 @@ export default function Home() {
       )}
 
       {/* How It Works Section */}
-      <div className='max-w-6xl mx-auto'>
-        <h2 className='text-3xl font-bold text-gray-900 text-center mb-12'>How It Works</h2>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+      <div className='max-w-6xl mx-auto px-6 py-20 relative'>
+        {/* Gradient background */}
+        <div className='absolute inset-0 bg-gradient-to-b from-gray-900 to-black -z-10' />
+
+        <h2 className='text-3xl font-bold text-white text-center mb-16 tracking-tight'>
+          How It Works
+        </h2>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
           {[
             {
-              icon: <ExternalLink size={24} className='text-blue-600' />,
+              icon: <ExternalLink size={24} className='text-blue-400' />,
               title: 'Paste a Link',
               desc: 'Paste any YouTube podcast link you want to summarize',
-              bg: 'blue',
+              border: 'border-blue-500/30',
+              glow: 'before:bg-blue-600/20',
             },
             {
-              icon: <Bookmark size={24} className='text-indigo-600' />,
+              icon: <Bookmark size={24} className='text-indigo-400' />,
               title: 'Get a Summary',
               desc: 'Receive a concise, detailed summary of the podcast content',
-              bg: 'indigo',
+              border: 'border-indigo-500/30',
+              glow: 'before:bg-indigo-600/20',
             },
             {
-              icon: <Bell size={24} className='text-purple-600' />,
+              icon: <Bell size={24} className='text-purple-400' />,
               title: 'Subscribe for Updates',
               desc: 'Get daily summaries of new content from your favorite channels',
-              bg: 'purple',
+              border: 'border-purple-500/30',
+              glow: 'before:bg-purple-600/20',
             },
           ].map(step => (
-            <div key={step.title} className={`bg-${step.bg}-50 p-8 rounded-2xl text-center`}>
-              <div
-                className={`w-16 h-16 bg-${step.bg}-100 rounded-full flex items-center justify-center mx-auto mb-6`}>
+            <div
+              key={step.title}
+              className={`bg-gray-900/50 p-8 rounded-xl backdrop-blur-sm text-center relative border ${step.border}
+                          before:absolute before:inset-0 before:rounded-xl ${step.glow} before:opacity-0
+                          hover:before:opacity-100 before:transition-opacity before:-z-10`}>
+              <div className='w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg'>
                 {step.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-3'>{step.title}</h3>
-              <p className='text-gray-600'>{step.desc}</p>
+              <h3 className='text-xl font-semibold mb-3 text-white'>{step.title}</h3>
+              <p className='text-gray-400'>{step.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Subscribe Channels Section */}
-      <div className='max-w-6xl mx-auto'>
-        <h2 className='text-3xl font-bold text-gray-900 text-center mb-4'>
+      <div className='max-w-6xl mx-auto px-6 py-20 relative'>
+        {/* Gradient background */}
+        <div className='absolute inset-0 bg-grid-small-white/[0.1] -z-10' />
+        <div className='absolute inset-0 bg-gradient-to-b from-black to-gray-900/80 -z-10' />
+
+        <h2 className='text-3xl font-bold text-white text-center mb-4 tracking-tight'>
           Subscribe To Your Channels
         </h2>
-        <p className='text-xl text-gray-600 text-center mb-10'>
+        <p className='text-xl text-gray-400 text-center mb-16'>
           Get daily summaries from your favorite creators
         </p>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-14'>
           {featuredChannels.map(channel => (
             <ChannelCard
               key={channel.id}
@@ -432,57 +469,68 @@ export default function Home() {
       </div>
 
       {/* Benefits Section */}
-      <div className='max-w-6xl mx-auto'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+      <div className='max-w-6xl mx-auto px-6 py-20 relative'>
+        {/* Gradient background */}
+        <div className='absolute inset-0 bg-gradient-to-t from-black to-gray-900/60 -z-10' />
+
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-12'>
           {[
             {
-              icon: <Clock size={28} className='text-amber-500' />,
+              icon: <Clock size={28} className='text-amber-400' />,
               title: 'Save Time',
               desc: 'Get the key points without listening to hours of content',
-              bg: 'amber',
+              bg: 'bg-amber-900/20',
+              border: 'border-amber-500/30',
             },
             {
-              icon: <Bell size={28} className='text-emerald-500' />,
+              icon: <Bell size={28} className='text-emerald-400' />,
               title: 'Stay Updated',
               desc: 'Never miss important insights from your favorite creators',
-              bg: 'emerald',
+              bg: 'bg-emerald-900/20',
+              border: 'border-emerald-500/30',
             },
             {
-              icon: <Bookmark size={28} className='text-blue-500' />,
+              icon: <Bookmark size={28} className='text-blue-400' />,
               title: 'Choose What to Hear',
               desc: 'Decide which episodes are worth your full attention',
-              bg: 'blue',
+              bg: 'bg-blue-900/20',
+              border: 'border-blue-500/30',
             },
           ].map(benefit => (
             <div key={benefit.title} className='text-center'>
               <div
-                className={`w-14 h-14 bg-${benefit.bg}-50 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                className={`w-16 h-16 ${benefit.bg} ${benefit.border} rounded-full flex items-center justify-center mx-auto mb-6 border`}>
                 {benefit.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-2'>{benefit.title}</h3>
-              <p className='text-gray-600'>{benefit.desc}</p>
+              <h3 className='text-xl font-semibold mb-3 text-white'>{benefit.title}</h3>
+              <p className='text-gray-400'>{benefit.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <footer className='py-10 px-4 bg-gray-50 border-t border-gray-100'>
+      <footer className='py-12 px-6 bg-gray-950 border-t border-gray-800'>
         <div className='max-w-6xl mx-auto text-center'>
-          <p className='text-gray-600 flex items-center justify-center mb-3'>
+          <p className='text-gray-400 flex items-center justify-center mb-4'>
             Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in India
           </p>
-          <div className='flex items-center justify-center gap-4 text-sm text-gray-500'>
-            <a href='mailto:founder@getoneplace.com' className='hover:text-blue-600'>
+          <div className='flex items-center justify-center gap-8 text-sm text-gray-500 mb-6'>
+            <a
+              href='mailto:founder@getoneplace.com'
+              className='hover:text-blue-400 transition-colors'>
               Email Feedback
             </a>
             <a
               href='https://wa.me/919820963946'
               target='_blank'
               rel='noopener noreferrer'
-              className='hover:text-green-600'>
+              className='hover:text-green-400 transition-colors'>
               Send Feedback
             </a>
+          </div>
+          <div className='text-xs text-gray-600'>
+            © {new Date().getFullYear()} OnePlace. All rights reserved.
           </div>
         </div>
       </footer>

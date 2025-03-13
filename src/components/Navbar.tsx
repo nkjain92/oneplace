@@ -112,10 +112,10 @@ export default function Navbar() {
   };
 
   return (
-    <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-transparent backdrop-blur-sm'>
+    <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-gray-800/30'>
       <div className='max-w-screen-xl mx-auto relative'>
         {/* Desktop navbar */}
-        <div className='glass-card rounded-full px-4 py-2 flex items-center justify-between shadow-md'>
+        <div className='flex items-center justify-between'>
           <Link href='/' className='flex items-center space-x-2'>
             <div className='rounded-full flex items-center justify-center'>
               <Image
@@ -127,7 +127,7 @@ export default function Navbar() {
                 style={{ borderRadius: '50%' }}
               />
             </div>
-            <span className='text-xl text-gray-700 font-medium'>OnePlace</span>
+            <span className='text-xl text-white font-medium'>OnePlace</span>
           </Link>
 
           {/* Desktop navigation links */}
@@ -137,7 +137,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm font-medium transition-colors flex items-center space-x-1 ${
-                  pathname === link.href ? 'text-primary' : 'text-gray-600 hover:text-primary'
+                  pathname === link.href ? 'text-blue-400' : 'text-gray-300 hover:text-blue-400'
                 }`}>
                 <link.icon size={16} className='opacity-70' />
                 <span>{link.title}</span>
@@ -148,12 +148,12 @@ export default function Navbar() {
           {/* Auth / CTA buttons */}
           <div className='flex items-center space-x-4'>
             {loading ? (
-              <div className='h-9 w-24 bg-gray-200 animate-pulse rounded-full'></div>
+              <div className='h-9 w-24 bg-gray-800 animate-pulse rounded-full'></div>
             ) : user ? (
               <div className='relative' ref={profileDropdownRef}>
                 <Button
                   variant='outline'
-                  className='rounded-full bg-white border-gray-200 hover:bg-gray-50 flex items-center hover:cursor-pointer'
+                  className='rounded-full bg-gray-900 border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-white flex items-center hover:cursor-pointer'
                   onClick={handleProfileDropdownToggle}>
                   <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className='h-4 w-4' />
@@ -161,17 +161,17 @@ export default function Navbar() {
 
                 {/* Profile dropdown */}
                 {profileDropdownOpen && (
-                  <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50'>
+                  <div className='absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg py-2 z-50 border border-gray-800'>
                     <Link
                       href='/subscriptions'
-                      className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
+                      className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
                       onClick={handleDropdownItemClick}>
-                      <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
+                      <BookOpen className='mr-2 h-4 w-4 text-blue-400' />
                       My Subscriptions
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:cursor-pointer'>
+                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:cursor-pointer'>
                       <LogOut className='mr-2 h-4 w-4' />
                       Logout
                     </button>
@@ -183,12 +183,14 @@ export default function Navbar() {
                 <Link href='/login'>
                   <Button
                     variant='outline'
-                    className='rounded-full border-gray-200 hover:bg-gray-50'>
+                    className='rounded-full border-gray-700 bg-gray-900 hover:bg-gray-800 text-white'>
                     Login
                   </Button>
                 </Link>
                 <Link href='/signup'>
-                  <Button className='elegant-button'>Sign Up</Button>
+                  <Button className='bg-blue-600 hover:bg-blue-700 text-white rounded-full'>
+                    Sign Up
+                  </Button>
                 </Link>
               </>
             )}
@@ -198,7 +200,7 @@ export default function Navbar() {
               variant='outline'
               size='icon'
               aria-label='Toggle mobile menu'
-              className='md:hidden rounded-full border-gray-200 bg-white'
+              className='md:hidden rounded-full border-gray-700 bg-gray-900 text-white'
               onClick={handleMobileMenuToggle}>
               {isMobileMenuOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
             </Button>
@@ -209,14 +211,14 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-[200] border-0'>
+            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-gray-900 rounded-lg shadow-lg py-2 z-[200] border border-gray-800'>
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
+                className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
-                <link.icon className='mr-2 h-4 w-4 text-primary/70' />
+                <link.icon className='mr-2 h-4 w-4 text-blue-400' />
                 {link.title}
               </Link>
             ))}
@@ -224,9 +226,9 @@ export default function Navbar() {
             {user && (
               <Link
                 href='/subscriptions'
-                className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:cursor-pointer'
+                className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
-                <BookOpen className='mr-2 h-4 w-4 text-primary/70' />
+                <BookOpen className='mr-2 h-4 w-4 text-blue-400' />
                 My Subscriptions
               </Link>
             )}
@@ -234,7 +236,7 @@ export default function Navbar() {
             {user && (
               <button
                 onClick={handleLogout}
-                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:cursor-pointer'>
+                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:cursor-pointer'>
                 <LogOut className='mr-2 h-4 w-4' />
                 Logout
               </button>

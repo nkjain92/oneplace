@@ -51,13 +51,16 @@ export default function SummaryCard({
   const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
-    <div className='bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300 overflow-hidden w-full mx-0'>
-      <div className='p-3 md:p-6'>
+    <div className='bg-gray-900 rounded-xl shadow-lg border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden w-full mx-0 relative group'>
+      {/* Subtle glow effect on hover */}
+      <div className='absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10'></div>
+
+      <div className='p-4 md:p-6'>
         {/* Header section */}
-        <div className='mb-4'>
-          <div className='flex items-center justify-between mb-2'>
+        <div className='mb-5'>
+          <div className='flex items-center justify-between mb-3'>
             <Link href={youtubeUrl} target='_blank' className='group inline-flex items-center'>
-              <h2 className='text-xl md:text-2xl font-bold text-gray-800 leading-tight tracking-tight group-hover:text-[#4263eb] transition-colors duration-200'>
+              <h2 className='text-xl md:text-2xl font-bold text-white leading-tight tracking-tight group-hover:text-blue-400 transition-colors duration-200'>
                 {title}
               </h2>
             </Link>
@@ -65,12 +68,12 @@ export default function SummaryCard({
           <div className='flex flex-wrap items-center justify-between gap-3'>
             <div className='flex items-center'>
               <Link href={`/channels/${channelId}`} className='flex items-center group'>
-                <span className='text-[#4263eb] font-medium group-hover:text-[#3b5bdb] transition-colors duration-200'>
+                <span className='text-blue-400 font-medium group-hover:text-blue-300 transition-colors duration-200'>
                   {channelName}
                 </span>
               </Link>
-              <div className='h-4 w-[1px] bg-gray-300 mx-3'></div>
-              <div className='flex items-center text-sm text-gray-500'>
+              <div className='h-4 w-[1px] bg-gray-700 mx-3'></div>
+              <div className='flex items-center text-sm text-gray-400'>
                 <Calendar size={14} className='mr-1' />
                 <span>{formattedDate}</span>
               </div>
@@ -80,8 +83,11 @@ export default function SummaryCard({
         </div>
 
         {/* Summary content */}
-        <div className='bg-gradient-to-br from-blue-50/50 to-gray-50 backdrop-blur-sm rounded-xl p-4 md:p-5 mb-4 border border-blue-100/30 shadow-sm'>
-          <div className='prose prose-sm max-w-none text-gray-700 leading-relaxed prose-headings:text-gray-800 prose-a:text-[#4263eb] prose-strong:text-gray-900 prose-strong:font-semibold'>
+        <div className='bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-lg p-4 md:p-6 mb-5 border border-gray-700/50 relative'>
+          {/* Subtle grid pattern overlay */}
+          <div className='absolute inset-0 bg-grid-small-white/[0.03] rounded-lg pointer-events-none' />
+
+          <div className='prose prose-sm max-w-none text-gray-300 leading-relaxed prose-headings:text-gray-100 prose-a:text-blue-400 prose-strong:text-white prose-strong:font-semibold'>
             <ReactMarkdown components={customRenderers}>{summary}</ReactMarkdown>
           </div>
         </div>
@@ -92,7 +98,7 @@ export default function SummaryCard({
             {/* Tags */}
             {tags.length > 0 && (
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm text-gray-600 mr-1'>
+                <span className='flex items-center text-sm text-gray-400 mr-1'>
                   <Tag size={14} className='mr-1' />
                   Topics:
                 </span>
@@ -100,7 +106,7 @@ export default function SummaryCard({
                   {tags.map((tag, index) => (
                     <span
                       key={index}
-                      className='text-xs bg-blue-50 text-[#4263eb] px-2.5 py-1 rounded-full border border-blue-100 font-medium transition-colors duration-200 hover:bg-blue-100 hover:text-[#3b5bdb] cursor-default'>
+                      className='text-xs bg-blue-900/30 text-blue-300 px-2.5 py-1 rounded-md border border-blue-800/50 font-medium transition-colors duration-200 hover:bg-blue-800/40 hover:border-blue-700/50 cursor-default'>
                       {tag}
                     </span>
                   ))}
@@ -111,7 +117,7 @@ export default function SummaryCard({
             {/* People mentioned */}
             {peopleMentioned.length > 0 && (
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm text-gray-600 mr-1'>
+                <span className='flex items-center text-sm text-gray-400 mr-1'>
                   <Users size={14} className='mr-1' />
                   People:
                 </span>
@@ -119,7 +125,7 @@ export default function SummaryCard({
                   {peopleMentioned.map((person, index) => (
                     <span
                       key={index}
-                      className='text-xs bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full border border-purple-100 font-medium transition-colors duration-200 hover:bg-purple-100 hover:text-purple-800 cursor-default'>
+                      className='text-xs bg-purple-900/30 text-purple-300 px-2.5 py-1 rounded-md border border-purple-800/50 font-medium transition-colors duration-200 hover:bg-purple-800/40 hover:border-purple-700/50 cursor-default'>
                       {person}
                     </span>
                   ))}
