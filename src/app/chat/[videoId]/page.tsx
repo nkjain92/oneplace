@@ -237,15 +237,12 @@ export default function ChatPage() {
           What do you want to ask about {summaryData.title}?
         </h2>
 
-        {/* Empty space (15% of screen height) */}
-        <div className='h-[5vh]'></div>
-
         {/* Chat container with fixed layout */}
         <div ref={chatContainerRef} className='w-full flex flex-col' style={{ minHeight: '300px' }}>
           {/* Messages container with scrolling */}
           <div
             ref={messagesContainerRef}
-            className='flex-1 overflow-y-auto'
+            className='flex-1 overflow-y-auto pb-24' // Added padding bottom to prevent content from being hidden behind fixed input
             style={{
               maxHeight: 'calc(100vh)',
             }}>
@@ -271,11 +268,13 @@ export default function ChatPage() {
           </div>
 
           {/* Chat Input - Fixed position container */}
-          <div className='w-full sticky bottom-0 bg-gray-50 pt-4' ref={inputContainerRef}>
+          <div
+            className='w-full fixed bottom-0 left-0 right-0 bg-gray-50 pt-4 pb-4 px-4 border-gray-200 shadow-md z-10'
+            ref={inputContainerRef}>
             <form
               ref={formRef}
               onSubmit={onSubmit}
-              className='flex items-end gap-2'
+              className='flex items-end gap-2 max-w-4xl mx-auto'
               style={{ minHeight: '56px' }}>
               <div className='flex-1 relative'>
                 <textarea
@@ -307,8 +306,7 @@ export default function ChatPage() {
                   } transition-colors duration-200 shadow-md`}
                   style={{
                     right: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
+                    bottom: '16px',
                   }}
                   aria-label='Send message'>
                   <ArrowUp size={16} />
@@ -316,14 +314,16 @@ export default function ChatPage() {
               </div>
             </form>
             {isInputTooLong && (
-              <p className='text-red-500 text-sm mt-1'>
+              <p className='text-red-500 text-sm mt-1 max-w-4xl mx-auto'>
                 Please reduce your message to less than 1000 characters to chat.
               </p>
             )}
             {isMobile ? (
-              <p className='text-xs text-gray-500 mt-1'>Press Enter for a new line</p>
+              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
+                Press Enter for a new line
+              </p>
             ) : (
-              <p className='text-xs text-gray-500 mt-1'>
+              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
                 Press Enter to send, Shift+Enter for a new line
               </p>
             )}
