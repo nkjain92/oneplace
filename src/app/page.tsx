@@ -13,8 +13,7 @@ import {
 } from '@/lib/localStorage';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import { ArrowRight, Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
 import { GlowButton } from '@/components/ui/glow-button';
 import { ChannelCard } from '@/components/ChannelCard';
 
@@ -51,18 +50,18 @@ const samplePodcasts = [
 /**
  * Formats raw summary data into SummaryData type
  */
-const formatSummaryData = (item: any): SummaryData => ({
-  id: item.id,
-  title: item.title || 'YouTube Video',
-  summary: item.summary || 'No summary available',
+const formatSummaryData = (item: Record<string, unknown>): SummaryData => ({
+  id: item.id as string,
+  title: (item.title as string) || 'YouTube Video',
+  summary: (item.summary as string) || 'No summary available',
   tags: Array.isArray(item.tags) ? item.tags : [],
   featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-  publisher_name: item.publisher_name || 'Unknown Channel',
-  publisher_id: item.publisher_id || '',
-  content_created_at: item.content_created_at || new Date().toISOString(),
-  videoId: item.content_id || '',
-  content_id: item.content_id,
-  status: item.status || 'unknown',
+  publisher_name: (item.publisher_name as string) || 'Unknown Channel',
+  publisher_id: (item.publisher_id as string) || '',
+  content_created_at: (item.content_created_at as string) || new Date().toISOString(),
+  videoId: (item.content_id as string) || '',
+  content_id: item.content_id as string,
+  status: (item.status as string) || 'unknown',
 });
 
 export default function Home() {
@@ -73,38 +72,6 @@ export default function Home() {
   const [isGeneratingNew, setIsGeneratingNew] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
-
-  // Memoized fetch for featured channels
-  const fetchFeaturedChannels = useCallback(async () => {
-    const { data, error } = await supabase.from('channels').select('*').in('id', [
-      'UCcefcZRL2oaA_uBNeo5UOWg', // Y Combinator
-      'UCSHZKyawb77ixDdsGog4iWA', // Lex Fridman
-      'UCLtTf_uKt0Itd0NG7txrwXA', // The Knowledge Project
-    ]);
-
-    if (error) {
-      console.error('Error fetching featured channels:', error);
-      return;
-    }
-
-    setFeaturedChannels(
-      data.map(channel => ({
-        id: channel.id,
-        name: channel.name,
-        description: channel.description || '',
-        thumbnail: channel.thumbnail,
-      })),
-    );
-  }, []);
-
-  // Memoized fetch for recent summaries
-  const fetchRecentSummaries = useCallback(async () => {
-    if (user) {
-      await fetchAuthenticatedUserSummaries();
-    } else {
-      await fetchAnonymousUserSummaries();
-    }
-  }, [user]);
 
   // Fetch summaries for logged-in users
   const fetchAuthenticatedUserSummaries = useCallback(async () => {
@@ -196,6 +163,38 @@ export default function Home() {
       setSummaryData(formattedSummaries[0]);
     }
   }, [summaryData]);
+
+  // Memoized fetch for recent summaries
+  const fetchRecentSummaries = useCallback(async () => {
+    if (user) {
+      await fetchAuthenticatedUserSummaries();
+    } else {
+      await fetchAnonymousUserSummaries();
+    }
+  }, [user, fetchAuthenticatedUserSummaries, fetchAnonymousUserSummaries]);
+
+  // Memoized fetch for featured channels
+  const fetchFeaturedChannels = useCallback(async () => {
+    const { data, error } = await supabase.from('channels').select('*').in('id', [
+      'UCcefcZRL2oaA_uBNeo5UOWg', // Y Combinator
+      'UCSHZKyawb77ixDdsGog4iWA', // Lex Fridman
+      'UCLtTf_uKt0Itd0NG7txrwXA', // The Knowledge Project
+    ]);
+
+    if (error) {
+      console.error('Error fetching featured channels:', error);
+      return;
+    }
+
+    setFeaturedChannels(
+      data.map(channel => ({
+        id: channel.id,
+        name: channel.name,
+        description: channel.description || '',
+        thumbnail: channel.thumbnail,
+      })),
+    );
+  }, []);
 
   // Initial data fetch
   useEffect(() => {

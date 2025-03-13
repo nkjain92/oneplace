@@ -34,7 +34,6 @@ export default function ChatPage() {
   const [textareaHeight, setTextareaHeight] = useState('auto');
   const [inputValue, setInputValue] = useState('');
   const [isInputTooLong, setIsInputTooLong] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Refs for DOM elements
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,10 +60,6 @@ export default function ChatPage() {
   // Initialize session ID and mobile check
   useEffect(() => {
     setSessionId(getChatSessionId());
-    const checkIfMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
   // Scroll to bottom function using the end anchor
