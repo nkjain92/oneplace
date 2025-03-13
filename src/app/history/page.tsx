@@ -210,7 +210,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className='p-6 bg-gray-50 min-h-screen'>
+    <div className=' bg-gray-50 min-h-screen'>
       <div className='max-w-7xl mx-auto'>
         <div className='flex justify-between items-center mb-6'>
           <h1 className='text-2xl font-bold text-gray-900'>Your History</h1>

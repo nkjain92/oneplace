@@ -276,53 +276,49 @@ export default function Home() {
   return (
     <main className='flex flex-col min-h-[calc(100vh-64px)]'>
       {/* Hero Section */}
-      <section className='py-16 px-3 md:px-6 bg-gradient-to-br from-blue-50 to-purple-50 text-center'>
-        <div className='max-w-4xl mx-auto'>
-          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4'>
-            Podcast Summaries in Your Inbox
-          </h1>
-          <p className='text-xl md:text-2xl text-gray-600 mb-8'>
-            Summaries of Your Top Channels, Every Day
-          </p>
-          <div className='max-w-2xl mx-auto mb-6'>
-            <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
-          </div>
-          {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
-          <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
-          {!isLoading && (
-            <div className='mt-4'>
-              <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
-              <div className='flex flex-wrap justify-center gap-2'>
-                {samplePodcasts.map((podcast, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSubmit(podcast.url)}
-                    className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
-                    {podcast.title} <ExternalLink size={14} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className='max-w-4xl mx-auto'>
+        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4'>
+          Podcast Summaries in Your Inbox
+        </h1>
+        <p className='text-xl md:text-2xl text-gray-600 mb-8'>
+          Summaries of Your Top Channels, Every Day
+        </p>
+        <div className='max-w-2xl mx-auto mb-6'>
+          <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
         </div>
-      </section>
+        {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
+        <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
+        {!isLoading && (
+          <div className='mt-4'>
+            <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
+            <div className='flex flex-wrap justify-center gap-2'>
+              {samplePodcasts.map((podcast, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSubmit(podcast.url)}
+                  className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
+                  {podcast.title} <ExternalLink size={14} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Summary Section */}
       {summaryData && (
-        <section className='py-10 px-1 md:px-4 bg-white'>
-          <div className='max-w-7xl mx-auto'>
-            <SummaryCard
-              title={summaryData.title}
-              date={summaryData.content_created_at}
-              channelName={summaryData.publisher_name}
-              channelId={summaryData.publisher_id}
-              summary={summaryData.summary}
-              tags={summaryData.tags}
-              peopleMentioned={summaryData.featured_names}
-              videoId={summaryData.videoId || summaryData.content_id || ''}
-            />
-          </div>
-        </section>
+        <div className='max-w-7xl mx-auto'>
+          <SummaryCard
+            title={summaryData.title}
+            date={summaryData.content_created_at}
+            channelName={summaryData.publisher_name}
+            channelId={summaryData.publisher_id}
+            summary={summaryData.summary}
+            tags={summaryData.tags}
+            peopleMentioned={summaryData.featured_names}
+            videoId={summaryData.videoId || summaryData.content_id || ''}
+          />
+        </div>
       )}
 
       {/* Recent Summaries Section */}
@@ -367,132 +363,125 @@ export default function Home() {
       )}
 
       {/* How It Works Section */}
-      <section className='py-16 px-4 bg-white'>
-        <div className='max-w-6xl mx-auto'>
-          <h2 className='text-3xl font-bold text-gray-900 text-center mb-12'>How It Works</h2>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {[
-              {
-                icon: <ExternalLink size={24} className='text-blue-600' />,
-                title: 'Paste a Link',
-                desc: 'Paste any YouTube podcast link you want to summarize',
-                bg: 'blue',
-              },
-              {
-                icon: <Bookmark size={24} className='text-indigo-600' />,
-                title: 'Get a Summary',
-                desc: 'Receive a concise, detailed summary of the podcast content',
-                bg: 'indigo',
-              },
-              {
-                icon: <Bell size={24} className='text-purple-600' />,
-                title: 'Subscribe for Updates',
-                desc: 'Get daily summaries of new content from your favorite channels',
-                bg: 'purple',
-              },
-            ].map(step => (
-              <div key={step.title} className={`bg-${step.bg}-50 p-8 rounded-2xl text-center`}>
-                <div
-                  className={`w-16 h-16 bg-${step.bg}-100 rounded-full flex items-center justify-center mx-auto mb-6`}>
-                  {step.icon}
-                </div>
-                <h3 className='text-xl font-semibold mb-3'>{step.title}</h3>
-                <p className='text-gray-600'>{step.desc}</p>
+      <div className='max-w-6xl mx-auto'>
+        <h2 className='text-3xl font-bold text-gray-900 text-center mb-12'>How It Works</h2>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          {[
+            {
+              icon: <ExternalLink size={24} className='text-blue-600' />,
+              title: 'Paste a Link',
+              desc: 'Paste any YouTube podcast link you want to summarize',
+              bg: 'blue',
+            },
+            {
+              icon: <Bookmark size={24} className='text-indigo-600' />,
+              title: 'Get a Summary',
+              desc: 'Receive a concise, detailed summary of the podcast content',
+              bg: 'indigo',
+            },
+            {
+              icon: <Bell size={24} className='text-purple-600' />,
+              title: 'Subscribe for Updates',
+              desc: 'Get daily summaries of new content from your favorite channels',
+              bg: 'purple',
+            },
+          ].map(step => (
+            <div key={step.title} className={`bg-${step.bg}-50 p-8 rounded-2xl text-center`}>
+              <div
+                className={`w-16 h-16 bg-${step.bg}-100 rounded-full flex items-center justify-center mx-auto mb-6`}>
+                {step.icon}
               </div>
-            ))}
-          </div>
+              <h3 className='text-xl font-semibold mb-3'>{step.title}</h3>
+              <p className='text-gray-600'>{step.desc}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
 
       {/* Subscribe Channels Section */}
-      <section className='py-16 px-4 bg-gray-50'>
-        <div className='max-w-6xl mx-auto'>
-          <h2 className='text-3xl font-bold text-gray-900 text-center mb-4'>
-            Subscribe To Your Channels
-          </h2>
-          <p className='text-xl text-gray-600 text-center mb-10'>
-            Get daily summaries from your favorite creators
-          </p>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
-            {featuredChannels.map(channel => (
-              <ChannelCard
-                key={channel.id}
-                id={channel.id}
-                name={channel.name}
-                description={channel.description}
-                thumbnail={channel.thumbnail}
-                subscriberCount={channel.subscriberCount}
-                contentCount={channel.contentCount}
-              />
-            ))}
-          </div>
-          <div className='text-center w-full flex justify-center'>
-            <Link href='/discover'>
-              <GlowButton
-                glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
-                glowMode='static'
-                glowBlur='soft'>
-                Discover More Channels
-              </GlowButton>
-            </Link>
-          </div>
+      <div className='max-w-6xl mx-auto'>
+        <h2 className='text-3xl font-bold text-gray-900 text-center mb-4'>
+          Subscribe To Your Channels
+        </h2>
+        <p className='text-xl text-gray-600 text-center mb-10'>
+          Get daily summaries from your favorite creators
+        </p>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
+          {featuredChannels.map(channel => (
+            <ChannelCard
+              key={channel.id}
+              id={channel.id}
+              name={channel.name}
+              description={channel.description}
+              thumbnail={channel.thumbnail}
+              subscriberCount={channel.subscriberCount}
+              contentCount={channel.contentCount}
+            />
+          ))}
         </div>
-      </section>
+        <div className='text-center w-full flex justify-center'>
+          <Link href='/discover'>
+            <GlowButton
+              glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+              glowMode='static'
+              glowBlur='soft'>
+              Discover More Channels
+            </GlowButton>
+          </Link>
+        </div>
+      </div>
 
       {/* Benefits Section */}
-      <section className='py-16 px-4 bg-white'>
-        <div className='max-w-6xl mx-auto'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            {[
-              {
-                icon: <Clock size={28} className='text-amber-500' />,
-                title: 'Save Time',
-                desc: 'Get the key points without listening to hours of content',
-                bg: 'amber',
-              },
-              {
-                icon: <Bell size={28} className='text-emerald-500' />,
-                title: 'Stay Updated',
-                desc: 'Never miss important insights from your favorite creators',
-                bg: 'emerald',
-              },
-              {
-                icon: <Bookmark size={28} className='text-blue-500' />,
-                title: 'Choose What to Hear',
-                desc: 'Decide which episodes are worth your full attention',
-                bg: 'blue',
-              },
-            ].map(benefit => (
-              <div key={benefit.title} className='text-center'>
-                <div
-                  className={`w-14 h-14 bg-${benefit.bg}-50 rounded-full flex items-center justify-center mx-auto mb-4`}>
-                  {benefit.icon}
-                </div>
-                <h3 className='text-xl font-semibold mb-2'>{benefit.title}</h3>
-                <p className='text-gray-600'>{benefit.desc}</p>
+      <div className='max-w-6xl mx-auto'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+          {[
+            {
+              icon: <Clock size={28} className='text-amber-500' />,
+              title: 'Save Time',
+              desc: 'Get the key points without listening to hours of content',
+              bg: 'amber',
+            },
+            {
+              icon: <Bell size={28} className='text-emerald-500' />,
+              title: 'Stay Updated',
+              desc: 'Never miss important insights from your favorite creators',
+              bg: 'emerald',
+            },
+            {
+              icon: <Bookmark size={28} className='text-blue-500' />,
+              title: 'Choose What to Hear',
+              desc: 'Decide which episodes are worth your full attention',
+              bg: 'blue',
+            },
+          ].map(benefit => (
+            <div key={benefit.title} className='text-center'>
+              <div
+                className={`w-14 h-14 bg-${benefit.bg}-50 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                {benefit.icon}
               </div>
-            ))}
-          </div>
+              <h3 className='text-xl font-semibold mb-2'>{benefit.title}</h3>
+              <p className='text-gray-600'>{benefit.desc}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
 
       {/* Footer */}
       <footer className='py-10 px-4 bg-gray-50 border-t border-gray-100'>
         <div className='max-w-6xl mx-auto text-center'>
           <p className='text-gray-600 flex items-center justify-center mb-3'>
-            Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> by
-            Nishank Jain
+            Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in India
           </p>
           <div className='flex items-center justify-center gap-4 text-sm text-gray-500'>
             <a href='mailto:founder@getoneplace.com' className='hover:text-blue-600'>
-              founder@getoneplace.com
+              Email Feedback
             </a>
             <a
               href='https://wa.me/919820963946'
               target='_blank'
               rel='noopener noreferrer'
               className='hover:text-green-600'>
-              WhatsApp: +91 9820963946
+              Send Feedback
             </a>
           </div>
         </div>

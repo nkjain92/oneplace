@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Calendar, Tag, Users, Youtube } from 'lucide-react';
+import { Calendar, Tag, Users } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
@@ -60,10 +60,6 @@ export default function SummaryCard({
               <h2 className='text-xl md:text-2xl font-bold text-gray-800 leading-tight tracking-tight group-hover:text-[#4263eb] transition-colors duration-200'>
                 {title}
               </h2>
-              <Youtube
-                size={18}
-                className='ml-2 text-gray-400 group-hover:text-[#4263eb] transition-colors duration-200'
-              />
             </Link>
           </div>
           <div className='flex flex-wrap items-center justify-between gap-3'>
