@@ -3,6 +3,7 @@ import { SubscribeButton } from '@/components/SubscribeButton';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Users, ExternalLink, Film } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ChannelCardProps {
   id: string;
@@ -25,9 +26,17 @@ export function ChannelCard({
 }: ChannelCardProps) {
   // Use thumbnail if available, fallback to provided image, or default to placeholder
   const imageUrl = thumbnail || image || '/images/channel-placeholder.jpg';
+  const router = useRouter();
+
+  // Handle card click to navigate to channel page
+  const handleCardClick = () => {
+    router.push(`/channels/${id}`);
+  };
 
   return (
-    <div className='overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 bg-white border border-gray-100'>
+    <div
+      className='overflow-hidden rounded-xl shadow-md hover:shadow-lg transition-all duration-300 bg-white border border-gray-100 cursor-pointer'
+      onClick={handleCardClick}>
       {/* Channel Image */}
       <div className='h-40 bg-gradient-to-r from-primary/5 to-accent/5 relative'>
         <Image
@@ -44,11 +53,9 @@ export function ChannelCard({
       <div className='p-5'>
         <div className='flex justify-between items-start'>
           <div>
-            <Link href={`/channels/${id}`} className='group'>
-              <h3 className='text-lg font-semibold text-gray-900 group-hover:text-primary transition-colors'>
-                {name}
-              </h3>
-            </Link>
+            <h3 className='text-lg font-semibold text-gray-900 hover:text-primary transition-colors'>
+              {name}
+            </h3>
 
             <div className='flex items-center gap-4 mt-1'>
               {/* Only show subscriber count if it's greater than zero */}
@@ -78,15 +85,20 @@ export function ChannelCard({
         </div>
 
         <div className='mt-5 flex justify-between items-center'>
-          <SubscribeButton channelId={id} />
+          {/* Use onClick with stopPropagation to prevent the card click from being triggered */}
+          <div onClick={e => e.stopPropagation()}>
+            <SubscribeButton channelId={id} />
+          </div>
 
-          <Link
+          {/* External link with stopPropagation to prevent the card click from being triggered */}
+          <a
             href={`https://youtube.com/channel/${id}`}
             target='_blank'
             rel='noopener noreferrer'
+            onClick={e => e.stopPropagation()}
             className='text-gray-500 hover:text-primary transition-colors'>
             <ExternalLink size={18} />
-          </Link>
+          </a>
         </div>
       </div>
     </div>

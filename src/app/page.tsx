@@ -1,4 +1,4 @@
-// src/app/page.tsx - Home page component that handles YouTube URL submissions and displays summaries
+// src/app/page.tsx - Home page component for podcast summaries
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { GlowButton } from '@/components/ui/glow-button';
 import { ChannelCard } from '@/components/ChannelCard';
 
-// Define the interface for summary data based on SummaryCard props
+// Types
 interface SummaryData {
   id: string;
   title: string;
@@ -33,52 +33,23 @@ interface SummaryData {
   status?: string;
 }
 
-// Sample podcast videos for quick access
-const samplePodcasts = [
-  {
-    title: 'Lex Fridman #375 - Sam Altman',
-    url: 'https://www.youtube.com/watch?v=jvqFAi7vkBc',
-  },
-  {
-    title: 'Anton Osika Lovable - 20VC',
-    url: 'https://www.youtube.com/watch?v=DHLczPQj9rA',
-  },
-  {
-    title: 'Tim Ferriss - Naval Ravikant',
-    url: 'https://www.youtube.com/watch?v=HiYo14wylQw',
-  },
-];
+interface ChannelData {
+  id: string;
+  name: string;
+  description: string;
+  thumbnail?: string;
+  subscriberCount?: number;
+  contentCount?: number;
+}
 
-// Sample channels for subscription CTA
-const featuredChannels = [
-  {
-    id: 'UCSHZKyawb77ixDdsGog4iWA',
-    name: 'Lex Fridman',
-    description: "Deep conversations with the world's most interesting people",
-    image: '/images/channels/lex-fridman.jpeg',
-    subscriberCount: 4200000,
-    contentCount: 375,
-  },
-  {
-    id: 'UCf0PBRjhf0rF8fWBIxTuoWA',
-    name: '20VC with Harry Stebbings',
-    description: '20VC is about interviweing founders, VCs and operators in tech',
-    image: '/images/channels/20vc.webp',
-    subscriberCount: 3700000,
-    contentCount: 156,
-  },
-  {
-    id: 'UCznv7Vf9nBdJYvBagFdAHWw',
-    name: 'The Knowledge Project with Shane Parrish',
-    description: 'Shane Parrish interviews world-class individuals',
-    image: '/images/channels/the-knowledge-project.png',
-    subscriberCount: 1100000,
-    contentCount: 680,
-  },
+const samplePodcasts = [
+  { title: 'Lex Fridman #375 - Sam Altman', url: 'https://www.youtube.com/watch?v=jvqFAi7vkBc' },
+  { title: 'Anton Osika Lovable - 20VC', url: 'https://www.youtube.com/watch?v=DHLczPQj9rA' },
+  { title: 'Tim Ferriss - Naval Ravikant', url: 'https://www.youtube.com/watch?v=HiYo14wylQw' },
 ];
 
 /**
- * Formats raw summary data from the database into the SummaryData interface
+ * Formats raw summary data into SummaryData type
  */
 const formatSummaryData = (item: any): SummaryData => ({
   id: item.id,
@@ -97,76 +68,88 @@ const formatSummaryData = (item: any): SummaryData => ({
 export default function Home() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [recentSummaries, setRecentSummaries] = useState<SummaryData[]>([]);
+  const [featuredChannels, setFeaturedChannels] = useState<ChannelData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingNew, setIsGeneratingNew] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
 
-  /**
-   * Fetches recent summaries based on user authentication status
-   */
-  const fetchRecentSummaries = useCallback(async () => {
-    try {
-      if (user) {
-        await fetchAuthenticatedUserSummaries();
-      } else {
-        await fetchAnonymousUserSummaries();
-      }
-    } catch (err) {
-      console.error('Error loading recent summaries:', err);
-    }
-  }, [user]); // Remove summaryData dependency to avoid circular updates
+  // Memoized fetch for featured channels
+  const fetchFeaturedChannels = useCallback(async () => {
+    const { data, error } = await supabase.from('channels').select('*').in('id', [
+      'UCcefcZRL2oaA_uBNeo5UOWg', // Y Combinator
+      'UCSHZKyawb77ixDdsGog4iWA', // Lex Fridman
+      'UCLtTf_uKt0Itd0NG7txrwXA', // The Knowledge Project
+    ]);
 
-  /**
-   * Fetches summaries for authenticated users
-   */
-  const fetchAuthenticatedUserSummaries = async () => {
-    // Get user's generated summaries
-    if (!user) return; // Early return if user is null
-
-    const { data: userSummaries, error: userSummariesError } = await supabase
-      .from('user_generated_summaries')
-      .select('summary_id')
-      .eq('user_id', user.id);
-
-    if (userSummariesError) {
-      console.error('Error fetching user generated summaries:', userSummariesError);
+    if (error) {
+      console.error('Error fetching featured channels:', error);
       return;
     }
 
-    const userSummaryIds = userSummaries.map(us => us.summary_id);
+    setFeaturedChannels(
+      data.map(channel => ({
+        id: channel.id,
+        name: channel.name,
+        description: channel.description || '',
+        thumbnail: channel.thumbnail,
+      })),
+    );
+  }, []);
 
-    // Get user's subscribed channels
-    const { data: subscriptions, error: subscriptionsError } = await supabase
+  // Memoized fetch for recent summaries
+  const fetchRecentSummaries = useCallback(async () => {
+    if (user) {
+      await fetchAuthenticatedUserSummaries();
+    } else {
+      await fetchAnonymousUserSummaries();
+    }
+  }, [user]);
+
+  // Fetch summaries for logged-in users
+  const fetchAuthenticatedUserSummaries = useCallback(async () => {
+    if (!user) return;
+
+    // Fetch all user-generated summary IDs
+    const { data: allUserSummaries, error: userError } = await supabase
+      .from('user_generated_summaries')
+      .select('summary_id')
+      .eq('user_id', user.id)
+      .order('generated_at', { ascending: false });
+
+    if (userError) {
+      console.error('Error fetching user summaries:', userError);
+      return;
+    }
+
+    const userSummaryIds = allUserSummaries.map(us => us.summary_id);
+
+    // Fetch subscriptions
+    const { data: subscriptions, error: subError } = await supabase
       .from('subscriptions')
       .select('channel_id')
       .eq('user_id', user.id);
 
-    if (subscriptionsError) {
-      console.error('Error fetching subscriptions:', subscriptionsError);
+    if (subError) {
+      console.error('Error fetching subscriptions:', subError);
       return;
     }
 
     const subscribedChannelIds = subscriptions.map(sub => sub.channel_id);
 
-    // Skip the query if there are no IDs to search for
-    if (userSummaryIds.length === 0 && subscribedChannelIds.length === 0) {
+    if (!userSummaryIds.length && !subscribedChannelIds.length) {
       setRecentSummaries([]);
       return;
     }
 
-    // Build the OR condition only with non-empty arrays
-    let orCondition = '';
-    if (userSummaryIds.length > 0) {
-      orCondition += `id.in.(${userSummaryIds.join(',')})`;
-    }
+    // Fetch recent summaries
+    const orCondition = [
+      userSummaryIds.length ? `id.in.(${userSummaryIds.join(',')})` : '',
+      subscribedChannelIds.length ? `publisher_id.in.(${subscribedChannelIds.join(',')})` : '',
+    ]
+      .filter(Boolean)
+      .join(',');
 
-    if (subscribedChannelIds.length > 0) {
-      if (orCondition) orCondition += ',';
-      orCondition += `publisher_id.in.(${subscribedChannelIds.join(',')})`;
-    }
-
-    // Fetch summaries
     const { data: summaries, error: summariesError } = await supabase
       .from('summaries')
       .select('*')
@@ -175,65 +158,52 @@ export default function Home() {
       .limit(5);
 
     if (summariesError) {
-      console.error('Error fetching summaries:', summariesError);
+      console.error('Error fetching recent summaries:', summariesError);
       return;
     }
 
     const formattedSummaries = summaries.map(formatSummaryData);
     setRecentSummaries(formattedSummaries);
 
-    // Set the first summary as the current one if none is selected
-    if (!summaryData && formattedSummaries.length > 0) {
-      setSummaryData(formattedSummaries[0]);
+    // Set summaryData to the most recent user-generated summary if not set
+    if (!summaryData && formattedSummaries.length) {
+      const mostRecentUserSummary = formattedSummaries.find(s => userSummaryIds.includes(s.id));
+      setSummaryData(mostRecentUserSummary || formattedSummaries[0]);
     }
-  };
+  }, [user, summaryData]);
 
-  /**
-   * Fetches summaries for anonymous users based on local storage
-   */
-  const fetchAnonymousUserSummaries = async () => {
-    const contentIds = getAnonymousGeneratedContentIds();
+  // Fetch summaries for anonymous users
+  const fetchAnonymousUserSummaries = useCallback(async () => {
+    const contentIds = getAnonymousGeneratedContentIds().slice(-5).reverse();
+    if (!contentIds.length) return;
 
-    if (contentIds.length === 0) {
-      return;
-    }
-
-    // Get the 5 most recent content IDs
-    const recentContentIds = contentIds.slice(-5).reverse();
-
-    // Fetch the summaries from the database
     const { data, error } = await supabase
       .from('summaries')
       .select('*')
-      .in('content_id', recentContentIds)
+      .in('content_id', contentIds)
       .order('created_at', { ascending: false })
       .limit(5);
 
     if (error) {
-      console.error('Error fetching recent summaries:', error);
+      console.error('Error fetching anonymous summaries:', error);
       return;
     }
 
-    if (data && data.length > 0) {
-      const formattedSummaries = data.map(formatSummaryData);
+    const formattedSummaries = data.map(formatSummaryData);
+    setRecentSummaries(formattedSummaries);
 
-      // Set the most recent summary as the main summary if none is selected
-      if (!summaryData && formattedSummaries.length > 0) {
-        setSummaryData(formattedSummaries[0]);
-      }
-
-      setRecentSummaries(formattedSummaries);
+    if (!summaryData && formattedSummaries.length) {
+      setSummaryData(formattedSummaries[0]);
     }
-  };
+  }, [summaryData]);
 
-  // Fetch recent summaries on initial load and when user auth state changes
+  // Initial data fetch
   useEffect(() => {
     fetchRecentSummaries();
-  }, [fetchRecentSummaries]);
+    fetchFeaturedChannels();
+  }, [fetchRecentSummaries, fetchFeaturedChannels]);
 
-  /**
-   * Handles submission of a YouTube URL to generate a summary
-   */
+  // Handle URL submission
   const handleSubmit = async (url: string) => {
     setIsLoading(true);
     setError(null);
@@ -241,73 +211,41 @@ export default function Home() {
 
     try {
       const contentId = extractYouTubeVideoId(url);
+      if (contentId && (await checkExistingSummary(contentId))) return;
 
-      // Check if we already have this summary
-      if (contentId) {
-        const existingSummary = await checkExistingSummary(contentId);
-        if (existingSummary) {
-          return; // Exit early if we found and used an existing summary
-        }
-      } else {
-        setIsGeneratingNew(true);
-      }
-
-      // Generate a new summary
-      await generateNewSummary(url, contentId || undefined);
+      setIsGeneratingNew(true);
+      await generateNewSummary(url, contentId);
     } catch (err) {
-      console.error('Error generating summary:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred');
       setSummaryData(null);
     } finally {
-      setIsGeneratingNew(false);
       setIsLoading(false);
+      setIsGeneratingNew(false);
     }
   };
 
-  /**
-   * Checks if a summary already exists for the given content ID
-   * @returns true if an existing summary was found and used
-   */
+  // Check for existing summary
   const checkExistingSummary = async (contentId: string): Promise<boolean> => {
-    const { data: existingData } = await supabase
+    const { data } = await supabase
       .from('summaries')
       .select('*')
       .eq('content_id', contentId)
       .single();
 
-    if (existingData?.summary && existingData?.status === 'completed') {
-      // Use the existing summary
-      setSummaryData(formatSummaryData(existingData));
-
-      // For anonymous users, store content_id in local storage
+    if (data?.status === 'completed') {
+      setSummaryData(formatSummaryData(data));
       if (!user) {
-        try {
-          addAnonymousGeneratedContentId(contentId);
-          fetchRecentSummaries();
-        } catch (storageError) {
-          console.error('Error storing in local storage:', storageError);
-        }
+        addAnonymousGeneratedContentId(contentId);
+        await fetchRecentSummaries();
       }
-
       setIsLoading(false);
       return true;
-    } else {
-      // We need to generate a new summary
-      setIsGeneratingNew(true);
-
-      if (existingData) {
-        console.log(
-          `Regenerating summary for video ID: ${contentId}, current status: ${existingData.status}`,
-        );
-      }
-
-      return false;
     }
+    setIsGeneratingNew(true);
+    return false;
   };
 
-  /**
-   * Generates a new summary for the given URL
-   */
+  // Generate new summary
   const generateNewSummary = async (url: string, contentId?: string) => {
     const response = await fetch('/api/summaries', {
       method: 'POST',
@@ -315,37 +253,25 @@ export default function Home() {
       body: JSON.stringify({ url }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch summary');
-    }
+    if (!response.ok)
+      throw new Error((await response.json()).error || 'Failed to generate summary');
 
     const data = await response.json();
-
-    // Format and set the summary data
     const formattedData = formatSummaryData({
       ...data,
-      content_id: data.content_id || contentId || '',
-      videoId: data.content_id || contentId || '',
+      content_id: data.content_id || contentId,
+      videoId: data.content_id || contentId,
       publisher_id: data.publisher_id || data.channelId || '',
       status: data.status || 'completed',
     });
 
     setSummaryData(formattedData);
 
-    // For anonymous users, store content_id in local storage
     if (!user && contentId) {
-      try {
-        addAnonymousGeneratedContentId(contentId);
-        fetchRecentSummaries();
-      } catch (storageError) {
-        console.error('Error storing in local storage:', storageError);
-      }
+      addAnonymousGeneratedContentId(contentId);
+      await fetchRecentSummaries();
     }
   };
-
-  // Handle sample podcast clicks
-  const handleSampleClick = (url: string) => handleSubmit(url);
 
   return (
     <main className='flex flex-col min-h-[calc(100vh-64px)]'>
@@ -358,30 +284,21 @@ export default function Home() {
           <p className='text-xl md:text-2xl text-gray-600 mb-8'>
             Summaries of Your Top Channels, Every Day
           </p>
-
-          {/* YouTube URL Input */}
-          <div className='w-full max-w-2xl mx-auto mb-6'>
+          <div className='max-w-2xl mx-auto mb-6'>
             <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
           </div>
-
           {error && <p className='mt-2 text-red-500 text-sm'>{error}</p>}
-
-          {/* Progress Loader */}
           <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
-
-          {/* Sample Podcasts */}
           {!isLoading && (
-            <div className='mt-4 mb-1'>
+            <div className='mt-4'>
               <p className='text-gray-600 mb-3'>Try These Podcasts:</p>
               <div className='flex flex-wrap justify-center gap-2'>
-                {samplePodcasts.map((podcast, index) => (
+                {samplePodcasts.map((podcast, i) => (
                   <button
-                    key={index}
-                    onClick={() => handleSampleClick(podcast.url)}
-                    className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200
-                             hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
-                    {podcast.title}
-                    <ExternalLink size={14} className='ml-1' />
+                    key={i}
+                    onClick={() => handleSubmit(podcast.url)}
+                    className='bg-white text-gray-800 px-4 py-2 rounded-full text-sm border border-gray-200 hover:border-blue-300 hover:text-blue-600 transition-colors shadow-sm flex items-center gap-1'>
+                    {podcast.title} <ExternalLink size={14} />
                   </button>
                 ))}
               </div>
@@ -417,7 +334,7 @@ export default function Home() {
             </h2>
             <div className='flex flex-col gap-6'>
               {recentSummaries
-                .filter(summary => summary.id !== summaryData?.id)
+                .filter(s => s.id !== summaryData?.id)
                 .slice(0, 4)
                 .map(summary => (
                   <SummaryCard
@@ -433,14 +350,15 @@ export default function Home() {
                   />
                 ))}
             </div>
-
-            {recentSummaries.length > 5 && (
-              <div className='mt-6 text-center'>
+            {recentSummaries.length > 4 && (
+              <div className='mt-6 text-center w-full flex justify-center'>
                 <Link href='/history'>
-                  <Button variant='outline' className='mt-4'>
+                  <GlowButton
+                    glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+                    glowMode='static'
+                    glowBlur='soft'>
                     View All History
-                    <ArrowRight className='ml-2 h-4 w-4' />
-                  </Button>
+                  </GlowButton>
                 </Link>
               </div>
             )}
@@ -452,35 +370,36 @@ export default function Home() {
       <section className='py-16 px-4 bg-white'>
         <div className='max-w-6xl mx-auto'>
           <h2 className='text-3xl font-bold text-gray-900 text-center mb-12'>How It Works</h2>
-
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            <div className='bg-blue-50 p-8 rounded-2xl text-center'>
-              <div className='w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6'>
-                <ExternalLink size={24} className='text-blue-600' />
+            {[
+              {
+                icon: <ExternalLink size={24} className='text-blue-600' />,
+                title: 'Paste a Link',
+                desc: 'Paste any YouTube podcast link you want to summarize',
+                bg: 'blue',
+              },
+              {
+                icon: <Bookmark size={24} className='text-indigo-600' />,
+                title: 'Get a Summary',
+                desc: 'Receive a concise, detailed summary of the podcast content',
+                bg: 'indigo',
+              },
+              {
+                icon: <Bell size={24} className='text-purple-600' />,
+                title: 'Subscribe for Updates',
+                desc: 'Get daily summaries of new content from your favorite channels',
+                bg: 'purple',
+              },
+            ].map(step => (
+              <div key={step.title} className={`bg-${step.bg}-50 p-8 rounded-2xl text-center`}>
+                <div
+                  className={`w-16 h-16 bg-${step.bg}-100 rounded-full flex items-center justify-center mx-auto mb-6`}>
+                  {step.icon}
+                </div>
+                <h3 className='text-xl font-semibold mb-3'>{step.title}</h3>
+                <p className='text-gray-600'>{step.desc}</p>
               </div>
-              <h3 className='text-xl font-semibold mb-3'>Paste a Link</h3>
-              <p className='text-gray-600'>Paste any YouTube podcast link you want to summarize</p>
-            </div>
-
-            <div className='bg-indigo-50 p-8 rounded-2xl text-center'>
-              <div className='w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6'>
-                <Bookmark size={24} className='text-indigo-600' />
-              </div>
-              <h3 className='text-xl font-semibold mb-3'>Get a Summary</h3>
-              <p className='text-gray-600'>
-                Receive a concise, detailed summary of the podcast content
-              </p>
-            </div>
-
-            <div className='bg-purple-50 p-8 rounded-2xl text-center'>
-              <div className='w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6'>
-                <Bell size={24} className='text-purple-600' />
-              </div>
-              <h3 className='text-xl font-semibold mb-3'>Subscribe for Updates</h3>
-              <p className='text-gray-600'>
-                Get daily summaries of new content from your favorite channels
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -494,7 +413,6 @@ export default function Home() {
           <p className='text-xl text-gray-600 text-center mb-10'>
             Get daily summaries from your favorite creators
           </p>
-
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
             {featuredChannels.map(channel => (
               <ChannelCard
@@ -502,12 +420,12 @@ export default function Home() {
                 id={channel.id}
                 name={channel.name}
                 description={channel.description}
-                image={channel.image}
+                thumbnail={channel.thumbnail}
                 subscriberCount={channel.subscriberCount}
+                contentCount={channel.contentCount}
               />
             ))}
           </div>
-
           <div className='text-center w-full flex justify-center'>
             <Link href='/discover'>
               <GlowButton
@@ -525,33 +443,35 @@ export default function Home() {
       <section className='py-16 px-4 bg-white'>
         <div className='max-w-6xl mx-auto'>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-            <div className='text-center'>
-              <div className='w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <Clock size={28} className='text-amber-500' />
+            {[
+              {
+                icon: <Clock size={28} className='text-amber-500' />,
+                title: 'Save Time',
+                desc: 'Get the key points without listening to hours of content',
+                bg: 'amber',
+              },
+              {
+                icon: <Bell size={28} className='text-emerald-500' />,
+                title: 'Stay Updated',
+                desc: 'Never miss important insights from your favorite creators',
+                bg: 'emerald',
+              },
+              {
+                icon: <Bookmark size={28} className='text-blue-500' />,
+                title: 'Choose What to Hear',
+                desc: 'Decide which episodes are worth your full attention',
+                bg: 'blue',
+              },
+            ].map(benefit => (
+              <div key={benefit.title} className='text-center'>
+                <div
+                  className={`w-14 h-14 bg-${benefit.bg}-50 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  {benefit.icon}
+                </div>
+                <h3 className='text-xl font-semibold mb-2'>{benefit.title}</h3>
+                <p className='text-gray-600'>{benefit.desc}</p>
               </div>
-              <h3 className='text-xl font-semibold mb-2'>Save Time</h3>
-              <p className='text-gray-600'>
-                Get the key points without listening to hours of content
-              </p>
-            </div>
-
-            <div className='text-center'>
-              <div className='w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <Bell size={28} className='text-emerald-500' />
-              </div>
-              <h3 className='text-xl font-semibold mb-2'>Stay Updated</h3>
-              <p className='text-gray-600'>
-                Never miss important insights from your favorite creators
-              </p>
-            </div>
-
-            <div className='text-center'>
-              <div className='w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <Bookmark size={28} className='text-blue-500' />
-              </div>
-              <h3 className='text-xl font-semibold mb-2'>Choose What to Hear</h3>
-              <p className='text-gray-600'>Decide which episodes are worth your full attention</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
