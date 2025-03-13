@@ -282,9 +282,9 @@ export default function Home() {
         <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-black to-black -z-10' />
 
         {/* Floating gradient orbs - Vercel style */}
-        <div className='absolute top-20 -left-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob'></div>
-        <div className='absolute top-40 -right-64 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob animation-delay-2000'></div>
-        <div className='absolute -bottom-40 left-64 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob animation-delay-4000'></div>
+        <div className='absolute top-20 -left-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob'></div>
+        <div className='absolute top-40 -right-64 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob animation-delay-2000'></div>
+        <div className='absolute -bottom-40 left-64 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob animation-delay-4000'></div>
 
         <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight'>
           Podcast Summaries <br className='hidden md:block' />
@@ -310,7 +310,7 @@ export default function Home() {
                 <button
                   key={i}
                   onClick={() => handleSubmit(podcast.url)}
-                  className='bg-gray-900 text-gray-200 px-4 py-2 rounded-md text-sm border border-gray-800 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-md flex items-center gap-1.5 group'>
+                  className='bg-gray-900 text-gray-200 px-4 py-2 rounded-md text-sm border border-gray-800 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-md flex items-center gap-1.5 group z-[1]'>
                   {podcast.title}
                   <ExternalLink
                     size={14}
