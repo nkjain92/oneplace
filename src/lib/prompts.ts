@@ -7,7 +7,7 @@ Tags: tag1, tag2, tag3
 
 People: person1, person2, person3
 
-The summary should be in bullet points and 200-300 words in markdown format with proper highlights for important keywords. The main part of the bullet point should be highlighted and in bold. The summary should incorporate the 5-8 most important and useful points for readers to learn from each video, while still organizing information efficiently. Towards the end of the summary text, also include quotes if you think they are important and novel.
+The summary should be in bullet points and 150-250 words in markdown format with proper highlights for important keywords. The main part of the bullet point should be highlighted and in bold. The summary should incorporate the 5-8 most important and useful points for readers to learn from each video, while still organizing information efficiently. Towards the end of the summary text, also include quotes if you think they are important and novel.
 
 IMPORTANT FORMATTING INSTRUCTIONS:
 1. Start with "Summary:" on its own line, followed by the summary text in bullet points
