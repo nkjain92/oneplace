@@ -219,113 +219,115 @@ export default function ChatPage() {
 
   return (
     <div className='flex flex-col min-h-screen bg-gray-50'>
-      {/* Summary Card */}
-      <SummaryCard
-        title={summaryData.title}
-        date={summaryData.content_created_at}
-        channelName={summaryData.publisher_name}
-        channelId={summaryData.publisher_id}
-        summary={summaryData.summary}
-        tags={summaryData.tags}
-        peopleMentioned={summaryData.featured_names}
-        videoId={summaryData.videoId}
-      />
+      <div className='p-6 max-w-7xl mx-auto w-full'>
+        {/* Summary Card */}
+        <SummaryCard
+          title={summaryData.title}
+          date={summaryData.content_created_at}
+          channelName={summaryData.publisher_name}
+          channelId={summaryData.publisher_id}
+          summary={summaryData.summary}
+          tags={summaryData.tags}
+          peopleMentioned={summaryData.featured_names}
+          videoId={summaryData.videoId}
+        />
 
-      {/* Chat heading */}
-      <h2 className='text-xl font-semibold mt-8 mb-2'>
-        What do you want to ask about {summaryData.title}?
-      </h2>
+        {/* Chat heading */}
+        <h2 className='text-xl font-semibold mt-8 mb-2'>
+          What do you want to ask about {summaryData.title}?
+        </h2>
 
-      {/* Empty space (15% of screen height) */}
-      <div className='h-[5vh]'></div>
-
-      {/* Chat container with fixed layout */}
-      <div ref={chatContainerRef} className='w-full flex flex-col' style={{ minHeight: '300px' }}>
-        {/* Messages container with scrolling */}
-        <div
-          ref={messagesContainerRef}
-          className='flex-1 overflow-y-auto'
-          style={{
-            maxHeight: 'calc(100vh)',
-          }}>
-          <div className='space-y-4 pb-4'>
-            {messages.map(m => (
-              <div
-                key={m.id}
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {m.role === 'user' ? (
-                  <div className='max-w-[85%] p-3 rounded-2xl shadow-sm border bg-gray-200 text-gray-800 rounded-tr-none border-gray-300'>
-                    {m.content}
-                  </div>
-                ) : (
-                  <div className='max-w-[85%] p-3 text-gray-800 prose prose-sm'>
-                    <ReactMarkdown components={markdownComponents}>{m.content}</ReactMarkdown>
-                  </div>
-                )}
-              </div>
-            ))}
-            {/* Empty div at the end for scrolling target */}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Chat Input - Fixed position container */}
-        <div className='w-full sticky bottom-0 bg-gray-50 pt-4' ref={inputContainerRef}>
-          <form
-            ref={formRef}
-            onSubmit={onSubmit}
-            className='flex items-end gap-2'
-            style={{ minHeight: '56px' }}>
-            <div className='flex-1 relative'>
-              <textarea
-                ref={textareaRef}
-                value={inputValue}
-                onChange={handleTextareaChange}
-                onKeyDown={handleKeyPress}
-                placeholder='Ask anything about the video'
-                className={`w-full p-3 pl-4 pr-12 bg-white text-gray-800 rounded-lg border ${
-                  isInputTooLong ? 'border-red-500' : 'border-gray-300'
-                } shadow-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 resize-none overflow-auto`}
-                style={{
-                  height: textareaHeight,
-                  maxHeight: '240px',
-                  borderRadius: '8px',
-                  transition: 'height 0.1s ease',
-                }}
-                rows={1}
-                maxLength={1000}
-                autoFocus
-              />
-              <button
-                type='submit'
-                disabled={isLoading || !inputValue.trim() || isInputTooLong}
-                className={`absolute flex items-center justify-center h-8 w-8 rounded-full ${
-                  isLoading || !inputValue.trim() || isInputTooLong
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-70'
-                    : 'bg-gray-700 text-white hover:bg-gray-800 cursor-pointer'
-                } transition-colors duration-200 shadow-md`}
-                style={{
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                }}
-                aria-label='Send message'>
-                <ArrowUp size={16} />
-              </button>
+        {/* Chat container with fixed layout */}
+        <div ref={chatContainerRef} className='w-full flex flex-col' style={{ minHeight: '300px' }}>
+          {/* Messages container with scrolling */}
+          <div
+            ref={messagesContainerRef}
+            className='flex-1 overflow-y-auto pb-24' // Added padding bottom to prevent content from being hidden behind fixed input
+            style={{
+              maxHeight: 'calc(100vh)',
+            }}>
+            <div className='space-y-4 pb-4'>
+              {messages.map(m => (
+                <div
+                  key={m.id}
+                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {m.role === 'user' ? (
+                    <div className='max-w-[85%] p-3 rounded-2xl shadow-sm border bg-gray-200 text-gray-800 rounded-tr-none border-gray-300'>
+                      {m.content}
+                    </div>
+                  ) : (
+                    <div className='max-w-[85%] p-3 text-gray-800 prose prose-sm'>
+                      <ReactMarkdown components={markdownComponents}>{m.content}</ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Empty div at the end for scrolling target */}
+              <div ref={messagesEndRef} />
             </div>
-          </form>
-          {isInputTooLong && (
-            <p className='text-red-500 text-sm mt-1'>
-              Please reduce your message to less than 1000 characters to chat.
-            </p>
-          )}
-          {isMobile ? (
-            <p className='text-xs text-gray-500 mt-1'>Press Enter for a new line</p>
-          ) : (
-            <p className='text-xs text-gray-500 mt-1'>
-              Press Enter to send, Shift+Enter for a new line
-            </p>
-          )}
+          </div>
+
+          {/* Chat Input - Fixed position container */}
+          <div
+            className='w-full fixed bottom-0 left-0 right-0 bg-gray-50 pt-4 pb-4 px-4 border-gray-200 shadow-md z-10'
+            ref={inputContainerRef}>
+            <form
+              ref={formRef}
+              onSubmit={onSubmit}
+              className='flex items-end gap-2 max-w-4xl mx-auto'
+              style={{ minHeight: '56px' }}>
+              <div className='flex-1 relative'>
+                <textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={handleTextareaChange}
+                  onKeyDown={handleKeyPress}
+                  placeholder='Ask anything about the video'
+                  className={`w-full p-3 pl-4 pr-12 bg-white text-gray-800 rounded-lg border ${
+                    isInputTooLong ? 'border-red-500' : 'border-gray-300'
+                  } shadow-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 resize-none overflow-auto`}
+                  style={{
+                    height: textareaHeight,
+                    maxHeight: '240px',
+                    borderRadius: '8px',
+                    transition: 'height 0.1s ease',
+                  }}
+                  rows={1}
+                  maxLength={1000}
+                  autoFocus
+                />
+                <button
+                  type='submit'
+                  disabled={isLoading || !inputValue.trim() || isInputTooLong}
+                  className={`absolute flex items-center justify-center h-8 w-8 rounded-full ${
+                    isLoading || !inputValue.trim() || isInputTooLong
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-70'
+                      : 'bg-gray-700 text-white hover:bg-gray-800 cursor-pointer'
+                  } transition-colors duration-200 shadow-md`}
+                  style={{
+                    right: '12px',
+                    bottom: '16px',
+                  }}
+                  aria-label='Send message'>
+                  <ArrowUp size={16} />
+                </button>
+              </div>
+            </form>
+            {isInputTooLong && (
+              <p className='text-red-500 text-sm mt-1 max-w-4xl mx-auto'>
+                Please reduce your message to less than 1000 characters to chat.
+              </p>
+            )}
+            {isMobile ? (
+              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
+                Press Enter for a new line
+              </p>
+            ) : (
+              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
+                Press Enter to send, Shift+Enter for a new line
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
