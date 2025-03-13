@@ -77,6 +77,23 @@ const featuredChannels = [
   },
 ];
 
+/**
+ * Formats raw summary data from the database into the SummaryData interface
+ */
+const formatSummaryData = (item: any): SummaryData => ({
+  id: item.id,
+  title: item.title || 'YouTube Video',
+  summary: item.summary || 'No summary available',
+  tags: Array.isArray(item.tags) ? item.tags : [],
+  featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
+  publisher_name: item.publisher_name || 'Unknown Channel',
+  publisher_id: item.publisher_id || '',
+  content_created_at: item.content_created_at || new Date().toISOString(),
+  videoId: item.content_id || '',
+  content_id: item.content_id,
+  status: item.status || 'unknown',
+});
+
 export default function Home() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [recentSummaries, setRecentSummaries] = useState<SummaryData[]>([]);
@@ -85,237 +102,158 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuthStore();
 
-  // Use useCallback to memoize the fetchRecentSummaries function
+  /**
+   * Fetches recent summaries based on user authentication status
+   */
   const fetchRecentSummaries = useCallback(async () => {
     try {
       if (user) {
-        const { data: userSummaries, error: userSummariesError } = await supabase
-          .from('user_generated_summaries')
-          .select('summary_id')
-          .eq('user_id', user.id);
-        if (userSummariesError) {
-          console.error('Error fetching user generated summaries:', userSummariesError);
-          return;
-        }
-        const userSummaryIds = userSummaries.map(us => us.summary_id);
-
-        const { data: subscriptions, error: subscriptionsError } = await supabase
-          .from('subscriptions')
-          .select('channel_id')
-          .eq('user_id', user.id);
-        if (subscriptionsError) {
-          console.error('Error fetching subscriptions:', subscriptionsError);
-          return;
-        }
-        const subscribedChannelIds = subscriptions.map(sub => sub.channel_id);
-
-        const { data: summaries, error: summariesError } = await supabase
-          .from('summaries')
-          .select('*')
-          .or(
-            `id.in.(${userSummaryIds.join(',')}),publisher_id.in.(${subscribedChannelIds.join(
-              ',',
-            )})`,
-          )
-          .order('content_created_at', { ascending: false })
-          .limit(5);
-        if (summariesError) {
-          console.error('Error fetching summaries:', summariesError);
-          return;
-        }
-
-        const formattedSummaries = summaries.map(item => ({
-          id: item.id,
-          title: item.title || 'YouTube Video',
-          summary: item.summary || 'No summary available',
-          tags: Array.isArray(item.tags) ? item.tags : [],
-          featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-          publisher_name: item.publisher_name || 'Unknown Channel',
-          publisher_id: item.publisher_id || '',
-          content_created_at: item.content_created_at || new Date().toISOString(),
-          videoId: item.content_id || '',
-          content_id: item.content_id,
-          status: item.status || 'unknown',
-        }));
-        setRecentSummaries(formattedSummaries);
-        if (!summaryData && formattedSummaries.length > 0) {
-          setSummaryData(formattedSummaries[0]);
-        }
+        await fetchAuthenticatedUserSummaries();
       } else {
-        // Get content IDs from storage
-        const contentIds = getAnonymousGeneratedContentIds();
-        console.log('Local storage content IDs:', contentIds);
-
-        if (contentIds.length > 0) {
-          // Get the 5 most recent content IDs
-          const recentContentIds = contentIds.slice(-5).reverse();
-          console.log('Using recent content IDs:', recentContentIds);
-
-          // Fetch the summaries from the database
-          const { data, error } = await supabase
-            .from('summaries')
-            .select('*')
-            .in('content_id', recentContentIds)
-            .order('content_created_at', { ascending: false })
-            .limit(5);
-
-          if (error) {
-            console.error('Error fetching recent summaries:', error);
-            return;
-          }
-
-          console.log('Fetched summaries from DB:', data?.length || 0);
-
-          if (data && data.length > 0) {
-            // Format the data to match the SummaryCard props
-            const formattedSummaries = data.map(item => ({
-              id: item.id,
-              title: item.title || 'YouTube Video',
-              summary: item.summary || 'No summary available',
-              tags: Array.isArray(item.tags) ? item.tags : [],
-              featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-              publisher_name: item.publisher_name || 'Unknown Channel',
-              publisher_id: item.publisher_id || '',
-              content_created_at: item.content_created_at || new Date().toISOString(),
-              videoId: item.content_id || '',
-              content_id: item.content_id,
-              status: item.status || 'unknown',
-            }));
-
-            console.log('Formatted summaries:', formattedSummaries.length);
-
-            // Set the most recent summary as the main summary if none is selected
-            if (!summaryData) {
-              setSummaryData(formattedSummaries[0]);
-            }
-
-            // Set all summaries for the recent list
-            setRecentSummaries(formattedSummaries);
-          }
-        }
+        await fetchAnonymousUserSummaries();
       }
     } catch (err) {
       console.error('Error loading recent summaries:', err);
     }
-  }, [user, summaryData]); // Add user as a dependency
+  }, [user]); // Remove summaryData dependency to avoid circular updates
 
-  // Fetch the most recent summaries for anonymous users on initial load
-  useEffect(() => {
-    fetchRecentSummaries();
-  }, [user, fetchRecentSummaries]); // fetchRecentSummaries is now properly memoized
+  /**
+   * Fetches summaries for authenticated users
+   */
+  const fetchAuthenticatedUserSummaries = async () => {
+    // Get user's generated summaries
+    if (!user) return; // Early return if user is null
 
-  const handleSampleClick = async (url: string) => {
-    await handleSubmit(url);
+    const { data: userSummaries, error: userSummariesError } = await supabase
+      .from('user_generated_summaries')
+      .select('summary_id')
+      .eq('user_id', user.id);
+
+    if (userSummariesError) {
+      console.error('Error fetching user generated summaries:', userSummariesError);
+      return;
+    }
+
+    const userSummaryIds = userSummaries.map(us => us.summary_id);
+
+    // Get user's subscribed channels
+    const { data: subscriptions, error: subscriptionsError } = await supabase
+      .from('subscriptions')
+      .select('channel_id')
+      .eq('user_id', user.id);
+
+    if (subscriptionsError) {
+      console.error('Error fetching subscriptions:', subscriptionsError);
+      return;
+    }
+
+    const subscribedChannelIds = subscriptions.map(sub => sub.channel_id);
+
+    // Skip the query if there are no IDs to search for
+    if (userSummaryIds.length === 0 && subscribedChannelIds.length === 0) {
+      setRecentSummaries([]);
+      return;
+    }
+
+    // Build the OR condition only with non-empty arrays
+    let orCondition = '';
+    if (userSummaryIds.length > 0) {
+      orCondition += `id.in.(${userSummaryIds.join(',')})`;
+    }
+
+    if (subscribedChannelIds.length > 0) {
+      if (orCondition) orCondition += ',';
+      orCondition += `publisher_id.in.(${subscribedChannelIds.join(',')})`;
+    }
+
+    // Fetch summaries
+    const { data: summaries, error: summariesError } = await supabase
+      .from('summaries')
+      .select('*')
+      .or(orCondition)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (summariesError) {
+      console.error('Error fetching summaries:', summariesError);
+      return;
+    }
+
+    const formattedSummaries = summaries.map(formatSummaryData);
+    setRecentSummaries(formattedSummaries);
+
+    // Set the first summary as the current one if none is selected
+    if (!summaryData && formattedSummaries.length > 0) {
+      setSummaryData(formattedSummaries[0]);
+    }
   };
 
+  /**
+   * Fetches summaries for anonymous users based on local storage
+   */
+  const fetchAnonymousUserSummaries = async () => {
+    const contentIds = getAnonymousGeneratedContentIds();
+
+    if (contentIds.length === 0) {
+      return;
+    }
+
+    // Get the 5 most recent content IDs
+    const recentContentIds = contentIds.slice(-5).reverse();
+
+    // Fetch the summaries from the database
+    const { data, error } = await supabase
+      .from('summaries')
+      .select('*')
+      .in('content_id', recentContentIds)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching recent summaries:', error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      const formattedSummaries = data.map(formatSummaryData);
+
+      // Set the most recent summary as the main summary if none is selected
+      if (!summaryData && formattedSummaries.length > 0) {
+        setSummaryData(formattedSummaries[0]);
+      }
+
+      setRecentSummaries(formattedSummaries);
+    }
+  };
+
+  // Fetch recent summaries on initial load and when user auth state changes
+  useEffect(() => {
+    fetchRecentSummaries();
+  }, [fetchRecentSummaries]);
+
+  /**
+   * Handles submission of a YouTube URL to generate a summary
+   */
   const handleSubmit = async (url: string) => {
     setIsLoading(true);
     setError(null);
     setIsGeneratingNew(false);
 
     try {
-      // Extract video ID for local storage (for anonymous users)
       const contentId = extractYouTubeVideoId(url);
 
-      // First, check if we already have this summary
+      // Check if we already have this summary
       if (contentId) {
-        const { data: existingData } = await supabase
-          .from('summaries')
-          .select('*')
-          .eq('content_id', contentId)
-          .single();
-
-        if (existingData && existingData.summary && existingData.status === 'completed') {
-          // If we already have the summary and it's completed, use it directly
-          const formattedData: SummaryData = {
-            id: existingData.id,
-            title: existingData.title || 'YouTube Video',
-            summary: existingData.summary || 'No summary available',
-            tags: Array.isArray(existingData.tags) ? existingData.tags : [],
-            featured_names: Array.isArray(existingData.featured_names)
-              ? existingData.featured_names
-              : [],
-            publisher_name: existingData.publisher_name || 'Unknown Channel',
-            publisher_id: existingData.publisher_id || '',
-            content_created_at: existingData.content_created_at || new Date().toISOString(),
-            videoId: existingData.content_id || contentId || '',
-            content_id: existingData.content_id,
-          };
-
-          setSummaryData(formattedData);
-
-          // For anonymous users, store content_id in local storage
-          if (!user && contentId) {
-            try {
-              addAnonymousGeneratedContentId(contentId);
-              console.log('Added to local storage history:', contentId);
-              // Refresh recent summaries after adding a new one
-              fetchRecentSummaries();
-            } catch (storageError) {
-              console.error('Error storing in local storage:', storageError);
-            }
-          }
-
-          setIsLoading(false);
-          return;
-        } else {
-          // We need to generate a new summary (either doesn't exist, is empty, or is still processing)
-          setIsGeneratingNew(true);
-
-          // If we have an existing record, log the status
-          if (existingData) {
-            console.log(
-              `Regenerating summary for video ID: ${contentId}, current status: ${existingData.status}`,
-            );
-          }
+        const existingSummary = await checkExistingSummary(contentId);
+        if (existingSummary) {
+          return; // Exit early if we found and used an existing summary
         }
       } else {
-        // If we can't extract a content ID, assume we need to generate a new summary
         setIsGeneratingNew(true);
       }
 
-      // Call the API to get the summary
-      const response = await fetch('/api/summaries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch summary');
-      }
-
-      const data = await response.json();
-
-      // Format the data to match the SummaryCard props
-      const formattedData: SummaryData = {
-        id: data.id,
-        title: data.title || 'YouTube Video',
-        summary: data.summary || 'No summary available',
-        tags: Array.isArray(data.tags) ? data.tags : [],
-        featured_names: Array.isArray(data.featured_names) ? data.featured_names : [],
-        publisher_name: data.publisher_name || 'Unknown Channel',
-        publisher_id: data.publisher_id || data.channelId || '',
-        content_created_at: data.content_created_at || new Date().toISOString(),
-        videoId: data.content_id || contentId || '',
-        content_id: data.content_id || contentId,
-        status: data.status || 'completed',
-      };
-
-      setSummaryData(formattedData);
-
-      // For anonymous users, store content_id in local storage
-      if (!user && contentId) {
-        try {
-          addAnonymousGeneratedContentId(contentId);
-          console.log('Added to local storage history:', contentId);
-          // Refresh recent summaries after adding a new one
-          fetchRecentSummaries();
-        } catch (storageError) {
-          console.error('Error storing in local storage:', storageError);
-        }
-      }
+      // Generate a new summary
+      await generateNewSummary(url, contentId || undefined);
     } catch (err) {
       console.error('Error generating summary:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -325,6 +263,89 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  /**
+   * Checks if a summary already exists for the given content ID
+   * @returns true if an existing summary was found and used
+   */
+  const checkExistingSummary = async (contentId: string): Promise<boolean> => {
+    const { data: existingData } = await supabase
+      .from('summaries')
+      .select('*')
+      .eq('content_id', contentId)
+      .single();
+
+    if (existingData?.summary && existingData?.status === 'completed') {
+      // Use the existing summary
+      setSummaryData(formatSummaryData(existingData));
+
+      // For anonymous users, store content_id in local storage
+      if (!user) {
+        try {
+          addAnonymousGeneratedContentId(contentId);
+          fetchRecentSummaries();
+        } catch (storageError) {
+          console.error('Error storing in local storage:', storageError);
+        }
+      }
+
+      setIsLoading(false);
+      return true;
+    } else {
+      // We need to generate a new summary
+      setIsGeneratingNew(true);
+
+      if (existingData) {
+        console.log(
+          `Regenerating summary for video ID: ${contentId}, current status: ${existingData.status}`,
+        );
+      }
+
+      return false;
+    }
+  };
+
+  /**
+   * Generates a new summary for the given URL
+   */
+  const generateNewSummary = async (url: string, contentId?: string) => {
+    const response = await fetch('/api/summaries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch summary');
+    }
+
+    const data = await response.json();
+
+    // Format and set the summary data
+    const formattedData = formatSummaryData({
+      ...data,
+      content_id: data.content_id || contentId || '',
+      videoId: data.content_id || contentId || '',
+      publisher_id: data.publisher_id || data.channelId || '',
+      status: data.status || 'completed',
+    });
+
+    setSummaryData(formattedData);
+
+    // For anonymous users, store content_id in local storage
+    if (!user && contentId) {
+      try {
+        addAnonymousGeneratedContentId(contentId);
+        fetchRecentSummaries();
+      } catch (storageError) {
+        console.error('Error storing in local storage:', storageError);
+      }
+    }
+  };
+
+  // Handle sample podcast clicks
+  const handleSampleClick = (url: string) => handleSubmit(url);
 
   return (
     <main className='flex flex-col min-h-[calc(100vh-64px)]'>
