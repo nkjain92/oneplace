@@ -78,68 +78,66 @@ export function SummaryProgressLoader({
 
   // Get current step
   const currentStep = SUMMARY_STEPS[currentStepIndex];
-  
+
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-sm p-4 mt-4">
+    <div className='w-full max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-6 mt-4'>
       {/* Combined progress bar and status */}
-      <div className="flex items-center gap-3 mb-2.5">
+      <div className='flex items-center gap-3 mb-3'>
         {/* Status indicator */}
-        <div className="flex items-center flex-shrink-0">
+        <div className='flex items-center flex-shrink-0'>
           {isComplete ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
+            <CheckCircle2 className='h-5 w-5 text-green-500' />
           ) : (
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}>
-              <Loader2 className="h-5 w-5 text-primary" />
+              <Loader2 className='h-5 w-5 text-blue-400' />
             </motion.div>
           )}
         </div>
-        
+
         {/* Progress bar */}
-        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden flex-grow">
+        <div className='h-2 w-full bg-gray-800 rounded-full overflow-hidden flex-grow'>
           <motion.div
-            className="h-full bg-gradient-to-r from-blue-500 to-primary rounded-full"
+            className='h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full'
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}
-            transition={{ ease: "easeInOut" }}
+            transition={{ ease: 'easeInOut' }}
           />
         </div>
-        
+
         {/* Percentage */}
-        <div className="text-sm font-medium text-primary bg-primary/5 px-2 py-0.5 rounded-full flex-shrink-0 min-w-[48px] text-center">
+        <div className='text-sm font-medium text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded-full flex-shrink-0 min-w-[48px] text-center'>
           {Math.round(progress)}%
         </div>
       </div>
-      
+
       {/* Step indicators and current step label in one line */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         {/* Current step with animation */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode='wait'>
           <motion.div
             key={currentStep.key}
             initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 5 }}
             transition={{ duration: 0.2 }}
-            className="text-sm font-medium text-gray-700 flex items-center"
-          >
-            {isComplete ? "Summary complete! Displaying results..." : currentStep.label}
+            className='text-sm font-medium text-gray-300 flex items-center'>
+            {isComplete ? 'Summary complete! Displaying results...' : currentStep.label}
           </motion.div>
         </AnimatePresence>
-        
+
         {/* Step dots */}
-        <div className="flex items-center space-x-1.5">
+        <div className='flex items-center space-x-1.5'>
           {SUMMARY_STEPS.map((step, index) => {
             const isActive = index === currentStepIndex;
             const isDone = index < currentStepIndex || isComplete;
-            
+
             return (
-              <div 
+              <div
                 key={step.key}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  isActive ? 'bg-primary scale-125' : 
-                  isDone ? 'bg-green-500' : 'bg-gray-200'
+                  isActive ? 'bg-blue-400 scale-125' : isDone ? 'bg-green-500' : 'bg-gray-700'
                 }`}
               />
             );

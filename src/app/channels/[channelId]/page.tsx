@@ -80,10 +80,10 @@ export default function ChannelPage() {
   if (loading) {
     return (
       <div className='p-6 max-w-7xl mx-auto'>
-        <div className='h-10 w-80 bg-gray-200 rounded-md mb-8 animate-pulse'></div>
+        <div className='h-10 w-80 bg-gray-800 rounded-md mb-8 animate-pulse'></div>
         <div className='grid grid-cols-1 gap-6'>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className='h-48 bg-gray-200 rounded-lg animate-pulse'></div>
+            <div key={i} className='h-48 bg-gray-800 rounded-lg animate-pulse'></div>
           ))}
         </div>
       </div>
@@ -93,49 +93,72 @@ export default function ChannelPage() {
   if (error) {
     return (
       <div className='p-6 max-w-7xl mx-auto'>
-        <div className='bg-red-50 text-red-600 p-4 rounded-md'>Error: {error}</div>
+        <div className='bg-red-900/20 text-red-400 p-4 rounded-md border border-red-800'>
+          Error: {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!channel) {
+    return (
+      <div className='p-6 max-w-7xl mx-auto'>
+        <div className='bg-amber-900/20 text-amber-400 p-4 rounded-md border border-amber-800'>
+          Channel not found
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='p-6 bg-gray-50 min-h-screen'>
-      <div className='max-w-7xl mx-auto'>
-        {/* Channel header with subscription status */}
-        <div className='bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-8 rounded-lg shadow-md mb-6 relative overflow-hidden'>
-          {channel?.thumbnail && (
-            <div className='absolute inset-0 opacity-20'>
-              <Image src={channel.thumbnail} alt={channel.name} fill className='object-cover' />
+    <div className='relative min-h-screen bg-black'>
+      {/* Grid background */}
+      <div className='absolute inset-0 bg-grid-small-white/[0.1] -z-10' />
+
+      {/* Floating gradient orbs - Vercel style */}
+      <div className='absolute top-40 -right-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-10 animate-blob animation-delay-4000'></div>
+      <div className='absolute bottom-20 -left-64 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-10 animate-blob'></div>
+
+      <div className='max-w-7xl mx-auto p-6'>
+        <div className='mb-10'>
+          <div className='flex items-center justify-between flex-wrap gap-4 bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8'>
+            <div className='flex items-center gap-4'>
+              {channel.thumbnail && (
+                <div className='relative h-16 w-16 rounded-full overflow-hidden border border-gray-700 bg-gray-800'>
+                  <Image src={channel.thumbnail} alt={channel.name} fill className='object-cover' />
+                </div>
+              )}
+              <div>
+                <h1 className='text-2xl font-bold text-white'>{channel.name}</h1>
+                {channel.description && (
+                  <p className='text-gray-400 mt-1 max-w-2xl'>{channel.description}</p>
+                )}
+              </div>
             </div>
-          )}
-          <div className='relative z-10'>
-            <h1 className='text-3xl font-bold'>{channel?.name}</h1>
-            {channel?.description && <p className='mt-2 text-white/80'>{channel.description}</p>}
-          </div>
-          <div className='mt-4 flex justify-end relative z-10'>
             <SubscribeButton channelId={channelId} />
           </div>
-        </div>
 
-        {/* Summaries list */}
-        <div className='grid grid-cols-1 gap-6'>
+          <h2 className='text-xl font-semibold text-white mb-6'>Recent Summaries</h2>
+
           {summaries.length > 0 ? (
-            summaries.map(summary => (
-              <SummaryCard
-                key={summary.id}
-                title={summary.title}
-                date={summary.content_created_at}
-                channelName={channel?.name || summary.publisher_name}
-                channelId={channelId}
-                summary={summary.summary}
-                tags={summary.tags || []}
-                peopleMentioned={summary.featured_names || []}
-                videoId={summary.content_id}
-              />
-            ))
+            <div className='space-y-6'>
+              {summaries.map(summary => (
+                <SummaryCard
+                  key={summary.id}
+                  title={summary.title}
+                  date={summary.content_created_at}
+                  channelName={summary.publisher_name}
+                  channelId={summary.publisher_id}
+                  summary={summary.summary}
+                  tags={summary.tags || []}
+                  peopleMentioned={summary.featured_names || []}
+                  videoId={summary.content_id}
+                />
+              ))}
+            </div>
           ) : (
-            <div className='bg-white p-8 rounded-lg text-center'>
-              <p className='text-gray-600'>No summaries available for this channel yet.</p>
+            <div className='bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center'>
+              <p className='text-gray-400'>No summaries available for this channel yet.</p>
             </div>
           )}
         </div>

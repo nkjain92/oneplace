@@ -46,8 +46,8 @@ const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
         size='sm'
         className={`rounded-full px-4 py-1 h-9 transition-all duration-200 hover:cursor-pointer ${
           isSubscribed
-            ? 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300'
-            : 'bg-[#4263eb] hover:bg-[#3b5bdb] text-white shadow-sm'
+            ? 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700 hover:text-white hover:border-gray-600'
+            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
         }`}>
         {isLoading ? (
           <span className='flex items-center'>
@@ -68,27 +68,29 @@ const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
       </Button>
 
       {error && !isLoading && (
-        <p className='text-red-500 text-xs mt-1 bg-red-50 px-2 py-1 rounded-md border border-red-100'>
+        <p className='text-red-400 text-xs mt-1 bg-red-900/20 px-2 py-1 rounded-md border border-red-800/30'>
           {error}
         </p>
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='bg-white rounded-xl border border-gray-100 shadow-lg'>
+        <DialogContent className='bg-gray-900 rounded-xl border border-gray-800 shadow-xl'>
           <DialogHeader>
-            <DialogTitle className='text-[#4263eb] text-xl font-bold'>
+            <DialogTitle className='text-blue-400 text-xl font-bold'>
               Sign in to subscribe
             </DialogTitle>
-            <DialogDescription className='text-gray-600 mt-2'>
+            <DialogDescription className='text-gray-400 mt-2'>
               Please sign in or create an account to subscribe to channels and get updates.
             </DialogDescription>
           </DialogHeader>
           <div className='flex space-x-4 mt-2'>
             <Link href='/login' className='flex-1'>
-              <Button className='bg-[#4263eb] hover:bg-[#3b5bdb] text-white w-full'>Sign In</Button>
+              <Button className='bg-blue-600 hover:bg-blue-700 text-white w-full'>Sign In</Button>
             </Link>
             <Link href='/signup' className='flex-1'>
-              <Button variant='outline' className='border-gray-200 hover:bg-gray-50 w-full'>
+              <Button
+                variant='outline'
+                className='border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white w-full'>
                 Sign Up
               </Button>
             </Link>

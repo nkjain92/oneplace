@@ -101,233 +101,248 @@ export default function ChatPage() {
       setIsInputTooLong(false);
     }
 
+    // Handle input change for AI chat
     handleInputChange(e);
 
-    // Reset height to auto to get the correct scrollHeight
+    // Adjust textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-
-      // Calculate new height based on content (with max height of 10 lines)
-      const lineHeight = 24; // Approximate line height in pixels
-      const maxHeight = lineHeight * 10; // Max height for 10 lines
       const scrollHeight = textareaRef.current.scrollHeight;
+      const maxHeight = 200; // Maximum height before scrolling
 
-      // Set new height, capped at maxHeight
-      const newHeight = Math.min(scrollHeight, maxHeight);
-      textareaRef.current.style.height = `${newHeight}px`;
-      setTextareaHeight(`${newHeight}px`);
+      if (scrollHeight <= maxHeight) {
+        textareaRef.current.style.height = `${scrollHeight}px`;
+        setTextareaHeight(`${scrollHeight}px`);
+      } else {
+        textareaRef.current.style.height = `${maxHeight}px`;
+        setTextareaHeight(`${maxHeight}px`);
+      }
     }
   };
 
+  // Fetch summary and transcript when component mounts
   useEffect(() => {
     async function fetchSummary() {
+      if (!videoId) return;
+
+      setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error: summaryError } = await supabase
           .from('summaries')
           .select('*')
           .eq('content_id', videoId)
           .single();
-        if (error) throw error;
+
+        if (summaryError) throw summaryError;
+
+        // Format the data
         setSummaryData({
           id: data.id,
-          title: data.title,
-          summary: data.summary,
-          tags: data.tags || [],
-          featured_names: data.featured_names || [],
-          publisher_name: data.publisher_name,
-          publisher_id: data.publisher_id,
-          content_created_at: data.content_created_at,
-          videoId: data.content_id,
+          title: data.title || 'Untitled Video',
+          summary: data.summary || 'No summary available',
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          featured_names: Array.isArray(data.featured_names) ? data.featured_names : [],
+          publisher_name: data.publisher_name || 'Unknown Channel',
+          publisher_id: data.publisher_id || '',
+          content_created_at: data.content_created_at || new Date().toISOString(),
+          videoId: videoId,
           transcript: data.transcript,
         });
-      } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'An error occurred while fetching the summary';
-        setError(errorMessage);
+      } catch (err) {
+        console.error('Error fetching summary:', err);
+        setError('Failed to load video information');
       } finally {
         setLoading(false);
       }
     }
+
     fetchSummary();
   }, [videoId]);
 
-  // Custom submit handler that maintains focus and handles mobile vs desktop behavior
+  // Custom form submission handler
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Don't submit if input is too long
-    if (isInputTooLong || !inputValue.trim()) {
+    if (isInputTooLong) {
       return;
     }
 
-    handleSubmit(e);
-    setInputValue('');
+    if (inputValue.trim() === '') {
+      return;
+    }
 
-    // Reset textarea height after submission
+    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       setTextareaHeight('auto');
     }
 
-    // Immediately attempt to refocus
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-      }
-    }, 10);
+    // Submit the form using AI SDK
+    handleSubmit(e);
+
+    // Clear the input field
+    setInputValue('');
   };
 
-  // Handle key press events for the textarea
+  // Custom keyboard shortcut handler
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // On mobile, Enter should create a new line
-    // On desktop, Enter should submit, and Shift+Enter should create a new line
-    if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
+    // Submit on Enter (without shift for new line)
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       onSubmit(e);
     }
   };
 
-  // Custom markdown components for styling
-  const markdownComponents: Partial<Components> = {
-    p: props => <p className='mb-2' {...props} />,
-    ul: props => <ul className='list-disc pl-5 mb-2' {...props} />,
-    ol: props => <ol className='list-decimal pl-5 mb-2' {...props} />,
-    li: props => <li className='mb-1' {...props} />,
-    h1: props => <h1 className='text-xl font-bold mb-2' {...props} />,
-    h2: props => <h2 className='text-lg font-bold mb-2' {...props} />,
-    h3: props => <h3 className='text-md font-bold mb-2' {...props} />,
-    strong: props => <strong className='font-bold' {...props} />,
-    em: props => <em className='italic' {...props} />,
-    code: props => {
-      const { className } = props;
-      // Check if this is an inline code block (not wrapped in a pre)
-      const isInline = !className || !className.includes('language-');
-      return isInline ? (
-        <code className='bg-gray-100 px-1 py-0.5 rounded font-mono text-sm' {...props} />
-      ) : (
-        <code className='bg-gray-100 p-2 rounded font-mono text-sm block' {...props} />
-      );
-    },
-    pre: props => (
-      <pre className='bg-gray-100 p-2 rounded font-mono text-sm mb-2 overflow-x-auto' {...props} />
+  // Custom renderer for markdown elements
+  const markdownRenderers: Components = {
+    p: ({ children }) => <p className='mb-4 last:mb-0'>{children}</p>,
+    a: ({ href, children }) => (
+      <a
+        href={href}
+        target='_blank'
+        rel='noopener noreferrer'
+        className='text-blue-400 hover:underline'>
+        {children}
+      </a>
     ),
+    ol: ({ children }) => <ol className='list-decimal pl-6 mb-4'>{children}</ol>,
+    ul: ({ children }) => <ul className='list-disc pl-6 mb-4'>{children}</ul>,
+    li: ({ children }) => <li className='mb-1'>{children}</li>,
+    code: ({ children }) => <code className='bg-gray-800 rounded px-1 py-0.5'>{children}</code>,
+    pre: ({ children }) => (
+      <pre className='bg-gray-800 rounded p-3 mb-4 overflow-x-auto text-sm'>{children}</pre>
+    ),
+    h1: ({ children }) => <h1 className='text-xl font-bold mb-4 text-white'>{children}</h1>,
+    h2: ({ children }) => <h2 className='text-lg font-bold mb-3 text-white'>{children}</h2>,
+    h3: ({ children }) => <h3 className='text-md font-bold mb-3 text-white'>{children}</h3>,
   };
 
-  if (loading) return <div className='p-6 text-center'>Loading...</div>;
-  if (error) return <div className='p-6 text-red-500'>Error: {error}</div>;
-  if (!summaryData) return <div className='p-6 text-center'>Summary not found</div>;
+  if (loading) {
+    return (
+      <div className='min-h-[calc(100vh-64px)] bg-black flex flex-col'>
+        <div className='mx-auto px-4 py-8 w-full max-w-4xl'>
+          <div className='h-12 bg-gray-800 rounded-lg animate-pulse mb-8'></div>
+          <div className='space-y-4'>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className='h-20 bg-gray-800 rounded-lg animate-pulse'></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='min-h-[calc(100vh-64px)] bg-black'>
+        <div className='max-w-7xl mx-auto px-4 py-8'>
+          <div className='bg-red-900/20 border border-red-800 text-red-400 p-4 rounded-md'>
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className='flex flex-col min-h-screen bg-gray-50'>
-      <div className='p-6 max-w-7xl mx-auto w-full'>
-        {/* Summary Card */}
-        <SummaryCard
-          title={summaryData.title}
-          date={summaryData.content_created_at}
-          channelName={summaryData.publisher_name}
-          channelId={summaryData.publisher_id}
-          summary={summaryData.summary}
-          tags={summaryData.tags}
-          peopleMentioned={summaryData.featured_names}
-          videoId={summaryData.videoId}
-        />
+    <div className='flex flex-col min-h-[calc(100vh-64px)] bg-black'>
+      {/* Summary Section */}
+      <div className='w-full max-w-7xl mx-auto px-4 md:px-6 py-6'>
+        {summaryData && (
+          <SummaryCard
+            title={summaryData.title}
+            date={summaryData.content_created_at}
+            channelName={summaryData.publisher_name}
+            channelId={summaryData.publisher_id}
+            summary={summaryData.summary}
+            tags={summaryData.tags}
+            peopleMentioned={summaryData.featured_names}
+            videoId={summaryData.videoId}
+          />
+        )}
+      </div>
 
-        {/* Chat heading */}
-        <h2 className='text-xl font-semibold mt-8 mb-2'>
-          What do you want to ask about {summaryData.title}?
-        </h2>
-
-        {/* Chat container with fixed layout */}
-        <div ref={chatContainerRef} className='w-full flex flex-col' style={{ minHeight: '300px' }}>
-          {/* Messages container with scrolling */}
-          <div
-            ref={messagesContainerRef}
-            className='flex-1 overflow-y-auto pb-24' // Added padding bottom to prevent content from being hidden behind fixed input
-            style={{
-              maxHeight: 'calc(100vh)',
-            }}>
-            <div className='space-y-4 pb-4'>
-              {messages.map(m => (
+      {/* Chat Interface */}
+      <div
+        ref={chatContainerRef}
+        className='flex-1 flex flex-col w-full max-w-4xl mx-auto px-4 md:px-6 pb-6 relative'>
+        {/* Messages Container */}
+        <div
+          ref={messagesContainerRef}
+          className='flex-1 overflow-y-auto pb-4 space-y-4 mb-4 border-t border-gray-800 pt-4'>
+          {messages.length === 0 ? (
+            <div className='text-center p-8'>
+              <p className='text-gray-400 mb-2'>
+                Ask a question about this video to start a conversation
+              </p>
+              <p className='text-gray-500 text-sm'>
+                You can ask about specific moments, themes, or get clarification on anything
+                mentioned in the video
+              </p>
+            </div>
+          ) : (
+            messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  key={m.id}
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {m.role === 'user' ? (
-                    <div className='max-w-[85%] p-3 rounded-2xl shadow-sm border bg-gray-200 text-gray-800 rounded-tr-none border-gray-300'>
-                      {m.content}
+                  className={`rounded-lg px-4 py-3 max-w-3xl text-white ${
+                    message.role === 'user'
+                      ? 'bg-blue-600 rounded-br-none'
+                      : 'bg-gray-800 rounded-bl-none'
+                  }`}>
+                  {message.role === 'assistant' ? (
+                    <div className='prose prose-invert prose-sm max-w-none'>
+                      <ReactMarkdown components={markdownRenderers}>
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   ) : (
-                    <div className='max-w-[85%] p-3 text-gray-800 prose prose-sm'>
-                      <ReactMarkdown components={markdownComponents}>{m.content}</ReactMarkdown>
-                    </div>
+                    <div>{message.content}</div>
                   )}
                 </div>
-              ))}
-              {/* Empty div at the end for scrolling target */}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-
-          {/* Chat Input - Fixed position container */}
-          <div
-            className='w-full fixed bottom-0 left-0 right-0 bg-gray-50 pt-4 pb-4 px-4 border-gray-200 shadow-md z-10'
-            ref={inputContainerRef}>
-            <form
-              ref={formRef}
-              onSubmit={onSubmit}
-              className='flex items-end gap-2 max-w-4xl mx-auto'
-              style={{ minHeight: '56px' }}>
-              <div className='flex-1 relative'>
-                <textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={handleTextareaChange}
-                  onKeyDown={handleKeyPress}
-                  placeholder='Ask anything about the video'
-                  className={`w-full p-3 pl-4 pr-12 bg-white text-gray-800 rounded-lg border ${
-                    isInputTooLong ? 'border-red-500' : 'border-gray-300'
-                  } shadow-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 resize-none overflow-auto`}
-                  style={{
-                    height: textareaHeight,
-                    maxHeight: '240px',
-                    borderRadius: '8px',
-                    transition: 'height 0.1s ease',
-                  }}
-                  rows={1}
-                  maxLength={1000}
-                  autoFocus
-                />
-                <button
-                  type='submit'
-                  disabled={isLoading || !inputValue.trim() || isInputTooLong}
-                  className={`absolute flex items-center justify-center h-8 w-8 rounded-full ${
-                    isLoading || !inputValue.trim() || isInputTooLong
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-70'
-                      : 'bg-gray-700 text-white hover:bg-gray-800 cursor-pointer'
-                  } transition-colors duration-200 shadow-md`}
-                  style={{
-                    right: '12px',
-                    bottom: '16px',
-                  }}
-                  aria-label='Send message'>
-                  <ArrowUp size={16} />
-                </button>
               </div>
-            </form>
-            {isInputTooLong && (
-              <p className='text-red-500 text-sm mt-1 max-w-4xl mx-auto'>
-                Please reduce your message to less than 1000 characters to chat.
-              </p>
-            )}
-            {isMobile ? (
-              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
-                Press Enter for a new line
-              </p>
-            ) : (
-              <p className='text-xs text-gray-500 mt-1 max-w-4xl mx-auto'>
-                Press Enter to send, Shift+Enter for a new line
-              </p>
-            )}
-          </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div
+          ref={inputContainerRef}
+          className='sticky bottom-0 w-full bg-gradient-to-t from-black via-black to-transparent py-4'>
+          <form
+            ref={formRef}
+            onSubmit={onSubmit}
+            className='relative border border-gray-800 bg-gray-900 rounded-xl'>
+            <textarea
+              ref={textareaRef}
+              value={inputValue}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyPress}
+              placeholder='Ask a question about this video...'
+              className='w-full resize-none bg-transparent py-3 pl-4 pr-12 text-white focus:outline-none focus:ring-0 placeholder:text-gray-500'
+              style={{ height: textareaHeight }}
+              disabled={isLoading}
+            />
+            <button
+              type='submit'
+              disabled={isLoading || isInputTooLong || inputValue.trim() === ''}
+              className={`absolute right-2 bottom-3 p-1.5 rounded-full ${
+                isLoading || isInputTooLong || inputValue.trim() === ''
+                  ? 'bg-gray-700 text-gray-400'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              } transition-colors`}
+              aria-label='Send message'>
+              <ArrowUp size={16} />
+            </button>
+          </form>
+          {isInputTooLong && (
+            <div className='mt-1 text-xs text-red-400 px-2'>
+              Message is too long. Please keep it under 1000 characters.
+            </div>
+          )}
+          {isLoading && <div className='mt-1 text-xs text-gray-400 px-2'>Thinking...</div>}
         </div>
       </div>
     </div>
