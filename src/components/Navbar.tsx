@@ -24,7 +24,7 @@ const navLinks = [
   },
   {
     title: 'History',
-    href: '/history',
+    href: '/history?filter=all',
     icon: History,
   },
 ];

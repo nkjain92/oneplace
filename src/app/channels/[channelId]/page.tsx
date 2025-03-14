@@ -1,13 +1,8 @@
-'use client';
-
 // src/app/channels/[channelId]/page.tsx - Channel-specific page displaying channel details and summaries
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import SummaryCard from '@/components/SummaryCard';
-import { useSubscriptionStore } from '@/store/subscriptionStore';
 import Image from 'next/image';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 // Define interface for summary object
 interface Summary {
@@ -22,73 +17,55 @@ interface Summary {
   featured_names?: string[];
 }
 
-export default function ChannelPage() {
-  const params = useParams();
-  const channelId = params.channelId as string;
+interface ChannelDetails {
+  name: string;
+  description: string | null;
+  thumbnail?: string;
+}
 
-  // Get subscription status from the store
-  const {} = useSubscriptionStore();
+interface ChannelPageProps {
+  params: { channelId: string };
+}
 
-  const [channel, setChannel] = useState<{
-    name: string;
-    description: string | null;
-    thumbnail?: string;
-  } | null>(null);
-  const [summaries, setSummaries] = useState<Summary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function ChannelPage({ params }: ChannelPageProps) {
+  // Await params.channelId to ensure it's fully resolved
+  const channelId = await params.channelId;
 
-  useEffect(() => {
-    async function fetchChannelData() {
-      if (!channelId) return;
+  const supabase = await createSupabaseServerClient();
 
-      try {
-        setLoading(true);
+  async function fetchChannelData() {
+    if (!channelId) return { channel: null, summaries: [], error: 'Channel ID missing' };
 
-        // Fetch channel details
-        const { data: channelData, error: channelError } = await supabase
-          .from('channels')
-          .select('name, description, thumbnail')
-          .eq('id', channelId)
-          .single();
+    try {
+      // Fetch channel details
+      const { data: channelData, error: channelError } = await supabase
+        .from('channels')
+        .select('name, description, thumbnail')
+        .eq('id', channelId)
+        .single();
 
-        if (channelError) throw new Error(`Error fetching channel: ${channelError.message}`);
+      if (channelError) throw new Error(`Error fetching channel: ${channelError.message}`);
 
-        // Fetch summaries
-        const { data: summariesData, error: summariesError } = await supabase
-          .from('summaries')
-          .select('*')
-          .eq('publisher_id', channelId)
-          .order('content_created_at', { ascending: false });
+      // Fetch summaries
+      const { data: summariesData, error: summariesError } = await supabase
+        .from('summaries')
+        .select('*')
+        .eq('publisher_id', channelId)
+        .order('content_created_at', { ascending: false });
 
-        if (summariesError) throw new Error(`Error fetching summaries: ${summariesError.message}`);
+      if (summariesError) throw new Error(`Error fetching summaries: ${summariesError.message}`);
 
-        setChannel(channelData);
-        setSummaries(summariesData || []);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching channel data:', err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
-      }
+      return {
+        channel: channelData as ChannelDetails | null,
+        summaries: (summariesData as Summary[]) || [],
+      };
+    } catch (err) {
+      console.error('Error fetching channel data:', err);
+      return { channel: null, summaries: [], error: err instanceof Error ? err.message : 'An unknown error occurred' };
     }
-
-    fetchChannelData();
-  }, [channelId]);
-
-  if (loading) {
-    return (
-      <div className='p-6 max-w-7xl mx-auto'>
-        <div className='h-10 w-80 bg-gray-800 rounded-md mb-8 animate-pulse'></div>
-        <div className='grid grid-cols-1 gap-6'>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className='h-48 bg-gray-800 rounded-lg animate-pulse'></div>
-          ))}
-        </div>
-      </div>
-    );
   }
+
+  const { channel, summaries, error } = await fetchChannelData();
 
   if (error) {
     return (

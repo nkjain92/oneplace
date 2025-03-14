@@ -1,4 +1,5 @@
 // src/components/SubscribeButton.tsx - Button component for subscribing to channels with authentication handling
+'use client'
 import { useState, memo } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';

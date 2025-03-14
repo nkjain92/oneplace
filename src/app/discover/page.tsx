@@ -1,10 +1,6 @@
 // src/app/discover/page.tsx - Discovery page for exploring available channels
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { ChannelCard } from '@/components/ChannelCard';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 interface Channel {
   id: string;
@@ -16,32 +12,23 @@ interface Channel {
   contentCount?: number;
 }
 
-export default function DiscoverPage() {
-  const { user } = useAuthStore();
-  const { fetchSubscriptions } = useSubscriptionStore();
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function DiscoverPage() {
+  const supabase = await createSupabaseServerClient();
 
-  useEffect(() => {
-    const fetchChannels = async () => {
-      try {
-        const response = await fetch('/api/channels');
-        if (!response.ok) throw new Error('Failed to fetch channels');
-        const data = await response.json();
-        setChannels(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchChannels();
-    if (user) fetchSubscriptions();
-  }, [user, fetchSubscriptions]);
+  async function fetchChannels(): Promise<Channel[]> {
+    try {
+      const response = await supabase
+        .from('channels')
+        .select('id, name, description, thumbnail');
+      if (response.error) throw new Error('Failed to fetch channels');
+      return response.data as Channel[];
+    } catch (err) {
+      console.error('Error fetching channels:', err);
+      return []; // Or handle error as needed, maybe return empty array or throw and handle at component level
+    }
+  }
 
-  if (isLoading) return <div className='text-center py-8 text-gray-400'>Loading...</div>;
-  if (error) return <div className='text-center py-8 text-red-400'>Error: {error}</div>;
+  const channels = await fetchChannels();
 
   return (
     <div className='relative py-16 px-6'>

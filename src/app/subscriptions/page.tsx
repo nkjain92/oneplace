@@ -1,10 +1,7 @@
 // src/app/subscriptions/page.tsx - User subscriptions page displaying subscribed channels
-'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { ChannelCard } from '@/components/ChannelCard';
+import { createSupabaseServerClient } from '@/lib/supabaseServer';
 
 interface Channel {
   id: string;
@@ -16,55 +13,18 @@ interface Channel {
   contentCount?: number;
 }
 
-export default function SubscriptionsPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const { user } = useAuthStore();
-  const { fetchSubscriptions } = useSubscriptionStore();
-  const dataFetchedRef = useRef(false);
-
-  useEffect(() => {
-    if (!dataFetchedRef.current && user) {
-      dataFetchedRef.current = true;
-
-      const fetchData = async () => {
-        try {
-          await fetchSubscriptions();
-          const latestSubscribedChannels = useSubscriptionStore.getState().subscribedChannels;
-
-          const response = await fetch('/api/subscribed-channels', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ channelIds: latestSubscribedChannels }),
-          });
-          if (!response.ok) throw new Error('Failed to fetch subscribed channels');
-
-          const subscribedChannelsData: Channel[] = await response.json();
-          setChannels(subscribedChannelsData);
-        } catch (err) {
-          console.error('Error fetching subscribed channels:', err);
-          setChannels([]);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchData();
-    } else if (!user) {
-      setIsLoading(false);
-    }
-  }, [user, fetchSubscriptions]);
-
-  if (isLoading) {
-    return (
-      <div className='min-h-[calc(100vh-64px)] bg-black flex items-center justify-center'>
-        <div className='space-y-4'>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className='h-20 w-72 bg-gray-800 rounded-lg animate-pulse'></div>
-          ))}
-        </div>
+export default async function SubscriptionsPage() {
+  // Get user session securely using getUser()
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError) {
+    console.error("Error fetching user:", userError);
+    return <div className='min-h-[calc(100vh-64px)] bg-black p-8'>
+      <div className='max-w-lg mx-auto bg-gray-900 border border-gray-800 rounded-lg p-6 shadow-lg'>
+        <p className='text-gray-300'>Error loading subscriptions. Please try again later.</p>
       </div>
-    );
+    </div>;
   }
 
   if (!user) {
@@ -91,6 +51,32 @@ export default function SubscriptionsPage() {
       </div>
     );
   }
+
+  async function fetchSubscribedChannels(userId: string): Promise<Channel[]> {
+    try {
+      const { data: subscriptionData, error } = await supabase
+        .from('subscriptions')
+        .select('channel_id')
+        .eq('user_id', userId);
+      if (error) throw error;
+
+      const channelIds = subscriptionData?.map(sub => sub.channel_id) || [];
+      if (channelIds.length === 0) return [];
+
+      const { data: channelsData, error: channelsError } = await supabase
+        .from('channels')
+        .select('id, name, description, thumbnail')
+        .in('id', channelIds);
+      if (channelsError) throw channelsError;
+
+      return channelsData as Channel[];
+    } catch (err) {
+      console.error('Error fetching subscribed channels:', err);
+      return [];
+    }
+  }
+
+  const channels = await fetchSubscribedChannels(user.id);
 
   return (
     <div className='min-h-[calc(100vh-64px)] bg-black'>

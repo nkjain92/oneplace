@@ -1,4 +1,6 @@
 // src/components/ChannelCard.tsx - Modern, elegant channel card component with subscription button
+'use client'
+
 import { SubscribeButton } from '@/components/SubscribeButton';
 import Image from 'next/image';
 import { Users, ExternalLink, Film } from 'lucide-react';
