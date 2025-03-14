@@ -14,6 +14,7 @@ interface ChannelCardProps {
   thumbnail?: string;
   subscriberCount?: number;
   contentCount?: number;
+  isSubscribed?: boolean;
 }
 
 export function ChannelCard({
@@ -24,6 +25,7 @@ export function ChannelCard({
   thumbnail,
   subscriberCount,
   contentCount,
+  isSubscribed = false,
 }: ChannelCardProps) {
   // Use thumbnail if available, fallback to provided image, or default to placeholder
   const imageUrl = thumbnail || image || '/images/channel-placeholder.jpg';
@@ -94,7 +96,7 @@ export function ChannelCard({
         <div className='mt-5 flex justify-between items-center'>
           {/* Use onClick with stopPropagation to prevent the card click from being triggered */}
           <div onClick={e => e.stopPropagation()}>
-            <SubscribeButton channelId={id} />
+            <SubscribeButton channelId={id} initialIsSubscribed={isSubscribed} />
           </div>
 
           {/* External link with stopPropagation to prevent the card click from being triggered */}
@@ -103,7 +105,9 @@ export function ChannelCard({
             target='_blank'
             rel='noopener noreferrer'
             onClick={e => e.stopPropagation()}
-            className='text-gray-400 hover:text-blue-400 transition-colors'>
+            className='text-gray-400 hover:text-blue-400 transition-colors'
+            title={`Visit ${name} on YouTube`}
+            aria-label={`Visit ${name} on YouTube`}>
             <ExternalLink size={18} />
           </a>
         </div>

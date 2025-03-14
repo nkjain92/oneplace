@@ -1,6 +1,7 @@
 // src/app/discover/page.tsx - Discovery page for exploring available channels
 import { ChannelCard } from '@/components/ChannelCard';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { unstable_cache } from 'next/cache';
 
 interface Channel {
   id: string;
@@ -14,21 +15,53 @@ interface Channel {
 
 export default async function DiscoverPage() {
   const supabase = await createSupabaseServerClient();
-
-  async function fetchChannels(): Promise<Channel[]> {
-    try {
-      const response = await supabase
-        .from('channels')
-        .select('id, name, description, thumbnail');
-      if (response.error) throw new Error('Failed to fetch channels');
-      return response.data as Channel[];
-    } catch (err) {
-      console.error('Error fetching channels:', err);
-      return []; // Or handle error as needed, maybe return empty array or throw and handle at component level
-    }
-  }
-
-  const channels = await fetchChannels();
+  
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // Cache the channel fetching function
+  const fetchChannels = unstable_cache(
+    async () => {
+      try {
+        const response = await supabase
+          .from('channels')
+          .select('id, name, description, thumbnail');
+        if (response.error) throw new Error('Failed to fetch channels');
+        return response.data as Channel[];
+      } catch (err) {
+        console.error('Error fetching channels:', err);
+        return []; 
+      }
+    },
+    ['discover-channels'],
+    { revalidate: 3600 } // Revalidate every hour
+  );
+  
+  // Cache the subscriptions fetching function
+  const fetchSubscriptions = unstable_cache(
+    async (userId: string) => {
+      if (!userId) return [];
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('channel_id')
+          .eq('user_id', userId);
+        if (error) throw error;
+        return data.map(sub => sub.channel_id);
+      } catch (err) {
+        console.error('Error fetching subscriptions:', err);
+        return [];
+      }
+    },
+    ['user-subscriptions'],
+    { revalidate: 60 } // Revalidate every minute
+  );
+  
+  // Fetch channels and subscriptions in parallel
+  const [channels, subscribedChannelIds] = await Promise.all([
+    fetchChannels(),
+    user ? fetchSubscriptions(user.id) : Promise.resolve([])
+  ]);
 
   return (
     <div className='relative py-16 px-6'>
@@ -61,6 +94,7 @@ export default async function DiscoverPage() {
               thumbnail={channel.thumbnail}
               subscriberCount={channel.subscriberCount}
               contentCount={channel.contentCount}
+              isSubscribed={subscribedChannelIds.includes(channel.id)}
             />
           ))}
         </div>

@@ -3,6 +3,7 @@ import { SubscribeButton } from '@/components/SubscribeButton';
 import SummaryCard from '@/components/SummaryCard';
 import Image from 'next/image';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { unstable_cache } from 'next/cache';
 
 // Define interface for summary object
 interface Summary {
@@ -32,6 +33,36 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
   const channelId = await params.channelId;
 
   const supabase = await createSupabaseServerClient();
+  
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Check if user is subscribed to this channel
+  const checkSubscription = unstable_cache(
+    async (userId: string, channelId: string) => {
+      if (!userId || !channelId) return false;
+      
+      try {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('channel_id', channelId)
+          .maybeSingle();
+          
+        if (error) throw error;
+        return !!data; // Convert to boolean - true if data exists, false otherwise
+      } catch (err) {
+        console.error('Error checking subscription:', err);
+        return false;
+      }
+    },
+    ['channel-subscription-status'],
+    { revalidate: 60 } // Revalidate every minute
+  );
+  
+  // Determine if the user is subscribed to this channel
+  const isSubscribed = user ? await checkSubscription(user.id, channelId) : false;
 
   async function fetchChannelData() {
     if (!channelId) return { channel: null, summaries: [], error: 'Channel ID missing' };
@@ -112,7 +143,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
                 )}
               </div>
             </div>
-            <SubscribeButton channelId={channelId} />
+            <SubscribeButton channelId={channelId} initialIsSubscribed={isSubscribed} />
           </div>
 
           <h2 className='text-xl font-semibold text-white mb-6'>Recent Summaries</h2>

@@ -1,6 +1,6 @@
 // src/components/SubscribeButton.tsx - Button component for subscribing to channels with authentication handling
 'use client'
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { Button } from '@/components/ui/button';
@@ -16,15 +16,30 @@ import { BellOff, BellRing, Loader2 } from 'lucide-react';
 
 interface SubscribeButtonProps {
   channelId: string;
+  initialIsSubscribed?: boolean;
 }
 
-const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
+const SubscribeButton = memo(({ channelId, initialIsSubscribed = false }: SubscribeButtonProps) => {
   const { user } = useAuthStore();
-  const { subscribedChannels, subscribe, unsubscribe, isChannelLoading, error } =
+  const { subscribedChannels, subscribe, unsubscribe, isChannelLoading, error, fetchSubscriptions } =
     useSubscriptionStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const isSubscribed = subscribedChannels.includes(channelId);
+  const [isSubscribed, setIsSubscribed] = useState(initialIsSubscribed);
   const isLoading = isChannelLoading(channelId);
+  
+  // Initialize subscription state from both props and store
+  useEffect(() => {
+    // Update local state based on either the initialIsSubscribed prop or the store state
+    setIsSubscribed(initialIsSubscribed || subscribedChannels.includes(channelId));
+  }, [channelId, initialIsSubscribed, subscribedChannels]);
+  
+  // Fetch subscriptions only once when the component mounts and user exists
+  useEffect(() => {
+    // Only fetch if user is logged in and we haven't already fetched
+    if (user && subscribedChannels.length === 0) {
+      fetchSubscriptions();
+    }
+  }, [user, subscribedChannels.length, fetchSubscriptions]);
 
   const handleClick = async () => {
     if (!user) {
@@ -33,8 +48,10 @@ const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
     }
     if (isSubscribed) {
       await unsubscribe(channelId);
+      setIsSubscribed(false);
     } else {
       await subscribe(channelId);
+      setIsSubscribed(true);
     }
   };
 
@@ -58,7 +75,7 @@ const SubscribeButton = memo(({ channelId }: SubscribeButtonProps) => {
         ) : isSubscribed ? (
           <span className='flex items-center'>
             <BellOff className='h-3.5 w-3.5 mr-1.5' />
-            Subscribed
+            Unsubscribe
           </span>
         ) : (
           <span className='flex items-center'>

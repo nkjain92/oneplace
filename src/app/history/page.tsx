@@ -206,6 +206,23 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
   }
 
   const summaries = await fetchHistoryData(filterType);
+  
+  // Get the user's subscribed channel IDs for passing to SummaryCard
+  let subscribedChannelIds: string[] = [];
+  if (user) {
+    try {
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
+        .from('subscriptions')
+        .select('channel_id')
+        .eq('user_id', user.id);
+
+      if (!subscriptionsError && subscriptionsData) {
+        subscribedChannelIds = subscriptionsData.map(sub => sub.channel_id);
+      }
+    } catch (error) {
+      console.error('Error fetching subscriptions for UI:', error);
+    }
+  }
 
   return (
     <div className='min-h-[calc(100vh-64px)] bg-black'>
@@ -240,6 +257,7 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
                   tags={summary.tags || []}
                   peopleMentioned={summary.featured_names || []}
                   videoId={summary.content_id}
+                  isSubscribed={subscribedChannelIds.includes(summary.publisher_id)}
                 />
               ))
             ) : (

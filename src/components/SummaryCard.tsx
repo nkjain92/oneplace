@@ -18,6 +18,7 @@ interface SummaryCardProps {
   tags: string[];
   peopleMentioned: string[];
   videoId: string;
+  isSubscribed?: boolean;
 }
 
 export default function SummaryCard({
@@ -29,6 +30,7 @@ export default function SummaryCard({
   tags = [],
   peopleMentioned = [],
   videoId,
+  isSubscribed = false,
 }: SummaryCardProps) {
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     day: 'numeric',
@@ -78,7 +80,7 @@ export default function SummaryCard({
                 <span>{formattedDate}</span>
               </div>
             </div>
-            <SubscribeButton channelId={channelId} />
+            <SubscribeButton channelId={channelId} initialIsSubscribed={isSubscribed} />
           </div>
         </div>
 

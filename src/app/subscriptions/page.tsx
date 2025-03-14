@@ -100,6 +100,7 @@ export default async function SubscriptionsPage() {
                   thumbnail={channel.thumbnail}
                   subscriberCount={channel.subscriberCount}
                   contentCount={channel.contentCount}
+                  isSubscribed={true}
                 />
               ))}
             </div>
