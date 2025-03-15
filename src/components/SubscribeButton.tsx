@@ -64,7 +64,7 @@ const SubscribeButton = memo(({ channelId, initialIsSubscribed = false }: Subscr
         size='sm'
         className={`rounded-full px-4 py-1 h-9 transition-all duration-200 hover:cursor-pointer ${
           isSubscribed
-            ? 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700 hover:text-white hover:border-gray-600'
+            ? 'dark:bg-gray-800 bg-gray-100 dark:text-gray-300 text-gray-600 dark:border-gray-700 border-gray-300 dark:hover:bg-gray-700 hover:bg-gray-200 dark:hover:text-white hover:text-gray-800 dark:hover:border-gray-600 hover:border-gray-400'
             : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
         }`}>
         {isLoading ? (
@@ -86,18 +86,18 @@ const SubscribeButton = memo(({ channelId, initialIsSubscribed = false }: Subscr
       </Button>
 
       {error && !isLoading && (
-        <p className='text-red-400 text-xs mt-1 bg-red-900/20 px-2 py-1 rounded-md border border-red-800/30'>
+        <p className='text-red-400 text-xs mt-1 dark:bg-red-900/20 bg-red-50 px-2 py-1 rounded-md dark:border-red-800/30 border-red-200'>
           {error}
         </p>
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className='bg-gray-900 rounded-xl border border-gray-800 shadow-xl'>
+        <DialogContent className='dark:bg-gray-900 bg-white rounded-xl dark:border-gray-800 border-gray-200 shadow-xl'>
           <DialogHeader>
-            <DialogTitle className='text-blue-400 text-xl font-bold'>
+            <DialogTitle className='text-blue-500 dark:text-blue-400 text-xl font-bold'>
               Sign in to subscribe
             </DialogTitle>
-            <DialogDescription className='text-gray-400 mt-2'>
+            <DialogDescription className='dark:text-gray-400 text-gray-600 mt-2'>
               Please sign in or create an account to subscribe to channels and get updates.
             </DialogDescription>
           </DialogHeader>
@@ -108,7 +108,7 @@ const SubscribeButton = memo(({ channelId, initialIsSubscribed = false }: Subscr
             <Link href='/signup' className='flex-1'>
               <Button
                 variant='outline'
-                className='border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white w-full'>
+                className='dark:border-gray-700 border-gray-300 dark:hover:bg-gray-800 hover:bg-gray-100 dark:text-gray-300 text-gray-700 dark:hover:text-white hover:text-gray-900 w-full'>
                 Sign Up
               </Button>
             </Link>

@@ -80,7 +80,7 @@ export function SummaryProgressLoader({
   const currentStep = SUMMARY_STEPS[currentStepIndex];
 
   return (
-    <div className='w-full max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-lg shadow-lg p-6 mt-4'>
+    <div className='w-full max-w-2xl mx-auto dark:bg-gray-900 bg-white border dark:border-gray-800 border-gray-200 rounded-lg shadow-lg p-6 mt-4'>
       {/* Combined progress bar and status */}
       <div className='flex items-center gap-3 mb-3'>
         {/* Status indicator */}
@@ -97,7 +97,7 @@ export function SummaryProgressLoader({
         </div>
 
         {/* Progress bar */}
-        <div className='h-2 w-full bg-gray-800 rounded-full overflow-hidden flex-grow'>
+        <div className='h-2 w-full dark:bg-gray-800 bg-gray-100 rounded-full overflow-hidden flex-grow'>
           <motion.div
             className='h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full'
             initial={{ width: '0%' }}
@@ -107,7 +107,7 @@ export function SummaryProgressLoader({
         </div>
 
         {/* Percentage */}
-        <div className='text-sm font-medium text-blue-400 bg-blue-900/30 px-2 py-0.5 rounded-full flex-shrink-0 min-w-[48px] text-center'>
+        <div className='text-sm font-medium dark:text-blue-400 text-blue-600 dark:bg-blue-900/30 bg-blue-100 px-2 py-0.5 rounded-full flex-shrink-0 min-w-[48px] text-center'>
           {Math.round(progress)}%
         </div>
       </div>
@@ -122,7 +122,7 @@ export function SummaryProgressLoader({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 5 }}
             transition={{ duration: 0.2 }}
-            className='text-sm font-medium text-gray-300 flex items-center'>
+            className='text-sm font-medium dark:text-gray-300 text-gray-700 flex items-center'>
             {isComplete ? 'Summary complete! Displaying results...' : currentStep.label}
           </motion.div>
         </AnimatePresence>
@@ -137,7 +137,7 @@ export function SummaryProgressLoader({
               <div
                 key={step.key}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  isActive ? 'bg-blue-400 scale-125' : isDone ? 'bg-green-500' : 'bg-gray-700'
+                  isActive ? 'bg-blue-400 scale-125' : isDone ? 'bg-green-500' : 'dark:bg-gray-700 bg-gray-300'
                 }`}
               />
             );

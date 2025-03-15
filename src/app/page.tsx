@@ -219,26 +219,26 @@ export default function Home() {
   };
 
   return (
-    <main className='flex flex-col min-h-[calc(100vh-64px)] bg-black text-white'>
+    <main className='flex flex-col min-h-[calc(100vh-64px)] dark:bg-black bg-white dark:text-white text-gray-900'>
       {/* Hero Section - Vercel-inspired with grid background */}
       <div className='relative max-w-5xl mx-auto px-6 pt-16 pb-24 z-10 overflow-hidden'>
         {/* Grid background */}
-        <div className='absolute inset-0 bg-grid-small-white/[0.2] -z-10' />
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.2] bg-grid-small-black/[0.1] -z-10' />
         {/* Gradient overlay */}
-        <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-black to-black -z-10' />
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/20 dark:via-black dark:to-black bg-gradient-to-b from-white/50 via-white to-white -z-10' />
 
         {/* Floating gradient orbs - Vercel style */}
-        <div className='absolute top-20 -left-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob'></div>
-        <div className='absolute top-40 -right-64 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob animation-delay-2000'></div>
-        <div className='absolute -bottom-40 left-64 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-5xl opacity-30 animate-blob animation-delay-4000'></div>
+        <div className='absolute top-20 -left-64 w-96 h-96 dark:bg-blue-500 bg-blue-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob'></div>
+        <div className='absolute top-40 -right-64 w-96 h-96 dark:bg-purple-500 bg-purple-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob animation-delay-2000'></div>
+        <div className='absolute -bottom-40 left-64 w-96 h-96 dark:bg-pink-500 bg-pink-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob animation-delay-4000'></div>
 
-        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight'>
+        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold dark:text-white text-gray-900 mb-6 tracking-tight'>
           Podcast Summaries <br className='hidden md:block' />
           <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600'>
             in Your Inbox
           </span>
         </h1>
-        <p className='text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl'>
+        <p className='text-xl md:text-2xl dark:text-gray-400 text-gray-600 mb-12 max-w-2xl'>
           Summaries of Your Top Channels, Every Day
         </p>
         <div className='max-w-2xl mb-10'>
@@ -248,7 +248,7 @@ export default function Home() {
         <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
         {!isLoading && (
           <div className='mt-8'>
-            <p className='text-gray-400 mb-4 text-sm uppercase tracking-wider font-medium'>
+            <p className='dark:text-gray-400 text-gray-500 mb-4 text-sm uppercase tracking-wider font-medium'>
               Try These Podcasts:
             </p>
             <div className='flex flex-wrap gap-3'>
@@ -256,11 +256,15 @@ export default function Home() {
                 <button
                   key={i}
                   onClick={() => handleSubmit(podcast.url)}
-                  className='bg-gray-900 text-gray-200 px-4 py-2 rounded-md text-sm border border-gray-800 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-md flex items-center gap-1.5 group z-[1]'>
-                  {podcast.title}
+                  className='relative dark:bg-gray-900/40 bg-white dark:hover:bg-gray-800/80 hover:bg-gray-50 dark:text-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm border dark:border-gray-800/50 border-gray-200/80 dark:hover:border-blue-500/50 hover:border-blue-500/50 transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'>
+                  {/* Subtle glow effect that appears on hover */}
+                  <div className='absolute inset-0 dark:bg-gradient-to-r dark:from-blue-600/10 dark:to-purple-600/10 from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
+                  {/* Grid pattern overlay */}
+                  <div className='absolute inset-0 dark:bg-grid-small-white/[0.025] bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
+                  <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>{podcast.title}</span>
                   <ExternalLink
                     size={14}
-                    className='group-hover:translate-x-0.5 transition-transform'
+                    className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
                   />
                 </button>
               ))}
@@ -287,12 +291,12 @@ export default function Home() {
 
       {/* Recent Summaries Section */}
       {recentSummaries.length > 0 && (
-        <section className='py-16 px-6 bg-gradient-to-b from-black to-gray-900 relative z-10'>
+        <section className='py-16 px-6 dark:bg-gradient-to-b dark:from-black dark:to-gray-900 bg-gradient-to-b from-white to-gray-100 relative z-10'>
           {/* Subtle grid overlay */}
-          <div className='absolute inset-0 bg-grid-small-white/[0.1] -z-10' />
+          <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
 
           <div className='max-w-7xl mx-auto'>
-            <h2 className='text-2xl md:text-3xl font-bold text-white mb-8 tracking-tight'>
+            <h2 className='text-2xl md:text-3xl font-bold dark:text-white text-gray-900 mb-8 tracking-tight'>
               Your Recent Summaries
             </h2>
             <div className='flex flex-col gap-6'>
@@ -332,9 +336,10 @@ export default function Home() {
       {/* How It Works Section */}
       <div className='max-w-6xl mx-auto px-6 py-20 relative'>
         {/* Gradient background */}
-        <div className='absolute inset-0 bg-gradient-to-b from-gray-900 to-black -z-10' />
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-gray-900 dark:to-black bg-gradient-to-b from-gray-100 to-white -z-10' />
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
 
-        <h2 className='text-3xl font-bold text-white text-center mb-16 tracking-tight'>
+        <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-16 tracking-tight'>
           How It Works
         </h2>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
@@ -363,14 +368,15 @@ export default function Home() {
           ].map(step => (
             <div
               key={step.title}
-              className={`bg-gray-900/50 p-8 rounded-xl backdrop-blur-sm text-center relative border ${step.border}
-                          before:absolute before:inset-0 before:rounded-xl ${step.glow} before:opacity-0
-                          hover:before:opacity-100 before:transition-opacity before:-z-10`}>
-              <div className='w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg'>
+              className={`dark:bg-gray-900/50 bg-white/70 p-8 rounded-xl backdrop-blur-sm text-center relative border dark:${step.border} ${step.border.replace('dark:', '')} shadow-sm
+                          before:absolute before:inset-0 before:rounded-xl dark:${step.glow} ${step.glow.replace('dark:', '')} before:opacity-0
+                          hover:before:opacity-100 before:transition-opacity before:-z-10 transition-all duration-300
+                          hover:shadow-lg dark:hover:border-opacity-80 hover:border-opacity-80 group`}>
+              <div className='w-16 h-16 dark:bg-gray-800 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110'>
                 {step.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-3 text-white'>{step.title}</h3>
-              <p className='text-gray-400'>{step.desc}</p>
+              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900 transition-colors duration-300 group-hover:text-blue-500 dark:group-hover:text-blue-400'>{step.title}</h3>
+              <p className='dark:text-gray-400 text-gray-600'>{step.desc}</p>
             </div>
           ))}
         </div>
@@ -379,13 +385,13 @@ export default function Home() {
       {/* Subscribe Channels Section */}
       <div className='max-w-6xl mx-auto px-6 py-20 relative'>
         {/* Gradient background */}
-        <div className='absolute inset-0 bg-grid-small-white/[0.1] -z-10' />
-        <div className='absolute inset-0 bg-gradient-to-b from-black to-gray-900/80 -z-10' />
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black dark:to-gray-900/80 bg-gradient-to-b from-white to-gray-50 -z-10' />
 
-        <h2 className='text-3xl font-bold text-white text-center mb-4 tracking-tight'>
+        <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-4 tracking-tight'>
           Subscribe To Your Channels
         </h2>
-        <p className='text-xl text-gray-400 text-center mb-16'>
+        <p className='text-xl dark:text-gray-400 text-gray-600 text-center mb-16'>
           Get daily summaries from your favorite creators
         </p>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-14'>
@@ -416,7 +422,8 @@ export default function Home() {
       {/* Benefits Section */}
       <div className='max-w-6xl mx-auto px-6 py-20 relative'>
         {/* Gradient background */}
-        <div className='absolute inset-0 bg-gradient-to-t from-black to-gray-900/60 -z-10' />
+        <div className='absolute inset-0 dark:bg-gradient-to-t dark:from-black dark:to-gray-900/60 bg-gradient-to-t from-gray-50 to-white -z-10' />
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.05] bg-grid-small-black/[0.03] -z-10' />
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-12'>
           {[
@@ -444,37 +451,37 @@ export default function Home() {
           ].map(benefit => (
             <div key={benefit.title} className='text-center'>
               <div
-                className={`w-16 h-16 ${benefit.bg} ${benefit.border} rounded-full flex items-center justify-center mx-auto mb-6 border`}>
+                className={`w-16 h-16 dark:${benefit.bg} ${benefit.border} bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6 border`}>
                 {benefit.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-3 text-white'>{benefit.title}</h3>
-              <p className='text-gray-400'>{benefit.desc}</p>
+              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900'>{benefit.title}</h3>
+              <p className='dark:text-gray-400 text-gray-600'>{benefit.desc}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Footer */}
-      <footer className='py-12 px-6 bg-gray-950 border-t border-gray-800'>
+      <footer className='py-12 px-6 dark:bg-gray-950 bg-gray-100 dark:border-t dark:border-gray-800 border-t border-gray-200'>
         <div className='max-w-6xl mx-auto text-center'>
-          <p className='text-gray-400 flex items-center justify-center mb-4'>
+          <p className='dark:text-gray-400 text-gray-600 flex items-center justify-center mb-4'>
             Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in India
           </p>
-          <div className='flex items-center justify-center gap-8 text-sm text-gray-500 mb-6'>
+          <div className='flex items-center justify-center gap-8 text-sm dark:text-gray-500 text-gray-600 mb-6'>
             <a
               href='mailto:founder@getoneplace.com'
-              className='hover:text-blue-400 transition-colors'>
+              className='dark:hover:text-blue-400 hover:text-blue-600 transition-colors'>
               Email Feedback
             </a>
             <a
               href='https://wa.me/919820963946'
               target='_blank'
               rel='noopener noreferrer'
-              className='hover:text-green-400 transition-colors'>
+              className='dark:hover:text-green-400 hover:text-green-600 transition-colors'>
               Text Feedback
             </a>
           </div>
-          <div className='text-xs text-gray-600'>
+          <div className='text-xs dark:text-gray-600 text-gray-500'>
             © {new Date().getFullYear()} OnePlace. All rights reserved.
           </div>
         </div>

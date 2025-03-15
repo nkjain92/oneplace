@@ -53,16 +53,16 @@ export default function SummaryCard({
   const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
-    <div className='bg-gray-900 rounded-xl shadow-lg border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden w-full mx-0 relative group'>
+    <div className='dark:bg-gray-900 bg-white rounded-xl shadow-lg border dark:border-gray-800 border-gray-200 dark:hover:border-gray-700 hover:border-gray-300 transition-all duration-300 overflow-hidden w-full mx-0 relative group'>
       {/* Subtle glow effect on hover */}
-      <div className='absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10'></div>
+      <div className='absolute inset-0 bg-gradient-to-br dark:from-blue-500/10 dark:via-purple-500/5 from-blue-400/5 via-purple-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10'></div>
 
       <div className='p-4 md:p-6'>
         {/* Header section */}
         <div className='mb-5'>
           <div className='flex items-center justify-between mb-3'>
             <Link href={youtubeUrl} target='_blank' className='group inline-flex items-center'>
-              <h2 className='text-xl md:text-2xl font-bold text-white leading-tight tracking-tight group-hover:text-blue-400 transition-colors duration-200'>
+              <h2 className='text-xl md:text-2xl font-bold dark:text-white text-gray-900 leading-tight tracking-tight group-hover:text-blue-500 transition-colors duration-200'>
                 {title}
               </h2>
             </Link>
@@ -74,8 +74,8 @@ export default function SummaryCard({
                   {channelName}
                 </span>
               </Link>
-              <div className='h-4 w-[1px] bg-gray-700 mx-3'></div>
-              <div className='flex items-center text-sm text-gray-400'>
+              <div className='h-4 w-[1px] dark:bg-gray-700 bg-gray-300 mx-3'></div>
+              <div className='flex items-center text-sm dark:text-gray-400 text-gray-500'>
                 <Calendar size={14} className='mr-1' />
                 <span>{formattedDate}</span>
               </div>
@@ -85,11 +85,11 @@ export default function SummaryCard({
         </div>
 
         {/* Summary content */}
-        <div className='bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-lg p-4 md:p-6 mb-5 border border-gray-700/50 relative'>
+        <div className='bg-gradient-to-br dark:from-gray-800/80 dark:to-gray-900/80 from-gray-100/80 to-gray-50/80 backdrop-blur-sm rounded-lg p-4 md:p-6 mb-5 border dark:border-gray-700/50 border-gray-200/70 relative'>
           {/* Subtle grid pattern overlay */}
-          <div className='absolute inset-0 bg-grid-small-white/[0.03] rounded-lg pointer-events-none' />
+          <div className='absolute inset-0 dark:bg-grid-small-white/[0.03] bg-grid-small-black/[0.03] rounded-lg pointer-events-none' />
 
-          <div className='prose prose-sm max-w-none text-gray-300 leading-relaxed prose-headings:text-gray-100 prose-a:text-blue-400 prose-strong:text-white prose-strong:font-semibold'>
+          <div className='prose prose-sm max-w-none dark:text-gray-300 text-gray-700 leading-relaxed dark:prose-headings:text-gray-100 prose-headings:text-gray-900 prose-a:text-blue-500 dark:prose-a:text-blue-400 dark:prose-strong:text-white prose-strong:text-gray-900 prose-strong:font-semibold'>
             <ReactMarkdown components={customRenderers}>{summary}</ReactMarkdown>
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function SummaryCard({
             {/* Tags */}
             {tags.length > 0 && (
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm text-gray-400 mr-1'>
+                <span className='flex items-center text-sm dark:text-gray-400 text-gray-600 mr-1'>
                   <Tag size={14} className='mr-1' />
                   Topics:
                 </span>
@@ -108,7 +108,7 @@ export default function SummaryCard({
                   {tags.map((tag, index) => (
                     <span
                       key={index}
-                      className='text-xs bg-blue-900/30 text-blue-300 px-2.5 py-1 rounded-md border border-blue-800/50 font-medium transition-colors duration-200 hover:bg-blue-800/40 hover:border-blue-700/50 cursor-default'>
+                      className='text-xs dark:bg-blue-900/30 bg-blue-100 dark:text-blue-300 text-blue-700 px-2.5 py-1 rounded-md border dark:border-blue-800/50 border-blue-200 font-medium transition-colors duration-200 dark:hover:bg-blue-800/40 hover:bg-blue-200 dark:hover:border-blue-700/50 hover:border-blue-300 cursor-default'>
                       {tag}
                     </span>
                   ))}
@@ -119,7 +119,7 @@ export default function SummaryCard({
             {/* People mentioned */}
             {peopleMentioned.length > 0 && (
               <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm text-gray-400 mr-1'>
+                <span className='flex items-center text-sm dark:text-gray-400 text-gray-600 mr-1'>
                   <Users size={14} className='mr-1' />
                   People:
                 </span>
@@ -127,7 +127,7 @@ export default function SummaryCard({
                   {peopleMentioned.map((person, index) => (
                     <span
                       key={index}
-                      className='text-xs bg-purple-900/30 text-purple-300 px-2.5 py-1 rounded-md border border-purple-800/50 font-medium transition-colors duration-200 hover:bg-purple-800/40 hover:border-purple-700/50 cursor-default'>
+                      className='text-xs dark:bg-purple-900/30 bg-purple-100 dark:text-purple-300 text-purple-700 px-2.5 py-1 rounded-md border dark:border-purple-800/50 border-purple-200 font-medium transition-colors duration-200 dark:hover:bg-purple-800/40 hover:bg-purple-200 dark:hover:border-purple-700/50 hover:border-purple-300 cursor-default'>
                       {person}
                     </span>
                   ))}

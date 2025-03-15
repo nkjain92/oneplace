@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, X, Menu, History, Compass, Home, LogOut, BookOpen } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // Define navigation links and dropdown menus
 const navLinks = [
@@ -112,7 +113,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 bg-black/20 backdrop-blur-md border-b border-gray-800/30'>
+    <nav className='w-full py-4 px-4 md:px-6 sticky top-0 z-50 dark:bg-black bg-white/80 backdrop-blur-md dark:border-b dark:border-gray-800/30 border-b border-gray-200/30'>
       <div className='max-w-screen-xl mx-auto relative'>
         {/* Desktop navbar */}
         <div className='flex items-center justify-between'>
@@ -127,7 +128,7 @@ export default function Navbar() {
                 style={{ borderRadius: '50%' }}
               />
             </div>
-            <span className='text-xl text-white font-medium'>OnePlace</span>
+            <span className='text-xl dark:text-white text-gray-900 font-medium'>OnePlace</span>
           </Link>
 
           {/* Desktop navigation links */}
@@ -137,7 +138,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`text-sm font-medium transition-colors flex items-center space-x-1 ${
-                  pathname === link.href ? 'text-blue-400' : 'text-gray-300 hover:text-blue-400'
+                  pathname === link.href ? 'text-blue-500' : 'dark:text-gray-300 text-gray-600 hover:text-blue-500'
                 }`}>
                 <link.icon size={16} className='opacity-70' />
                 <span>{link.title}</span>
@@ -146,14 +147,16 @@ export default function Navbar() {
           </div>
 
           {/* Auth / CTA buttons */}
-          <div className='flex items-center space-x-4'>
+          <div className='flex items-center space-x-3'>  
+            <ThemeToggle />
+
             {loading ? (
-              <div className='h-9 w-24 bg-gray-800 animate-pulse rounded-full'></div>
+              <div className='h-9 w-24 dark:bg-gray-800 bg-gray-200 animate-pulse rounded-full'></div>
             ) : user ? (
               <div className='relative' ref={profileDropdownRef}>
                 <Button
                   variant='outline'
-                  className='rounded-full bg-gray-900 border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-white flex items-center hover:cursor-pointer'
+                  className='rounded-full dark:bg-gray-900 dark:border-gray-700 bg-white border-gray-300 dark:hover:bg-gray-800 hover:bg-gray-100 dark:hover:border-gray-600 hover:border-gray-400 dark:text-white text-gray-900 flex items-center hover:cursor-pointer'
                   onClick={handleProfileDropdownToggle}>
                   <span className='mr-2'>Hi, {profile?.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className='h-4 w-4' />
@@ -161,17 +164,17 @@ export default function Navbar() {
 
                 {/* Profile dropdown */}
                 {profileDropdownOpen && (
-                  <div className='absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg py-2 z-50 border border-gray-800'>
+                  <div className='absolute right-0 mt-2 w-48 dark:bg-gray-900 bg-white rounded-lg shadow-lg py-2 z-50 dark:border dark:border-gray-800 border border-gray-200'>
                     <Link
                       href='/subscriptions'
-                      className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
+                      className='flex items-center px-4 py-2 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-100 hover:cursor-pointer'
                       onClick={handleDropdownItemClick}>
                       <BookOpen className='mr-2 h-4 w-4 text-blue-400' />
                       My Subscriptions
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:cursor-pointer'>
+                      className='flex items-center w-full text-left px-4 py-2 text-sm text-red-500 dark:hover:bg-gray-800 hover:bg-gray-100 hover:cursor-pointer'>
                       <LogOut className='mr-2 h-4 w-4' />
                       Logout
                     </button>
@@ -183,7 +186,7 @@ export default function Navbar() {
                 <Link href='/login'>
                   <Button
                     variant='outline'
-                    className='rounded-full border-gray-700 bg-gray-900 hover:bg-gray-800 text-white'>
+                    className='rounded-full dark:border-gray-700 dark:bg-gray-900 border-gray-300 bg-white dark:hover:bg-gray-800 hover:bg-gray-100 dark:text-white text-gray-900'>
                     Login
                   </Button>
                 </Link>
@@ -200,7 +203,7 @@ export default function Navbar() {
               variant='outline'
               size='icon'
               aria-label='Toggle mobile menu'
-              className='md:hidden rounded-full border-gray-700 bg-gray-900 text-white'
+              className='md:hidden rounded-full dark:border-gray-700 border-gray-300 dark:bg-gray-900 bg-white dark:text-white text-gray-900'
               onClick={handleMobileMenuToggle}>
               {isMobileMenuOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
             </Button>
@@ -211,12 +214,12 @@ export default function Navbar() {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className='md:hidden absolute top-full right-0 mt-2 w-56 bg-gray-900 rounded-lg shadow-lg py-2 z-[200] border border-gray-800'>
+            className='md:hidden absolute top-full right-0 mt-2 w-56 dark:bg-gray-900 bg-white rounded-lg shadow-lg py-2 z-[200] dark:border dark:border-gray-800 border border-gray-200'>
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
+                className='flex items-center px-4 py-2 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-100 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
                 <link.icon className='mr-2 h-4 w-4 text-blue-400' />
                 {link.title}
@@ -226,7 +229,7 @@ export default function Navbar() {
             {user && (
               <Link
                 href='/subscriptions'
-                className='flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:cursor-pointer'
+                className='flex items-center px-4 py-2 text-sm dark:text-gray-300 text-gray-700 dark:hover:bg-gray-800 hover:bg-gray-100 hover:cursor-pointer'
                 onClick={handleMobileMenuItemClick}>
                 <BookOpen className='mr-2 h-4 w-4 text-blue-400' />
                 My Subscriptions
@@ -236,7 +239,7 @@ export default function Navbar() {
             {user && (
               <button
                 onClick={handleLogout}
-                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:cursor-pointer'>
+                className='flex items-center w-full text-left px-4 py-2 text-sm text-red-500 dark:hover:bg-gray-800 hover:bg-gray-100 hover:cursor-pointer'>
                 <LogOut className='mr-2 h-4 w-4' />
                 Logout
               </button>

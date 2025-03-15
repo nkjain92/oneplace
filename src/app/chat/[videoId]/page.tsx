@@ -31,7 +31,7 @@ export default function ChatPage() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [textareaHeight, setTextareaHeight] = useState('auto');
+  const [textareaHeightClass, setTextareaHeightClass] = useState('h-auto');
   const [inputValue, setInputValue] = useState('');
   const [isInputTooLong, setIsInputTooLong] = useState(false);
 
@@ -106,11 +106,10 @@ export default function ChatPage() {
       const scrollHeight = textareaRef.current.scrollHeight;
       const maxHeight = 200;
       if (scrollHeight <= maxHeight) {
-        textareaRef.current.style.height = `${scrollHeight}px`;
-        setTextareaHeight(`${scrollHeight}px`);
+        // Use state to adjust the height class instead of inline style
+        setTextareaHeightClass(`h-[${scrollHeight}px]`);
       } else {
-        textareaRef.current.style.height = `${maxHeight}px`;
-        setTextareaHeight(`${maxHeight}px`);
+        setTextareaHeightClass(`h-[${maxHeight}px]`);
       }
     }
   };
@@ -154,11 +153,8 @@ export default function ChatPage() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isInputTooLong || inputValue.trim() === '') return;
-    // Optionally reset the textarea height after submission
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      setTextareaHeight('auto');
-    }
+    // Reset the textarea height after submission
+    setTextareaHeightClass('h-auto');
     handleSubmit(e);
     setInputValue(''); // Clear input after sending
   };
@@ -186,23 +182,23 @@ export default function ChatPage() {
     ol: ({ children }) => <ol className='list-decimal pl-6 mb-4'>{children}</ol>,
     ul: ({ children }) => <ul className='list-disc pl-6 mb-4'>{children}</ul>,
     li: ({ children }) => <li className='mb-1'>{children}</li>,
-    code: ({ children }) => <code className='bg-gray-800 rounded px-1 py-0.5'>{children}</code>,
+    code: ({ children }) => <code className='dark:bg-gray-800 bg-gray-100 rounded px-1 py-0.5'>{children}</code>,
     pre: ({ children }) => (
-      <pre className='bg-gray-800 rounded p-3 mb-4 overflow-x-auto text-sm'>{children}</pre>
+      <pre className='dark:bg-gray-800 bg-gray-100 rounded p-3 mb-4 overflow-x-auto text-sm'>{children}</pre>
     ),
-    h1: ({ children }) => <h1 className='text-xl font-bold mb-4 text-white'>{children}</h1>,
-    h2: ({ children }) => <h2 className='text-lg font-bold mb-3 text-white'>{children}</h2>,
-    h3: ({ children }) => <h3 className='text-md font-bold mb-3 text-white'>{children}</h3>,
+    h1: ({ children }) => <h1 className='text-xl font-bold mb-4 dark:text-white text-gray-900'>{children}</h1>,
+    h2: ({ children }) => <h2 className='text-lg font-bold mb-3 dark:text-white text-gray-900'>{children}</h2>,
+    h3: ({ children }) => <h3 className='text-md font-bold mb-3 dark:text-white text-gray-900'>{children}</h3>,
   };
 
   if (loading) {
     return (
-      <div className='min-h-[calc(100vh-64px)] bg-black flex flex-col'>
+      <div className='min-h-[calc(100vh-64px)] dark:bg-black bg-white flex flex-col'>
         <div className='mx-auto px-4 py-8 w-full max-w-4xl'>
-          <div className='h-12 bg-gray-800 rounded-lg animate-pulse mb-8'></div>
+          <div className='h-12 dark:bg-gray-800 bg-gray-200 rounded-lg animate-pulse mb-8'></div>
           <div className='space-y-4'>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className='h-20 bg-gray-800 rounded-lg animate-pulse'></div>
+              <div key={i} className='h-20 dark:bg-gray-800 bg-gray-200 rounded-lg animate-pulse'></div>
             ))}
           </div>
         </div>
@@ -212,9 +208,9 @@ export default function ChatPage() {
 
   if (error) {
     return (
-      <div className='min-h-[calc(100vh-64px)] bg-black'>
+      <div className='min-h-[calc(100vh-64px)] dark:bg-black bg-white'>
         <div className='max-w-7xl mx-auto px-4 py-8'>
-          <div className='bg-red-900/20 border border-red-800 text-red-400 p-4 rounded-md'>
+          <div className='dark:bg-red-900/20 bg-red-100 dark:border-red-800 border-red-300 dark:text-red-400 text-red-600 p-4 rounded-md'>
             {error}
           </div>
         </div>
@@ -223,7 +219,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className='flex flex-col min-h-[calc(100vh-64px)] bg-black'>
+    <div className='flex flex-col min-h-[calc(100vh-64px)] dark:bg-black bg-white'>
       {/* Summary Section */}
       <div className='w-full max-w-7xl mx-auto px-4 md:px-6 py-6'>
         {summaryData && (
@@ -247,13 +243,13 @@ export default function ChatPage() {
         {/* Messages Container */}
         <div
           ref={messagesContainerRef}
-          className='flex-1 overflow-y-auto space-y-4 border-t border-gray-800 pt-4'>
+          className='flex-1 overflow-y-auto space-y-4 border-t dark:border-gray-800 border-gray-200 pt-4'>
           {messages.length === 0 ? (
             <div className='text-center p-8'>
-              <p className='text-gray-400 mb-2'>
+              <p className='dark:text-gray-400 text-gray-600 mb-2'>
                 Ask a question about this video to start a conversation
               </p>
-              <p className='text-gray-500 text-sm'>
+              <p className='dark:text-gray-500 text-gray-500 text-sm'>
                 You can ask about specific moments, themes, or get clarification on anything
                 mentioned in the video
               </p>
@@ -264,13 +260,13 @@ export default function ChatPage() {
                 key={index}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[85%] rounded-lg px-4 py-3 text-white ${
+                  className={`max-w-[85%] rounded-lg px-4 py-3 ${
                     message.role === 'user'
-                      ? 'bg-blue-600 rounded-br-none'
-                      : 'bg-gray-800 rounded-bl-none'
+                      ? 'bg-blue-600 rounded-br-none text-white'
+                      : 'dark:bg-gray-800 bg-gray-100 rounded-bl-none dark:text-white text-gray-900'
                   }`}>
                   {message.role === 'assistant' ? (
-                    <div className='prose prose-invert prose-sm max-w-none'>
+                    <div className='dark:prose-invert prose prose-sm max-w-none'>
                       <ReactMarkdown components={markdownRenderers}>
                         {message.content}
                       </ReactMarkdown>
@@ -290,12 +286,12 @@ export default function ChatPage() {
         {/* Input Area */}
         <div
           ref={inputContainerRef}
-          className='fixed bottom-0 left-0 right-0 w-full bg-gradient-to-t from-black via-black to-transparent py-2 z-50'>
+          className='fixed bottom-0 left-0 right-0 w-full dark:bg-gradient-to-t dark:from-black dark:via-black dark:to-transparent bg-gradient-to-t from-white via-white to-transparent py-2 z-50'>
           <div className='w-full max-w-4xl mx-auto px-4 md:px-6'>
             <form
               ref={formRef}
               onSubmit={onSubmit}
-              className='relative border border-gray-800 bg-gray-900 rounded-xl'>
+              className='relative border dark:border-gray-800 border-gray-300 dark:bg-gray-900 bg-white rounded-xl shadow-sm'>
               {/* The textarea is now always enabled so the user can type while streaming */}
               <textarea
                 ref={textareaRef}
@@ -303,15 +299,14 @@ export default function ChatPage() {
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyPress}
                 placeholder='Ask a question about this video...'
-                className='w-full resize-none bg-transparent py-3 pl-4 pr-12 text-white focus:outline-none focus:ring-0 placeholder:text-gray-500'
-                style={{ height: textareaHeight }}
+                className={`w-full resize-none bg-transparent py-3 pl-4 pr-12 dark:text-white text-gray-900 focus:outline-none focus:ring-0 dark:placeholder:text-gray-500 placeholder:text-gray-400 ${textareaHeightClass}`}
               />
               <button
                 type='submit'
                 disabled={isLoading || isInputTooLong || inputValue.trim() === ''}
                 className={`absolute right-2 bottom-3 p-1.5 rounded-full ${
                   isLoading || isInputTooLong || inputValue.trim() === ''
-                    ? 'bg-gray-700 text-gray-400'
+                    ? 'dark:bg-gray-700 bg-gray-300 dark:text-gray-400 text-gray-500'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 } transition-colors`}
                 aria-label='Send message'>
@@ -324,7 +319,7 @@ export default function ChatPage() {
                   Message is too long. Please keep it under 1000 characters.
                 </div>
               )}
-              {isLoading && <div className='text-xs text-gray-400 px-2'>Thinking...</div>}
+              {isLoading && <div className='text-xs dark:text-gray-400 text-gray-500 px-2'>Thinking...</div>}
             </div>
           </div>
         </div>

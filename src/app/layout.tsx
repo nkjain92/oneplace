@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import { AuthWrapper } from '@/components/AuthWrapper';
+import { ThemeProvider } from '@/context/ThemeProvider';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -21,14 +22,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='en' className={`${inter.variable} dark`}>
-      <body className='font-sans bg-black text-white min-h-screen'>
-        <AuthWrapper>
-          <Navbar />
-          {children}
-        </AuthWrapper>
-        <SpeedInsights />
-        <Analytics />
+    <html lang='en' className={inter.variable}>
+      <body className='font-sans min-h-screen'>
+        <ThemeProvider>
+          <AuthWrapper>
+            <Navbar />
+            {children}
+          </AuthWrapper>
+          <SpeedInsights />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -47,25 +47,25 @@ export default function SignUp() {
   };
 
   return (
-    <div className='flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden'>
+    <div className='flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden dark:bg-black bg-white'>
       {/* Grid background */}
-      <div className='absolute inset-0 bg-grid-small-white/[0.2] -z-10' />
+      <div className='absolute inset-0 dark:bg-grid-small-white/[0.2] bg-grid-small-black/[0.05] -z-10' />
       {/* Gradient overlay */}
-      <div className='absolute inset-0 bg-gradient-to-b from-black/20 via-black to-black -z-10' />
+      <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/20 dark:via-black dark:to-black bg-gradient-to-b from-white/80 via-white to-white -z-10' />
 
       {/* Floating gradient orbs - Vercel style */}
-      <div className='absolute top-20 -right-64 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob animation-delay-2000'></div>
-      <div className='absolute -bottom-40 left-20 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-5xl opacity-20 animate-blob'></div>
+      <div className='absolute top-20 -right-64 w-96 h-96 dark:bg-blue-500 bg-blue-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-20 opacity-30 animate-blob animation-delay-2000'></div>
+      <div className='absolute -bottom-40 left-20 w-96 h-96 dark:bg-purple-500 bg-purple-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-20 opacity-30 animate-blob'></div>
 
       <div className='w-full max-w-md relative z-10'>
-        <div className='bg-gray-900/80 backdrop-blur-sm border border-gray-800 rounded-xl shadow-lg p-8'>
+        <div className='dark:bg-gray-900/80 bg-white/80 backdrop-blur-sm border dark:border-gray-800 border-gray-200 rounded-xl shadow-lg p-8'>
           <div className='text-center mb-8'>
-            <h1 className='text-2xl font-bold text-white mb-2'>Create an Account</h1>
-            <p className='text-gray-400'>Sign up to get started with OnePlace</p>
+            <h1 className='text-2xl font-bold dark:text-white text-gray-900 mb-2'>Create an Account</h1>
+            <p className='dark:text-gray-400 text-gray-500'>Sign up to get started with OnePlace</p>
           </div>
 
           {error && (
-            <Alert variant='destructive' className='mb-6 bg-red-900/20 border-red-800 text-red-400'>
+            <Alert variant='destructive' className='mb-6 dark:bg-red-900/20 bg-red-100 dark:border-red-800 border-red-300 dark:text-red-400 text-red-600'>
               <AlertCircle className='h-4 w-4' />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -73,7 +73,7 @@ export default function SignUp() {
 
           <form onSubmit={handleSignUp} className='space-y-6'>
             <div className='space-y-2'>
-              <label htmlFor='name' className='block text-sm font-medium text-gray-300'>
+              <label htmlFor='name' className='block text-sm font-medium dark:text-gray-300 text-gray-700'>
                 Full Name
               </label>
               <Input
@@ -82,13 +82,13 @@ export default function SignUp() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder='John Doe'
-                className='bg-gray-800/80 border-gray-700 focus:border-blue-500 focus:ring-blue-500 text-white placeholder:text-gray-500'
+                className='dark:bg-gray-800/80 bg-white border dark:border-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-gray-900 dark:placeholder:text-gray-500 placeholder:text-gray-400'
                 required
               />
             </div>
 
             <div className='space-y-2'>
-              <label htmlFor='email' className='block text-sm font-medium text-gray-300'>
+              <label htmlFor='email' className='block text-sm font-medium dark:text-gray-300 text-gray-700'>
                 Email
               </label>
               <Input
@@ -97,13 +97,13 @@ export default function SignUp() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder='your@email.com'
-                className='bg-gray-800/80 border-gray-700 focus:border-blue-500 focus:ring-blue-500 text-white placeholder:text-gray-500'
+                className='dark:bg-gray-800/80 bg-white border dark:border-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-gray-900 dark:placeholder:text-gray-500 placeholder:text-gray-400'
                 required
               />
             </div>
 
             <div className='space-y-2'>
-              <label htmlFor='password' className='block text-sm font-medium text-gray-300'>
+              <label htmlFor='password' className='block text-sm font-medium dark:text-gray-300 text-gray-700'>
                 Password
               </label>
               <Input
@@ -112,10 +112,10 @@ export default function SignUp() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder='••••••••'
-                className='bg-gray-800/80 border-gray-700 focus:border-blue-500 focus:ring-blue-500 text-white placeholder:text-gray-500'
+                className='dark:bg-gray-800/80 bg-white border dark:border-gray-700 border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:text-white text-gray-900 dark:placeholder:text-gray-500 placeholder:text-gray-400'
                 required
               />
-              <p className='text-xs text-gray-500'>Must be at least 6 characters</p>
+              <p className='text-xs dark:text-gray-500 text-gray-500'>Must be at least 6 characters</p>
             </div>
 
             <Button
@@ -127,8 +127,8 @@ export default function SignUp() {
           </form>
 
           <div className='mt-6 text-center text-sm'>
-            <span className='text-gray-400'>Already have an account?</span>{' '}
-            <Link href='/login' className='text-blue-400 hover:text-blue-300 font-medium'>
+            <span className='dark:text-gray-400 text-gray-500'>Already have an account?</span>{' '}
+            <Link href='/login' className='dark:text-blue-400 text-blue-600 dark:hover:text-blue-300 hover:text-blue-500 font-medium'>
               Sign in
             </Link>
           </div>
