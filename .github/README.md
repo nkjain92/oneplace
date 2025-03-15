@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-This directory contains GitHub Actions workflows for automating tasks in the GetSmart project.
+This directory contains GitHub Actions workflows for automating tasks in the OnePlace project.
 
 ## Workflows
 

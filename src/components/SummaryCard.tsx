@@ -145,7 +145,7 @@ export default function SummaryCard({
                 glowBlur='medium'
                 glowScale={1.5}
                 glowDuration={2.5}>
-                Talk to this video
+                Chat with video
               </GlowButton>
             </Link>
           </div>
