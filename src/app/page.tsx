@@ -220,17 +220,25 @@ export default function Home() {
 
   return (
     <main className='flex flex-col min-h-[calc(100vh-64px)] dark:bg-black bg-white dark:text-white text-gray-900'>
-      {/* Hero Section - Vercel-inspired with grid background */}
-      <div className='relative max-w-5xl mx-auto px-6 pt-16 pb-24 z-10 overflow-hidden'>
-        {/* Grid background */}
-        <div className='absolute inset-0 dark:bg-grid-small-white/[0.2] bg-grid-small-black/[0.1] -z-10' />
-        {/* Gradient overlay */}
-        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/20 dark:via-black dark:to-black bg-gradient-to-b from-white/50 via-white to-white -z-10' />
+      {/* Hero Section - Enhanced with dynamic mesh gradient */}
+      <div className='relative w-full pt-16 pb-24 z-10 overflow-hidden'>
+        {/* Enhanced mesh gradient background - now full width */}
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.15] bg-grid-small-black/[0.07] -z-10' />
 
-        {/* Floating gradient orbs - Vercel style */}
-        <div className='absolute top-20 -left-64 w-96 h-96 dark:bg-blue-500 bg-blue-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob'></div>
-        <div className='absolute top-40 -right-64 w-96 h-96 dark:bg-purple-500 bg-purple-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob animation-delay-2000'></div>
-        <div className='absolute -bottom-40 left-64 w-96 h-96 dark:bg-pink-500 bg-pink-300 rounded-full mix-blend-multiply filter blur-5xl dark:opacity-30 opacity-20 animate-blob animation-delay-4000'></div>
+        {/* Improved gradient overlay with more depth - now full width */}
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/10 dark:via-black/95 dark:to-black bg-gradient-to-b from-white/30 via-white/90 to-white -z-10' />
+
+        {/* Animated noise texture for added richness - now full width */}
+        <div className='absolute inset-0 bg-noise opacity-[0.03] dark:opacity-[0.07] mix-blend-overlay -z-10'></div>
+
+        {/* Enhanced floating gradient orbs with better positioning and animation - positioned relative to full width */}
+        <div className='absolute -top-20 left-[10%] w-[30rem] h-[30rem] dark:bg-blue-600 bg-blue-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-20 opacity-15 animate-blob-slow'></div>
+        <div className='absolute top-60 right-[10%] w-[35rem] h-[35rem] dark:bg-purple-600 bg-purple-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-20 opacity-15 animate-blob-slow animation-delay-2000'></div>
+        <div className='absolute -bottom-60 left-[20%] w-[40rem] h-[40rem] dark:bg-indigo-600 bg-indigo-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-20 opacity-15 animate-blob-slow animation-delay-4000'></div>
+        <div className='absolute top-40 left-1/2 -translate-x-1/2 w-[25rem] h-[25rem] dark:bg-cyan-600 bg-cyan-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-15 opacity-10 animate-pulse animation-delay-3000'></div>
+        
+        {/* Content container - maintains original width and positioning */}
+        <div className='relative max-w-5xl mx-auto px-6 z-20'>
 
         <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold dark:text-white text-gray-900 mb-6 tracking-tight'>
           Podcast Summaries <br className='hidden md:block' />
@@ -254,27 +262,27 @@ export default function Home() {
             <div className='flex flex-wrap gap-3'>
               {samplePodcasts.map((podcast, i) => (
                 <button
-                key={i}
-                onClick={() => handleSubmit(podcast.url)}
-                className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'
-              >
-                {/* Subtle glow effect that appears on hover (light mode only) */}
-                <div className='absolute inset-0 dark:hidden bg-gradient-to-r from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
-                {/* Grid pattern overlay (light mode only) */}
-                <div className='absolute inset-0 dark:hidden bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
-                
-                <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>
-                  {podcast.title}
-                </span>
-                <ExternalLink
-                  size={14}
-                  className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
-                />
-              </button>
+                  key={i}
+                  onClick={() => handleSubmit(podcast.url)}
+                  className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'>
+                  {/* Subtle glow effect that appears on hover (light mode only) */}
+                  <div className='absolute inset-0 dark:hidden bg-gradient-to-r from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
+                  {/* Grid pattern overlay (light mode only) */}
+                  <div className='absolute inset-0 dark:hidden bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
+
+                  <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>
+                    {podcast.title}
+                  </span>
+                  <ExternalLink
+                    size={14}
+                    className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
+                  />
+                </button>
               ))}
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Summary Section */}
@@ -372,14 +380,20 @@ export default function Home() {
           ].map(step => (
             <div
               key={step.title}
-              className={`dark:bg-gray-900/50 bg-white/70 p-8 rounded-xl backdrop-blur-sm text-center relative border dark:${step.border} ${step.border.replace('dark:', '')} shadow-sm
-                          before:absolute before:inset-0 before:rounded-xl dark:${step.glow} ${step.glow.replace('dark:', '')} before:opacity-0
+              className={`dark:bg-gray-900/50 bg-white/70 p-8 rounded-xl backdrop-blur-sm text-center relative border dark:${
+                step.border
+              } ${step.border.replace('dark:', '')} shadow-sm
+                          before:absolute before:inset-0 before:rounded-xl dark:${
+                            step.glow
+                          } ${step.glow.replace('dark:', '')} before:opacity-0
                           hover:before:opacity-100 before:transition-opacity before:-z-10 transition-all duration-300
                           hover:shadow-lg dark:hover:border-opacity-80 hover:border-opacity-80 group`}>
               <div className='w-16 h-16 dark:bg-gray-800 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110'>
                 {step.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900 transition-colors duration-300 group-hover:text-blue-500 dark:group-hover:text-blue-400'>{step.title}</h3>
+              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900 transition-colors duration-300 group-hover:text-blue-500 dark:group-hover:text-blue-400'>
+                {step.title}
+              </h3>
               <p className='dark:text-gray-400 text-gray-600'>{step.desc}</p>
             </div>
           ))}
@@ -458,7 +472,9 @@ export default function Home() {
                 className={`w-16 h-16 dark:${benefit.bg} ${benefit.border} bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6 border`}>
                 {benefit.icon}
               </div>
-              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900'>{benefit.title}</h3>
+              <h3 className='text-xl font-semibold mb-3 dark:text-white text-gray-900'>
+                {benefit.title}
+              </h3>
               <p className='dark:text-gray-400 text-gray-600'>{benefit.desc}</p>
             </div>
           ))}
@@ -485,6 +501,52 @@ export default function Home() {
               Text Feedback
             </a>
           </div>
+
+          {/* GitHub Repository Link */}
+          <div className='mb-8 flex justify-center'>
+            <a
+              href='https://github.com/nkjain92/oneplace/'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='group relative flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300 shadow-sm hover:shadow-md'>
+              {/* Background effects */}
+              <div className='absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
+              <div className='absolute inset-0 bg-grid-small-black/[0.02] dark:bg-grid-small-white/[0.05] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
+
+              {/* GitHub icon */}
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                <path d='M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22'></path>
+              </svg>
+
+              {/* Text */}
+              <span className='relative z-10 font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                Open Source on GitHub
+              </span>
+
+              {/* Arrow icon */}
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                className='w-4 h-4 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all'>
+                <path d='M5 12h14'></path>
+                <path d='m12 5 7 7-7 7'></path>
+              </svg>
+            </a>
+          </div>
+
           <div className='text-xs dark:text-gray-600 text-gray-500'>
             © {new Date().getFullYear()} OnePlace. All rights reserved.
           </div>
