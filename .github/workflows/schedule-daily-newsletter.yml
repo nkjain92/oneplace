@@ -13,13 +13,13 @@ jobs:
     timeout-minutes: 5  # Set a reasonable timeout
     
     steps:
-      - name: Trigger Supabase Edge Function
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: ${{ secrets.SUPABASE_FUNCTION_URL_NEWSLETTER }}
-          method: 'POST'
-          customHeaders: '{"Authorization": "Bearer ${{ secrets.CRON_SECRET }}", "Content-Type": "application/json"}'
-          timeout: 60000  # 60 seconds timeout, matching your function's internal timeout
+      - name: Trigger Supabase Function
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --max-time 60 \
+            https://ijtwvrzkbnfepbfyfrvc.supabase.co/functions/v1/send-daily-newsletter
       
       - name: Log Success
         if: success()
@@ -29,4 +29,4 @@ jobs:
         if: failure()
         run: |
           echo "Failed to trigger send-daily-newsletter function"
-          echo "Check that SUPABASE_FUNCTION_URL_NEWSLETTER and CRON_SECRET are correctly set in repository secrets" 
+          echo "Check that CRON_SECRET is correctly set in repository secrets" 

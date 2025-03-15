@@ -1,15 +1,23 @@
+// @ts-ignore: Deno-specific imports
 // @deno-types="https://deno.land/std@0.168.0/http/server.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore: Deno-specific imports
 // @deno-types="https://esm.sh/@supabase/supabase-js@2"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore: Deno-specific imports
 // @deno-types="https://esm.sh/marked@4.3.0"
 import { marked } from "https://esm.sh/marked@4.3.0";
 
+// @ts-ignore: Deno-specific globals
 // Configuration
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+// @ts-ignore: Deno-specific globals
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
+// @ts-ignore: Deno-specific globals
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+// @ts-ignore: Deno-specific globals
 const APP_DOMAIN = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN") || "getsmart.vercel.app";
+// @ts-ignore: Deno-specific globals
 const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
 
 // Constants

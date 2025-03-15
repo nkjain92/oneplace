@@ -1,15 +1,37 @@
+// @ts-ignore: Deno-specific imports
 // @deno-types="https://deno.land/std@0.168.0/http/server.ts"
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+// @ts-ignore: Deno-specific imports
 // @deno-types="https://esm.sh/@supabase/supabase-js@2"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// @ts-ignore: Deno-specific imports
 // Simple XML parser
 import { parse as parseXML } from 'https://deno.land/x/xml@2.1.1/mod.ts';
+
+// Define interfaces for type safety
+interface Video {
+  id: string;
+  title: any;
+  url: any;
+  published_at: string;
+  status: string;
+  error?: string;
+  summary_id?: string;
+  duration?: number;
+}
+
+// @ts-ignore: Deno-specific globals
 // Configuration
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') || '';
+// @ts-ignore: Deno-specific globals
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+// @ts-ignore: Deno-specific globals
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+// @ts-ignore: Deno-specific globals
 const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY') || '';
+// @ts-ignore: Deno-specific globals
 const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY') || '';
+// @ts-ignore: Deno-specific globals
 const CRON_SECRET = Deno.env.get('CRON_SECRET') || '';
 // Constants
 const MAX_CHANNELS_PER_RUN = 3; // Reduce from 5 to 3 channels per run
@@ -550,7 +572,7 @@ async function handleRequest(req: Request) {
               continue;
             }
             // Create a video entry
-            const videoEntry = {
+            const videoEntry: Video = {
               id: currentVideoId,
               title: videoTitle,
               url: videoLink,
@@ -711,7 +733,7 @@ async function handleRequest(req: Request) {
             // If we have a video ID, add it to the results
             const currentVideoId = extractYouTubeVideoId(extractVideoLink(entry));
             if (currentVideoId) {
-              const errorVideoEntry = {
+              const errorVideoEntry: Video = {
                 id: currentVideoId,
                 title: getTextContent(entry, 'title') || 'Unknown',
                 url: extractVideoLink(entry),
