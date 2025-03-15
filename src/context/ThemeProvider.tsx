@@ -13,28 +13,36 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Use 'dark' as fallback but state will be updated on mount
   const [theme, setTheme] = useState<Theme>('dark');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize theme from localStorage on mount (client-side only)
   useEffect(() => {
+    // Read from the same source our script uses
     const storedTheme = localStorage.getItem('theme') as Theme;
-    if (storedTheme) {
-      setTheme(storedTheme);
-    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-      setTheme('light');
-    }
+    const isDarkPreferred = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = storedTheme || (isDarkPreferred ? 'dark' : 'light');
+
+    // First set the correct state
+    setTheme(initialTheme);
+    setIsInitialized(true);
   }, []);
 
-  // Update DOM when theme changes
+  // Update DOM when theme changes AFTER initial mount
   useEffect(() => {
-    const root = document.documentElement;
-    const oldTheme = theme === 'dark' ? 'light' : 'dark';
+    // Skip the first render to avoid hydration mismatch
+    // Our inline script already set the theme correctly
+    if (!isInitialized) return;
     
-    root.classList.remove(oldTheme);
+    const root = document.documentElement;
+    
+    // Clean approach to class toggling - remove both, add the current one
+    root.classList.remove('light', 'dark');
     root.classList.add(theme);
     
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, isInitialized]);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');

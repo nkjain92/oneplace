@@ -22,7 +22,31 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='en' className={inter.variable}>
+    <html lang='en' className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* 
+          Script uses Next.js recommended pattern for dark mode - no flash, no hydration mismatch
+          https://nextjs.org/docs/app/building-your-application/rendering/client-components#avoiding-hydration-mismatch
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var storageTheme = localStorage.getItem('theme');
+                  var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  var theme = storageTheme || systemTheme;
+                  
+                  document.documentElement.classList.remove('light', 'dark');
+                  document.documentElement.classList.add(theme);
+                } catch (e) {
+                  document.documentElement.classList.add('dark');
+                }
+              })()
+            `,
+          }}
+        />
+      </head>
       <body className='font-sans min-h-screen'>
         <ThemeProvider>
           <AuthWrapper>
