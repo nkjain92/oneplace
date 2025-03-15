@@ -24,13 +24,16 @@ interface ChannelDetails {
   thumbnail?: string;
 }
 
+// Define params as a Promise type to match Next.js 15 requirements
+type Params = Promise<{ channelId: string }>;
+
 interface ChannelPageProps {
-  params: { channelId: string };
+  params: Params;
 }
 
 export default async function ChannelPage({ params }: ChannelPageProps) {
-  // Await params.channelId to ensure it's fully resolved
-  const channelId = await params.channelId;
+  // Await the params Promise to get the channelId
+  const { channelId } = await params;
 
   const supabase = await createSupabaseServerClient();
   

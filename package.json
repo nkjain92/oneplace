@@ -11,7 +11,7 @@
     "update-thumbnails": "npx tsx src/scripts/update-channel-thumbnails.ts"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.2.1",
+    "@ai-sdk/openai": "^1.2.5",
     "@ai-sdk/react": "^1.1.21",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.6",

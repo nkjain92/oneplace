@@ -247,7 +247,7 @@ export default function ChatPage() {
         {/* Messages Container */}
         <div
           ref={messagesContainerRef}
-          className='flex-1 overflow-y-auto space-y-4 mb-4 border-t border-gray-800 pt-4'>
+          className='flex-1 overflow-y-auto space-y-4 border-t border-gray-800 pt-4'>
           {messages.length === 0 ? (
             <div className='text-center p-8'>
               <p className='text-gray-400 mb-2'>
@@ -284,13 +284,13 @@ export default function ChatPage() {
           )}
           {/* Anchor element for auto-scrolling */}
           <div ref={messagesEndRef} />
-          <div className='h-64'></div>
+          <div className='h-48'></div>
         </div>
 
         {/* Input Area */}
         <div
           ref={inputContainerRef}
-          className='fixed bottom-0 left-0 right-0 w-full bg-gradient-to-t from-black via-black to-transparent py-4 z-50'>
+          className='fixed bottom-0 left-0 right-0 w-full bg-gradient-to-t from-black via-black to-transparent py-2 z-50'>
           <div className='w-full max-w-4xl mx-auto px-4 md:px-6'>
             <form
               ref={formRef}
@@ -318,7 +318,7 @@ export default function ChatPage() {
                 <ArrowUp size={16} />
               </button>
             </form>
-            <div className='min-h-[1.5rem] mt-1'>
+            <div className='min-h-[1rem] mt-0.5'>
               {isInputTooLong && (
                 <div className='text-xs text-red-400 px-2'>
                   Message is too long. Please keep it under 1000 characters.
