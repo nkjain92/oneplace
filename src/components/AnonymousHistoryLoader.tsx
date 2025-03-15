@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { getAnonymousGeneratedContentIds } from '@/lib/localStorage';
 import SummaryCard from './SummaryCard';
 import { supabase } from '@/lib/supabaseClient';
+import { FileText } from 'lucide-react';
 
 interface Summary {
   id: string;
@@ -79,34 +80,39 @@ export default function AnonymousHistoryLoader() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
-            <div className="h-6 bg-gray-800 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/2 mb-2"></div>
-            <div className="h-4 bg-gray-800 rounded w-1/4 mb-4"></div>
-            <div className="h-20 bg-gray-800 rounded w-full"></div>
-          </div>
-        ))}
-      </div>
+      {[...Array(3)].map((_, i) => (
+    <div key={i} className="dark:bg-gray-900/50 bg-white rounded-xl p-6 dark:border dark:border-gray-800 border-gray-200">
+      <div className="h-6 dark:bg-gray-800 bg-gray-300 rounded w-3/4 mb-4"></div>
+      <div className="h-4 dark:bg-gray-800 bg-gray-300 rounded w-1/2 mb-2"></div>
+      <div className="h-4 dark:bg-gray-800 bg-gray-300 rounded w-1/4 mb-4"></div>
+      <div className="h-20 dark:bg-gray-800 bg-gray-300 rounded w-full"></div>
+    </div>
+  ))}
+</div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-900/20 text-red-400 p-4 rounded-md border border-red-800">
-        {error}
-      </div>
+      <div className="dark:bg-red-900/20 bg-red-100 dark:text-red-400 text-red-600 p-4 rounded-md dark:border dark:border-red-800 border-red-200">
+      {error}
+    </div>
     );
   }
 
   if (summaries.length === 0) {
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
-        <p className="text-gray-400">No summaries in your history yet.</p>
-        <p className="text-gray-500 text-sm mt-2">
-          Generate a summary from a YouTube video to see it here.
-        </p>
-      </div>
+      <div className="dark:bg-gray-900/50 bg-white backdrop-blur-sm rounded-xl p-6 dark:border dark:border-gray-800 border-gray-200 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br dark:from-gray-800 dark:to-gray-700 from-gray-100 to-gray-200 flex items-center justify-center">
+            <FileText className="w-8 h-8 dark:text-gray-400 text-gray-500" />
+          </div>
+          <h3 className="text-xl font-semibold dark:text-white text-gray-800">No summaries in your history yet</h3>
+          <p className="dark:text-gray-400 text-gray-600 max-w-md">
+      Generate a summary from a YouTube video to see it here.
+    </p>
+  </div>
+</div>
     );
   }
 
