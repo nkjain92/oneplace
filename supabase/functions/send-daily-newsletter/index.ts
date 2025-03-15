@@ -258,6 +258,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
             }
             .chat-button {
               display: inline-block;
+              background-color: #4263eb; /* Solid color fallback for email clients that don't support gradients */
               background: linear-gradient(135deg, #4263eb, #5c7cfa);
               color: #ffffff !important;
               font-weight: 500;
@@ -267,6 +268,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
               text-decoration: none;
               box-shadow: 0 2px 4px rgba(66, 99, 235, 0.2);
               transition: all 0.2s ease;
+              mso-padding-alt: 8px 16px; /* Outlook specific padding */
             }
             .footer {
               text-align: center;
@@ -354,10 +356,19 @@ async function sendEmail(data: EmailData): Promise<boolean> {
           `;
         }
 
-        // Add the Chat with Video button
+        // Add the Chat with Video button with Outlook VML support
         htmlContent += `
             <div class="chat-button-container">
-              <a href="${chatUrl}" class="chat-button" target="_blank">Chat with Video</a>
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${chatUrl}" style="height:36px;v-text-anchor:middle;width:150px;" arcsize="16.7%" stroke="f" fillcolor="#4263eb">
+                <w:anchorlock/>
+                <center>
+              <![endif]-->
+              <a href="${chatUrl}" class="chat-button" target="_blank" style="background-color:#4263eb;border-radius:6px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:14px;font-weight:500;line-height:36px;text-align:center;text-decoration:none;width:150px;-webkit-text-size-adjust:none;">Chat with Video</a>
+              <!--[if mso]>
+                </center>
+              </v:roundrect>
+              <![endif]-->
             </div>
             </div>
           </div>
