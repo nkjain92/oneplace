@@ -502,8 +502,8 @@ async function handleRequest(req: Request) {
           .from("summaries")
           .select("id, content_id, title, publisher_id, publisher_name, summary, content_created_at, created_at, tags, featured_names, source_url")
           .in("publisher_id", channelIds)
-          .gt("created_at", cutoffDate.toISOString())
-          .order("created_at", { ascending: false });
+          .gt("content_created_at", cutoffDate.toISOString())
+          .order("content_created_at", { ascending: false });
         
         if (summariesError) {
           throw new Error(`Error fetching summaries: ${summariesError.message}`);
