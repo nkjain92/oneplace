@@ -48,6 +48,7 @@ interface Summary {
   created_at: string;
   tags?: string[];
   featured_names?: string[];
+  source_url?: string;
 }
 
 interface EmailData {
@@ -81,8 +82,11 @@ async function sendEmail(data: EmailData): Promise<boolean> {
       return false;
     }
 
-    if (data.summaries.length === 0) {
-      console.log(`No new summaries to send to ${data.user.email}`);
+    // Filter out summaries with no content
+    const validSummaries = data.summaries.filter(summary => summary.summary);
+    
+    if (validSummaries.length === 0) {
+      console.log(`No valid summaries to send to ${data.user.email}`);
       return true;
     }
 
@@ -167,6 +171,13 @@ async function sendEmail(data: EmailData): Promise<boolean> {
               color: #d96c2e;
               padding-right: 15px;
             }
+            .summary-title a {
+              color: #d96c2e;
+              text-decoration: none;
+            }
+            .summary-title a:hover {
+              text-decoration: underline;
+            }
             .summary-date {
               font-size: 14px;
               color: #666;
@@ -237,7 +248,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
     `;
 
     // Group summaries by channel and sort by recency
-    const groupedSummaries = data.summaries.reduce((acc, summary) => {
+    const groupedSummaries = validSummaries.reduce((acc, summary) => {
       const channelId = summary.publisher_id;
       if (!acc[channelId]) {
         acc[channelId] = [];
@@ -255,14 +266,17 @@ async function sendEmail(data: EmailData): Promise<boolean> {
       htmlContent += `<h3 class="channel-header">${channelName}</h3>`;
       groupedSummaries[channelId].forEach(summary => {
         const formattedDate = formatDate(summary.content_created_at || summary.created_at);
-        const summaryHtml = markdownToHtml(summary.summary || '');
+        const summaryHtml = markdownToHtml(summary.summary);
         const people = summary.featured_names || [];
+        const titleLink = summary.source_url ? 
+          `<a href="${summary.source_url}" target="_blank">${summary.title || 'Untitled Summary'}</a>` : 
+          `${summary.title || 'Untitled Summary'}`;
 
         htmlContent += `
           <div class="summary-card">
             <div class="summary-header">
               <div class="title-container">
-                <h2 class="summary-title">${summary.title || 'Untitled Summary'}</h2>
+                <h2 class="summary-title">${titleLink}</h2>
                 <span class="summary-date">${formattedDate}</span>
               </div>
             </div>
@@ -315,7 +329,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
       body: JSON.stringify({
         from: "OnePlace <newsletter@updates.getoneplace.com>",
         to: data.user.email,
-        subject: `OnePlace Daily Digest: ${data.summaries.length} New Summaries`,
+        subject: `OnePlace Daily Digest: ${validSummaries.length} New Summaries`,
         html: htmlContent,
       }),
     });
@@ -326,7 +340,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
       return false;
     }
 
-    console.log(`Successfully sent email to ${data.user.email} with ${data.summaries.length} summaries`);
+    console.log(`Successfully sent email to ${data.user.email} with ${validSummaries.length} summaries`);
     return true;
   } catch (error) {
     console.error(`Error sending email to ${data.user.email}:`, error);
@@ -381,7 +395,38 @@ async function handleRequest(req: Request) {
     cutoffDate.setHours(cutoffDate.getHours() - HOURS_TO_CHECK);
     console.log(`Checking for summaries created after: ${cutoffDate.toISOString()}`);
     
-    // Get all users from auth.users
+    // Get users who have at least one subscription
+    const { data: usersWithSubscriptions, error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .select("user_id")
+      .order("user_id");
+    
+    if (subscriptionError) {
+      clearTimeout(timeoutId);
+      throw new Error(`Error fetching users with subscriptions: ${subscriptionError.message}`);
+    }
+    
+    if (!usersWithSubscriptions || usersWithSubscriptions.length === 0) {
+      console.log("No users with subscriptions found");
+      clearTimeout(timeoutId);
+      return new Response(
+        JSON.stringify({
+          message: "No users with subscriptions found",
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+    
+    // Extract unique user IDs from subscriptions
+    const uniqueUserIds = [...new Set(usersWithSubscriptions.map(sub => sub.user_id))];
+    console.log(`Found ${uniqueUserIds.length} unique users with subscriptions`);
+    
+    // Get all users from auth.users that have subscriptions
     const { data: users, error: usersError } = await supabase.auth.admin.listUsers();
     
     if (usersError) {
@@ -389,7 +434,9 @@ async function handleRequest(req: Request) {
       throw new Error(`Error fetching users: ${usersError.message}`);
     }
     
-    console.log(`Found ${users.users.length} users`);
+    // Filter users to only include those with subscriptions
+    const subscribedUsers = users.users.filter(user => uniqueUserIds.includes(user.id));
+    console.log(`Found ${subscribedUsers.length} subscribed users out of ${users.users.length} total users`);
     
     // Initialize results object
     const results = {
@@ -399,8 +446,8 @@ async function handleRequest(req: Request) {
       users: [] as Array<{ email: string; summaries_count: number; status: string }>,
     };
     
-    // Process each user
-    for (const user of users.users) {
+    // Process each user with subscriptions
+    for (const user of subscribedUsers) {
       try {
         // Skip users without email
         if (!user.email) {
@@ -420,7 +467,7 @@ async function handleRequest(req: Request) {
           throw new Error(`Error fetching subscriptions: ${subscriptionsError.message}`);
         }
         
-        // Skip users without subscriptions
+        // Skip users without subscriptions (should not happen due to our filtering, but just in case)
         if (!subscriptions || subscriptions.length === 0) {
           console.log(`User ${user.email} has no subscriptions, skipping`);
           results.users.push({
@@ -450,13 +497,13 @@ async function handleRequest(req: Request) {
           channelsMap[channel.id] = channel;
         });
         
-        // Get new summaries from subscribed channels
+        // Get new summaries from subscribed channels - now including source_url
         const { data: summaries, error: summariesError } = await supabase
           .from("summaries")
-          .select("id, content_id, title, publisher_id, publisher_name, summary, content_created_at, created_at, tags, featured_names")
+          .select("id, content_id, title, publisher_id, publisher_name, summary, content_created_at, created_at, tags, featured_names, source_url")
           .in("publisher_id", channelIds)
-          .gt("created_at", cutoffDate.toISOString())
-          .order("created_at", { ascending: false });
+          .gt("content_created_at", cutoffDate.toISOString())
+          .order("content_created_at", { ascending: false });
         
         if (summariesError) {
           throw new Error(`Error fetching summaries: ${summariesError.message}`);
@@ -473,7 +520,20 @@ async function handleRequest(req: Request) {
           continue;
         }
         
-        console.log(`Found ${summaries.length} new summaries for user ${user.email}`);
+        // Filter out summaries with no content
+        const validSummaries = summaries.filter(summary => summary.summary);
+        
+        if (validSummaries.length === 0) {
+          console.log(`No valid summaries for user ${user.email}, skipping`);
+          results.users.push({
+            email: user.email,
+            summaries_count: 0,
+            status: "skipped_no_valid_summaries",
+          });
+          continue;
+        }
+        
+        console.log(`Found ${validSummaries.length} valid summaries for user ${user.email}`);
         
         // Prepare email data
         const emailData: EmailData = {
@@ -482,7 +542,7 @@ async function handleRequest(req: Request) {
             email: user.email,
             name: user.user_metadata?.name,
           },
-          summaries,
+          summaries: validSummaries,
           channels: channelsMap,
         };
         
@@ -493,14 +553,14 @@ async function handleRequest(req: Request) {
           results.emails_sent++;
           results.users.push({
             email: user.email,
-            summaries_count: summaries.length,
+            summaries_count: validSummaries.length,
             status: "email_sent",
           });
         } else {
           results.errors++;
           results.users.push({
             email: user.email,
-            summaries_count: summaries.length,
+            summaries_count: validSummaries.length,
             status: "email_failed",
           });
         }
