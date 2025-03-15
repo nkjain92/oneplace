@@ -5,17 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Newsletter Preview</title>
     <style>
-      @font-face {
-        font-family: 'Avenir';
-        src: url('https://fonts.cdnfonts.com/css/avenir');
-        font-weight: normal;
-        font-style: normal;
-      }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      
       body {
-        font-family: 'Avenir', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         line-height: 1.6;
-        color: #333;
-        background-color: #f4f4f9;
+        color: #1e293b;
+        background-color: #f8fafc;
         margin: 0;
         padding: 0;
       }
@@ -24,115 +20,158 @@
         margin: 20px auto;
         padding: 20px;
         background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
       .header {
-        padding: 15px 20px;
-        background-color: #f9f9f9;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(66, 99, 235, 0.1), rgba(92, 124, 250, 0.1));
+        border-radius: 0.5rem 0.5rem 0 0;
+        margin-bottom: 24px;
         text-align: center;
+        border-bottom: 1px solid rgba(92, 124, 250, 0.2);
       }
       .header h1 {
-        color: #d96c2e;
+        color: #4263eb;
         margin: 0;
         font-size: 24px;
         font-weight: bold;
+        letter-spacing: -0.025em;
       }
       .header p {
-        color: #666;
+        color: #64748b;
         margin: 10px 0 0;
+        font-size: 15px;
       }
       .channel-header {
-        color: #d96c2e;
+        color: #4263eb;
         font-size: 20px;
         font-weight: bold;
         margin: 30px 0 15px;
         padding-bottom: 8px;
-        border-bottom: 2px solid #f0f0f0;
+        border-bottom: 2px solid #e2e8f0;
+        letter-spacing: -0.025em;
       }
       .summary-card {
         margin-bottom: 30px;
-        border-bottom: 1px solid #e0e0e0;
-        padding-bottom: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
       }
       .summary-header {
-        padding: 15px 20px;
-        background-color: #f5f5f5;
-        border-radius: 8px 8px 0 0;
+        padding: 16px 20px;
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        border-bottom: 2px solid #e0e0e0;
       }
       .title-container {
         flex: 1;
       }
       .summary-title {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
         margin: 0;
-        color: #d96c2e;
+        color: #1e293b;
         padding-right: 15px;
+        letter-spacing: -0.025em;
+        line-height: 1.4;
       }
       .summary-date {
         font-size: 14px;
-        color: #666;
+        color: #64748b;
         margin-top: 5px;
         display: block;
       }
       .summary-body {
         padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 0 0 8px 8px;
+        background-color: #ffffff;
         text-align: left;
+        position: relative;
+        overflow: hidden;
+      }
+      .summary-body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-size: 40px 40px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M0 0h40v40H0V0zm1 1v38h38V1H1z' fill='%234263eb' fill-opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
       }
       .summary-content {
-        color: #333;
+        color: #334155;
         line-height: 1.8;
         margin-left: 0;
+        position: relative;
+        z-index: 1;
       }
       .summary-content p {
         margin-top: 0;
+        margin-bottom: 16px;
       }
       .summary-content ul {
         padding-left: 20px;
+        margin-bottom: 16px;
+      }
+      .summary-content li {
+        margin-bottom: 8px;
       }
       .people-section {
-        margin-top: 15px;
+        margin-top: 16px;
         text-align: left;
+        position: relative;
+        z-index: 1;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
       }
       .people-label {
-        font-weight: bold;
-        color: #666;
+        font-weight: 600;
+        color: #64748b;
         margin-right: 8px;
+        font-size: 14px;
       }
       .person {
         display: inline-block;
-        background-color: #f0e6dd;
-        color: #d96c2e;
+        background-color: rgba(92, 124, 250, 0.1);
+        color: #4263eb;
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
         margin-right: 6px;
         margin-bottom: 6px;
+        font-weight: 500;
+        border: 1px solid rgba(92, 124, 250, 0.2);
       }
       .footer {
         text-align: center;
-        padding: 20px;
-        background-color: #f0f0f0;
-        color: #666;
-        font-size: 12px;
-        border-top: 1px solid #e0e0e0;
+        padding: 24px 20px;
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 13px;
+        border-top: 1px solid #e2e8f0;
         margin-top: 30px;
+        border-radius: 0 0 0.5rem 0.5rem;
+      }
+      .footer a {
+        color: #4263eb;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
       }
       .quote {
         font-style: italic;
         margin: 20px 0;
-        padding: 10px 20px;
-        border-left: 3px solid #d96c2e;
-        background-color: #f9f9f9;
+        padding: 12px 20px;
+        border-left: 3px solid #4263eb;
+        background-color: rgba(92, 124, 250, 0.05);
       }
     </style>
   </head>
