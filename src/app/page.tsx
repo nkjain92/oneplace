@@ -254,19 +254,22 @@ export default function Home() {
             <div className='flex flex-wrap gap-3'>
               {samplePodcasts.map((podcast, i) => (
                 <button
-                  key={i}
-                  onClick={() => handleSubmit(podcast.url)}
-                  className='relative dark:bg-gray-900/40 bg-white dark:hover:bg-gray-800/80 hover:bg-gray-50 dark:text-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm border dark:border-gray-800/50 border-gray-200/80 dark:hover:border-blue-500/50 hover:border-blue-500/50 transition-all duration-300 shadow-sm hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'>
-                  {/* Subtle glow effect that appears on hover */}
-                  <div className='absolute inset-0 dark:bg-gradient-to-r dark:from-blue-600/10 dark:to-purple-600/10 from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
-                  {/* Grid pattern overlay */}
-                  <div className='absolute inset-0 dark:bg-grid-small-white/[0.025] bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
-                  <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>{podcast.title}</span>
-                  <ExternalLink
-                    size={14}
-                    className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
-                  />
-                </button>
+                onClick={() => handleSubmit(podcast.url)}
+                className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'
+              >
+                {/* Subtle glow effect that appears on hover (light mode only) */}
+                <div className='absolute inset-0 dark:hidden bg-gradient-to-r from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
+                {/* Grid pattern overlay (light mode only) */}
+                <div className='absolute inset-0 dark:hidden bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
+                
+                <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>
+                  {podcast.title}
+                </span>
+                <ExternalLink
+                  size={14}
+                  className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
+                />
+              </button>
               ))}
             </div>
           </div>
