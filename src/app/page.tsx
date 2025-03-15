@@ -548,7 +548,7 @@ export default function Home() {
           </div>
 
           <div className='text-xs dark:text-gray-600 text-gray-500'>
-            {new Date().getFullYear()} OnePlace. All rights reserved.
+            © {new Date().getFullYear()} OnePlace. All rights reserved.
           </div>
         </div>
       </footer>
