@@ -250,6 +250,24 @@ async function sendEmail(data: EmailData): Promise<boolean> {
               font-weight: 500;
               border: 1px solid rgba(92, 124, 250, 0.2);
             }
+            .chat-button-container {
+              margin-top: 16px;
+              text-align: center;
+              position: relative;
+              z-index: 1;
+            }
+            .chat-button {
+              display: inline-block;
+              background: linear-gradient(135deg, #4263eb, #5c7cfa);
+              color: #ffffff !important;
+              font-weight: 500;
+              font-size: 14px;
+              padding: 8px 16px;
+              border-radius: 6px;
+              text-decoration: none;
+              box-shadow: 0 2px 4px rgba(66, 99, 235, 0.2);
+              transition: all 0.2s ease;
+            }
             .footer {
               text-align: center;
               padding: 24px 20px;
@@ -309,6 +327,9 @@ async function sendEmail(data: EmailData): Promise<boolean> {
         const titleLink = summary.source_url ? 
           `<a href="${summary.source_url}" target="_blank">${summary.title || 'Untitled Summary'}</a>` : 
           `${summary.title || 'Untitled Summary'}`;
+        
+        // Create the chat URL for the video
+        const chatUrl = `https://${APP_DOMAIN}/chat/${summary.content_id}`;
 
         htmlContent += `
           <div class="summary-card">
@@ -333,10 +354,15 @@ async function sendEmail(data: EmailData): Promise<boolean> {
           `;
         }
 
+        // Add the Chat with Video button
         htmlContent += `
+            <div class="chat-button-container">
+              <a href="${chatUrl}" class="chat-button" target="_blank">Chat with Video</a>
+            </div>
             </div>
           </div>
         `;
+        
       });
     });
 
