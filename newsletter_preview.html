@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsletter Preview</title>
+    <style>
+      @font-face {
+        font-family: 'Avenir';
+        src: url('https://fonts.cdnfonts.com/css/avenir');
+        font-weight: normal;
+        font-style: normal;
+      }
+      body {
+        font-family: 'Avenir', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        padding: 15px 20px;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .header h1 {
+        color: #d96c2e;
+        margin: 0;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .header p {
+        color: #666;
+        margin: 10px 0 0;
+      }
+      .channel-header {
+        color: #d96c2e;
+        font-size: 20px;
+        font-weight: bold;
+        margin: 30px 0 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f0f0f0;
+      }
+      .summary-card {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 20px;
+      }
+      .summary-header {
+        padding: 15px 20px;
+        background-color: #f5f5f5;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #e0e0e0;
+      }
+      .title-container {
+        flex: 1;
+      }
+      .summary-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0;
+        color: #d96c2e;
+        padding-right: 15px;
+      }
+      .summary-date {
+        font-size: 14px;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+      }
+      .summary-body {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 0 0 8px 8px;
+        text-align: left;
+      }
+      .summary-content {
+        color: #333;
+        line-height: 1.8;
+        margin-left: 0;
+      }
+      .summary-content p {
+        margin-top: 0;
+      }
+      .summary-content ul {
+        padding-left: 20px;
+      }
+      .people-section {
+        margin-top: 15px;
+        text-align: left;
+      }
+      .people-label {
+        font-weight: bold;
+        color: #666;
+        margin-right: 8px;
+      }
+      .person {
+        display: inline-block;
+        background-color: #f0e6dd;
+        color: #d96c2e;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+      }
+      .footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #f0f0f0;
+        color: #666;
+        font-size: 12px;
+        border-top: 1px solid #e0e0e0;
+        margin-top: 30px;
+      }
+      .quote {
+        font-style: italic;
+        margin: 20px 0;
+        padding: 10px 20px;
+        border-left: 3px solid #d96c2e;
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>OnePlace Daily Digest</h1>
+        <p>Here's what's new from your subscribed channels</p>
+      </div>
+      <div class="content">
+        <!-- Channel 1 -->
+        <h3 class="channel-header">Technology Insights</h3>
+        
+        <!-- Summary 1 -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <div class="title-container">
+              <h2 class="summary-title">The Future of AI in Healthcare</h2>
+              <span class="summary-date">March 14, 2025</span>
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-content">
+              <p>This transcript discusses how artificial intelligence is transforming healthcare delivery and patient outcomes. Key points include:</p>
+              <ul>
+                <li>AI-powered diagnostic tools are achieving accuracy rates comparable to experienced physicians</li>
+                <li>Predictive analytics can identify high-risk patients before symptoms appear</li>
+                <li>Administrative automation is reducing paperwork by up to 70%</li>
+                <li>Ethical concerns around data privacy and algorithmic bias remain significant challenges</li>
+              </ul>
+              <p>The speaker emphasizes that AI will augment rather than replace healthcare professionals, creating new opportunities for improved care delivery.</p>
+            </div>
+            <div class="people-section">
+              <span class="people-label">People:</span>
+              <span class="person">Dr. Sarah Chen</span>
+              <span class="person">Mark Johnson</span>
+              <span class="person">Dr. Robert Patel</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary 2 -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <div class="title-container">
+              <h2 class="summary-title">Quantum Computing Breakthroughs</h2>
+              <span class="summary-date">March 12, 2025</span>
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-content">
+              <p>This transcript covers recent advances in quantum computing and their potential impact. Highlights include:</p>
+              <ul>
+                <li>A new 1000-qubit processor demonstrated quantum supremacy for complex optimization problems</li>
+                <li>Error correction techniques have improved quantum circuit reliability by 40%</li>
+                <li>Financial institutions are beginning to implement quantum algorithms for risk assessment</li>
+              </ul>
+              <p>The speaker predicts that practical quantum advantage for specific business applications will be achieved within 3-5 years, though general-purpose quantum computers remain a longer-term goal.</p>
+            </div>
+            <div class="people-section">
+              <span class="people-label">People:</span>
+              <span class="person">Dr. Emily Zhao</span>
+              <span class="person">Professor Alan Barker</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Channel 2 -->
+        <h3 class="channel-header">Business & Economics</h3>
+        
+        <!-- Summary 3 -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <div class="title-container">
+              <h2 class="summary-title">Global Supply Chain Resilience</h2>
+              <span class="summary-date">March 13, 2025</span>
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-content">
+              <p>This analysis examines how companies are rebuilding supply chains after recent global disruptions. Key insights include:</p>
+              <ul>
+                <li>Nearshoring has increased by 35% among Fortune 500 companies</li>
+                <li>Inventory management strategies have shifted from just-in-time to strategic buffering</li>
+                <li>Digital twins and AI simulations are enabling better risk forecasting</li>
+                <li>Sustainability considerations are being integrated into resilience planning</li>
+              </ul>
+              <p>The speaker notes that companies balancing resilience with efficiency are outperforming competitors by an average of 18% in market recovery.</p>
+            </div>
+            <div class="people-section">
+              <span class="people-label">People:</span>
+              <span class="person">Maria Rodriguez</span>
+              <span class="person">James Kim</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Summary 4 -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <div class="title-container">
+              <h2 class="summary-title">The Rise of Decentralized Finance</h2>
+              <span class="summary-date">March 10, 2025</span>
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-content">
+              <p>This transcript explores the growing impact of DeFi on traditional banking systems. Major points include:</p>
+              <ul>
+                <li>Total value locked in DeFi protocols has reached $500 billion</li>
+                <li>Regulatory frameworks are evolving to accommodate blockchain-based financial services</li>
+                <li>Traditional banks are launching their own DeFi offerings to remain competitive</li>
+                <li>Cross-chain interoperability is solving previous limitations in the ecosystem</li>
+              </ul>
+              <p>The speaker concludes that DeFi and traditional finance are likely to merge into a hybrid system rather than one replacing the other entirely.</p>
+            </div>
+            <div class="people-section">
+              <span class="people-label">People:</span>
+              <span class="person">Michael Chen</span>
+              <span class="person">Sophia Williams</span>
+              <span class="person">Dr. Raj Patel</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Channel 3 -->
+        <h3 class="channel-header">Climate & Sustainability</h3>
+        
+        <!-- Summary 5 -->
+        <div class="summary-card">
+          <div class="summary-header">
+            <div class="title-container">
+              <h2 class="summary-title">Breakthrough in Carbon Capture Technology</h2>
+              <span class="summary-date">March 11, 2025</span>
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-content">
+              <p>This transcript details a significant advancement in direct air capture technology. Key developments include:</p>
+              <ul>
+                <li>A new mineral-based sorbent reduces energy requirements by 60%</li>
+                <li>Cost per ton of captured CO2 has fallen below $100 for the first time</li>
+                <li>Captured carbon is being converted into building materials and synthetic fuels</li>
+                <li>Large-scale deployment could remove 1 gigaton of CO2 annually by 2030</li>
+              </ul>
+              <p>The researcher emphasizes that while carbon capture is essential, it must complement rather than replace emissions reduction efforts.</p>
+            </div>
+            <div class="people-section">
+              <span class="people-label">People:</span>
+              <span class="person">Dr. Amara Okafor</span>
+              <span class="person">Thomas Lindberg</span>
+              <span class="person">Elena Gomez</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <p>You received this email because you're subscribed to updates from OnePlace.</p>
+        <p>
+          <a href="#" class="unsubscribe">
+            Manage email preferences
+          </a>
+        </p>
+        <p>&copy; 2025 OnePlace. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html> 

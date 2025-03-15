@@ -138,6 +138,9 @@ async function fetchYouTubeTranscript(videoId: string) {
       console.error('Invalid transcript format received from API');
       throw new Error('Invalid transcript format received from API');
     }
+    // Store the raw transcript data
+    const rawTranscript = data;
+    
     // Combine all transcript segments into a single string
     const transcriptText = data.transcript
       .map((segment: { text: string }) => segment.text)
@@ -145,7 +148,10 @@ async function fetchYouTubeTranscript(videoId: string) {
     console.log(
       `Successfully fetched transcript for ${videoId} (${transcriptText.length} characters)`,
     );
-    return transcriptText;
+    return {
+      text: transcriptText,
+      raw: rawTranscript
+    };
   } catch (error) {
     console.error(
       `Error fetching YouTube transcript: ${
@@ -325,6 +331,40 @@ function extractVideoLink(entry: any) {
   console.log(`Could not extract video link from entry`);
   return '';
 }
+// Function to calculate total video duration from transcript segments in seconds
+function calculateVideoDuration(transcriptData: any): number {
+  if (!transcriptData || !transcriptData.transcript || !Array.isArray(transcriptData.transcript)) {
+    return 0;
+  }
+  
+  // If the transcript is empty, return 0
+  if (transcriptData.transcript.length === 0) {
+    return 0;
+  }
+  
+  try {
+    // Get the last segment
+    const lastSegment = transcriptData.transcript[transcriptData.transcript.length - 1];
+    
+    // If the last segment has start and duration properties, use them to calculate total duration
+    if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
+      return Math.round(lastSegment.start + lastSegment.duration);
+    }
+    
+    // Alternative calculation: sum up all durations
+    let totalDuration = 0;
+    for (const segment of transcriptData.transcript) {
+      if (segment.duration !== undefined) {
+        totalDuration += segment.duration;
+      }
+    }
+    
+    return Math.round(totalDuration);
+  } catch (error) {
+    console.error('Error calculating video duration:', error);
+    return 0;
+  }
+}
 // Main function to handle the request
 async function handleRequest(req: Request) {
   // Set a timeout to ensure the function doesn't run too long
@@ -452,7 +492,12 @@ async function handleRequest(req: Request) {
         const parsedXml = parseXML(xmlText);
         console.log('XML parsed');
         // Extract entries from the feed
-        const entries = parsedXml?.feed?.entry || [];
+        let entries = parsedXml?.feed?.entry || [];
+        // Ensure entries is always an array (handle case when there's only one entry)
+        if (entries && !Array.isArray(entries)) {
+          console.log('Single entry detected, converting to array');
+          entries = [entries];
+        }
         if (!entries || entries.length === 0) {
           console.log(`No entries found in RSS feed for channel ${channel.name}`);
           results.channels.push({
@@ -519,7 +564,7 @@ async function handleRequest(req: Request) {
             const { data: existingSummary, error: summaryCheckError } = await supabase
               .from('summaries')
               .select(
-                'id, title, summary, tags, featured_names, publisher_name, content_created_at',
+                'id, title, summary, tags, featured_names, publisher_name, content_created_at, duration_in_seconds, transcript_raw',
               )
               .eq('content_id', currentVideoId)
               .maybeSingle();
@@ -532,6 +577,33 @@ async function handleRequest(req: Request) {
             }
             if (existingSummary) {
               console.log(`Video ${currentVideoId} already has summary ID: ${existingSummary.id}`);
+              
+              // Check if duration_in_seconds is missing but we have transcript_raw
+              if ((!existingSummary.duration_in_seconds || existingSummary.duration_in_seconds === 0) && 
+                  existingSummary.transcript_raw) {
+                try {
+                  // Calculate duration from existing transcript_raw
+                  const calculatedDuration = calculateVideoDuration(existingSummary.transcript_raw);
+                  console.log(`Calculated duration for existing summary: ${calculatedDuration} seconds`);
+                  
+                  if (calculatedDuration > 0) {
+                    // Update the summary with the calculated duration (as integer)
+                    const { error: updateDurationError } = await supabase
+                      .from('summaries')
+                      .update({ duration_in_seconds: Math.round(calculatedDuration) })
+                      .eq('id', existingSummary.id);
+                      
+                    if (updateDurationError) {
+                      console.error(`Error updating duration: ${updateDurationError.message}`);
+                    } else {
+                      console.log(`Updated duration for summary ${existingSummary.id} to ${Math.round(calculatedDuration)} seconds`);
+                    }
+                  }
+                } catch (durationError) {
+                  console.error(`Error calculating duration for existing summary: ${durationError}`);
+                }
+              }
+              
               videoEntry.status = 'already_summarized';
               videoEntry.summary_id = existingSummary.id;
               continue;
@@ -544,8 +616,23 @@ async function handleRequest(req: Request) {
             try {
               // Fetch transcript from YouTube
               console.log(`Fetching transcript for ${currentVideoId}`);
-              const transcript = await fetchYouTubeTranscript(currentVideoId);
+              const transcriptResult = await fetchYouTubeTranscript(currentVideoId);
+              const transcript = transcriptResult.text;
+              const transcriptRaw = transcriptResult.raw;
               console.log(`Transcript fetched (${transcript.length} characters)`);
+              
+              // Calculate video duration in seconds
+              const videoDurationSeconds = Math.round(calculateVideoDuration(transcriptRaw));
+              console.log(`Video duration: ${videoDurationSeconds} seconds`);
+              
+              // Skip videos shorter than 60 seconds (1 minute)
+              if (videoDurationSeconds < 60) {
+                console.log(`Skipping video ${currentVideoId}: Duration (${videoDurationSeconds}s) is less than 1 minute`);
+                videoEntry.status = 'skipped_short_video';
+                videoEntry.duration = videoDurationSeconds;
+                continue;
+              }
+              
               if (transcript.length > 0) {
                 // Insert a new record into the summaries table
                 console.log('Inserting summary record');
@@ -561,6 +648,8 @@ async function handleRequest(req: Request) {
                       publisher_name: channel.name,
                       content_created_at: pubDate.toISOString(),
                       transcript: transcript,
+                      transcript_raw: transcriptRaw,
+                      duration_in_seconds: Math.round(videoDurationSeconds),
                       status: 'processing',
                     },
                   ])
