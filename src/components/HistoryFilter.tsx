@@ -26,11 +26,16 @@ export default function HistoryFilter({ initialFilter, userId, filter: propFilte
   const searchParams = useSearchParams();
   const [filter, setFilter] = useState<FilterType>(propFilter || initialFilter);
 
-  // Update URL when filter changes
+  // Update URL when filter changes, but only if it's different from the URL parameter
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('filter', filter);
-    router.push(`/history?${params.toString()}`);
+    const currentFilter = searchParams.get('filter') as FilterType || 'all';
+    
+    // Only update URL if the filter has changed to prevent infinite rerenders
+    if (filter !== currentFilter) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('filter', filter);
+      router.replace(`/history?${params.toString()}`);
+    }
   }, [filter, router, searchParams]);
 
   // Only show filter if user is logged in

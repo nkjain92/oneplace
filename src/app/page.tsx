@@ -254,6 +254,7 @@ export default function Home() {
             <div className='flex flex-wrap gap-3'>
               {samplePodcasts.map((podcast, i) => (
                 <button
+                key={i}
                 onClick={() => handleSubmit(podcast.url)}
                 className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'
               >
