@@ -16,7 +16,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 // @ts-ignore: Deno-specific globals
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 // @ts-ignore: Deno-specific globals
-const APP_DOMAIN = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN") || "getsmart.vercel.app";
+const APP_DOMAIN = Deno.env.get("NEXT_PUBLIC_APP_DOMAIN") || "getoneplace.com";
 // @ts-ignore: Deno-specific globals
 const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
 
