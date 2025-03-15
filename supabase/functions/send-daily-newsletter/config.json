@@ -1,0 +1,6 @@
+{
+  "name": "send-daily-newsletter",
+  "description": "Sends daily newsletter emails to users with new summaries from their subscribed channels",
+  "schedule": "30 3 * * *",
+  "verify_jwt": false
+} 
