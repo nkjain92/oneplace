@@ -17,7 +17,26 @@ export interface SummaryData {
 /**
  * Formats raw summary data into SummaryData type with consistent structure
  */
-export function formatSummaryData(item: Record<string, any>): SummaryData {
+/**
+ * Define more specific type for the raw summary data input
+ */
+export interface RawSummaryData extends Record<string, unknown> {
+  id?: string;
+  title?: string;
+  summary?: string;
+  tags?: string[];
+  featured_names?: string[];
+  publisher_name?: string;
+  publisher_id?: string;
+  content_created_at?: string;
+  content_id?: string;
+  status?: string;
+}
+
+/**
+ * Formats raw summary data into SummaryData type with consistent structure
+ */
+export function formatSummaryData(item: RawSummaryData): SummaryData {
   return {
     id: item.id as string,
     title: (item.title as string) || 'YouTube Video',

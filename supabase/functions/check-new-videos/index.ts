@@ -647,9 +647,9 @@ async function handleRequest(req: Request) {
               const videoDurationSeconds = Math.round(calculateVideoDuration(transcriptRaw));
               console.log(`Video duration: ${videoDurationSeconds} seconds`);
               
-              // Skip videos shorter than 60 seconds (1 minute)
-              if (videoDurationSeconds < 60) {
-                console.log(`Skipping video ${currentVideoId}: Duration (${videoDurationSeconds}s) is less than 1 minute`);
+              // Skip videos shorter than 180 seconds (3 minutes)
+              if (videoDurationSeconds < 180) {
+                console.log(`Skipping video ${currentVideoId}: Duration (${videoDurationSeconds}s) is less than 3 minutes`);
                 videoEntry.status = 'skipped_short_video';
                 videoEntry.duration = videoDurationSeconds;
                 continue;

@@ -1,7 +1,15 @@
 // src/lib/summaryHelpers.ts - Helper functions for summary generation and processing
 
 // Calculates total video duration (in seconds) from transcript segments.
-export function calculateVideoDuration(transcriptData: any): number {
+// Define proper type for transcript data
+interface TranscriptData {
+  transcript?: Array<{
+    start?: number;
+    duration?: number;
+  }>;
+}
+
+export function calculateVideoDuration(transcriptData: TranscriptData): number {
   if (!transcriptData || !transcriptData.transcript || !Array.isArray(transcriptData.transcript)) {
     return 0;
   }
@@ -90,9 +98,14 @@ export function parseAiResponse(fullText: string): {
 
 // Checks if the channel exists in the database; if not, inserts it,
 // or updates it if a thumbnail is missing.
+// Define type for database client
+// Use a type definition that avoids excessive type instantiation depth
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DbClient = any;
+
 export async function handleChannelInDB(
-  dbClient: any,
-  channelDetails: { channelId: string; name: string; description: string; thumbnailUrl: string },
+  dbClient: DbClient,
+  channelDetails: { channelId: string; name: string; description: string | null; thumbnailUrl: string | null },
 ) {
   const { channelId, name, description, thumbnailUrl } = channelDetails;
 

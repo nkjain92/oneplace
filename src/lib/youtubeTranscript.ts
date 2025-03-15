@@ -1,11 +1,17 @@
 // src/lib/youtubeTranscript.ts - Fetches YouTube video transcripts using RapidAPI
 
-// Define the structure of a transcript segment from the API
-interface TranscriptSegment {
+// Define the structure of a transcript response returned from the API
+type TranscriptSegment = {
   text: string;
-  duration: number;
-  offset: string;
-  lang: string;
+  duration?: number;
+};
+
+// Return type of the function
+interface TranscriptResult {
+  text: string;
+  raw: {
+    transcript: TranscriptSegment[];
+  };
 }
 
 // Function to fetch YouTube transcript
@@ -51,7 +57,7 @@ export default async function fetchYouTubeTranscript(videoId: string) {
     
     // Combine all transcript segments into a single string
     const transcriptText = data.transcript
-      .map((segment: { text: string }) => segment.text)
+      .map((segment: TranscriptSegment) => segment.text)
       .join(' ');
       
     console.log(
@@ -61,7 +67,7 @@ export default async function fetchYouTubeTranscript(videoId: string) {
     return {
       text: transcriptText,
       raw: rawTranscript
-    };
+    } as TranscriptResult;
   } catch (error) {
     console.error(
       `Error fetching YouTube transcript: ${
