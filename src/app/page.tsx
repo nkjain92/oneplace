@@ -225,8 +225,8 @@ export default function Home() {
         {/* Enhanced mesh gradient background - now full width */}
         <div className='absolute inset-0 dark:bg-grid-small-white/[0.15] bg-grid-small-black/[0.07] -z-10' />
 
-        {/* Improved gradient overlay with more depth - now full width */}
-        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/10 dark:via-black/95 dark:to-black bg-gradient-to-b from-white/30 via-white/90 to-white -z-10' />
+        {/* Improved gradient overlay with more depth - now full width with flush bottom */}
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black/10 dark:via-black/80 dark:to-black bg-gradient-to-b from-white/30 via-white/80 to-white -z-10' />
 
         {/* Animated noise texture for added richness - now full width */}
         <div className='absolute inset-0 bg-noise opacity-[0.03] dark:opacity-[0.07] mix-blend-overlay -z-10'></div>
@@ -240,48 +240,48 @@ export default function Home() {
         {/* Content container - maintains original width and positioning */}
         <div className='relative max-w-5xl mx-auto px-6 z-20'>
 
-        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold dark:text-white text-gray-900 mb-6 tracking-tight'>
-          Podcast Summaries <br className='hidden md:block' />
-          <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600'>
-            in Your Inbox
-          </span>
-        </h1>
-        <p className='text-xl md:text-2xl dark:text-gray-400 text-gray-600 mb-12 max-w-2xl'>
-          Summaries of Your Top Channels, Every Day
-        </p>
-        <div className='max-w-2xl mb-10'>
-          <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
-        </div>
-        {error && <p className='mt-2 text-red-400 text-sm'>{error}</p>}
-        <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
-        {!isLoading && (
-          <div className='mt-8'>
-            <p className='dark:text-gray-400 text-gray-500 mb-4 text-sm uppercase tracking-wider font-medium'>
-              Try These Podcasts:
-            </p>
-            <div className='flex flex-wrap gap-3'>
-              {samplePodcasts.map((podcast, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSubmit(podcast.url)}
-                  className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'>
-                  {/* Subtle glow effect that appears on hover (light mode only) */}
-                  <div className='absolute inset-0 dark:hidden bg-gradient-to-r from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
-                  {/* Grid pattern overlay (light mode only) */}
-                  <div className='absolute inset-0 dark:hidden bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
-
-                  <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>
-                    {podcast.title}
-                  </span>
-                  <ExternalLink
-                    size={14}
-                    className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
-                  />
-                </button>
-              ))}
-            </div>
+        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold mx-auto text-center dark:text-white text-gray-900 mb-6 tracking-tight'>
+            Podcast Summaries <br className='hidden md:block' />
+            <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600'>
+              in Your Inbox
+            </span>
+          </h1>
+          <p className='text-xl md:text-2xl dark:text-gray-400 text-gray-600 mb-12 max-w-2xl mx-auto text-center'>
+            Summaries of Your Top Channels, Every Day
+          </p>
+          <div className='max-w-2xl mb-10 mx-auto'>
+            <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
           </div>
-        )}
+          {error && <p className='mt-2 text-red-400 text-sm text-center'>{error}</p>}
+          <SummaryProgressLoader isVisible={isLoading && isGeneratingNew} durationInSeconds={8} />
+          {!isLoading && (
+            <div className='mt-8 text-center'>
+              <p className='dark:text-gray-400 text-gray-500 mb-4 text-sm uppercase tracking-wider font-medium'>
+                Try These Podcasts:
+              </p>
+              <div className='flex flex-wrap gap-3 justify-center'>
+                {samplePodcasts.map((podcast, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSubmit(podcast.url)}
+                    className='relative bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-4 py-2.5 rounded-lg dark:rounded-md text-sm border border-gray-200/80 dark:border-gray-800 hover:border-blue-500/50 dark:hover:border-blue-500 transition-all duration-300 shadow-sm dark:shadow-md hover:shadow-md flex items-center gap-1.5 group z-[1] backdrop-blur-sm overflow-hidden'>
+                    {/* Subtle glow effect that appears on hover (light mode only) */}
+                    <div className='absolute inset-0 dark:hidden bg-gradient-to-r from-blue-400/5 to-purple-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none'></div>
+                    {/* Grid pattern overlay (light mode only) */}
+                    <div className='absolute inset-0 dark:hidden bg-grid-small-black/[0.015] opacity-0 group-hover:opacity-100 transition-opacity'></div>
+
+                    <span className='relative z-10 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300'>
+                      {podcast.title}
+                    </span>
+                    <ExternalLink
+                      size={14}
+                      className='relative z-10 group-hover:translate-x-0.5 transition-all duration-300 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400'
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -548,7 +548,7 @@ export default function Home() {
           </div>
 
           <div className='text-xs dark:text-gray-600 text-gray-500'>
-            © {new Date().getFullYear()} OnePlace. All rights reserved.
+            {new Date().getFullYear()} OnePlace. All rights reserved.
           </div>
         </div>
       </footer>
