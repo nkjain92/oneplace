@@ -2,13 +2,30 @@
 
 OnePlace is a comprehensive YouTube/Podcast Summary Platform that enables users to generate concise summaries for video content, interact with an integrated Q&A system powered by LLM, and manage their content consumption via subscriptions and history. The platform supports both logged-in and anonymous users with persistent sessions and a seamless user experience.
 
+![OnePlace Platform](https://github.com/yourusername/oneplace/assets/yourusername/oneplace-screenshot.png)
+
 ## Features
 
-- **Content Summarization:** Generate summaries for YouTube videos
+### Current Features
+
+- **Content Summarization:** Generate concise summaries for YouTube videos and podcasts
 - **Interactive Q&A:** Chat with videos using an AI-powered Q&A system
-- **Channel Subscriptions:** Subscribe to channels and receive updates
+- **Channel Subscriptions:** Subscribe to channels and receive updates on new content
 - **User Authentication:** Create accounts, login with persistent sessions
 - **Content Discovery:** Find and explore channels and content
+- **History Tracking:** Keep track of previously viewed and summarized content
+- **Responsive Design:** Optimized for both desktop and mobile devices
+- **Server Components:** Utilizes Next.js server components for improved performance
+
+### Upcoming Features
+
+- **Advanced Search Tools:** Enhanced search capabilities across content and summaries
+- **Social Media Integration:** Share summaries on social media as images and links
+- **Error Logging:** Comprehensive error tracking and reporting
+- **Tag-Based Navigation:** Click on tags to find related content
+- **Transcript Display:** View full transcripts alongside summaries
+- **Timestamped Summaries:** Summaries with timestamps linking to specific video sections
+- **Content Expansion:** Support for additional content types beyond YouTube and podcasts
 
 ## Tech Stack
 
@@ -16,10 +33,12 @@ OnePlace is a comprehensive YouTube/Podcast Summary Platform that enables users 
 - **Backend:** Hosted Supabase for authentication and database
 - **Hosting:** Vercel
 - **AI Integration:** Vercel AI SDK with OpenAI
-- **AI SDK:** Vercel AI SDK
 - **State Management:** Zustand
 - **Form Validation:** Zod
 - **Styling:** Tailwind CSS with shadcn/ui components
+- **Authentication:** Supabase Auth
+- **Database:** PostgreSQL (via Supabase)
+- **API Integration:** YouTube Data API, Podcast APIs
 
 ## Prerequisites
 
@@ -42,7 +61,7 @@ You'll also need accounts with the following services:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/oneplace.git
+   git clone https://github.com/nkjain92/oneplace.git
    cd oneplace
    ```
 
@@ -89,12 +108,18 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 - `src/app` - Application routes and pages using the Next.js App Router
 - `src/components` - Reusable UI components
+  - `ui` - Base UI components
+  - `shared` - Shared components used across multiple pages
+  - `[page-specific]` - Components specific to individual pages
 - `src/lib` - Business logic, API clients, and utilities
+  - `actions` - Server actions for form submissions and data mutations
+  - `utils` - Utility functions
+  - `supabase` - Supabase client configuration
 - `src/store` - Zustand state management
 - `src/scripts` - Utility scripts (like RSS feed updater)
 - `src/types` - TypeScript type definitions
 - `public` - Static assets like images and fonts
-- `supabase` - Supabase configuration and migrations (if any)
+- `supabase` - Supabase configuration, migrations, and edge functions
 
 ## Available Scripts
 
@@ -103,6 +128,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `npm run start` - Start the production server
 - `npm run lint` - Run ESLint to check code quality
 - `npm run update-rss` - Run the RSS feed update script to fetch new content from subscribed channels
+- `npm run supabase:start` - Start the local Supabase development environment
+- `npm run supabase:stop` - Stop the local Supabase development environment
+- `npm run supabase:deploy` - Deploy Supabase edge functions
 
 ## Deployment
 
@@ -113,6 +141,23 @@ This application can be deployed on [Vercel](https://vercel.com/), the platform 
 3. Set up all the environment variables
 4. Deploy
 
+## Architecture
+
+OnePlace uses a modern architecture leveraging Next.js server components for optimal performance:
+
+- **Server Components:** Most pages use server components for data fetching and initial rendering
+- **Client Components:** Interactive elements use client components with the 'use client' directive
+- **Hybrid Approach:** Combines server-side rendering with client-side interactivity
+- **Edge Functions:** Utilizes Supabase Edge Functions for background tasks
+
+## Performance Optimizations
+
+- Server-side data fetching with `createSupabaseServerClient`
+- Caching with `unstable_cache` for frequently accessed data
+- Reduced client-side JavaScript with server components
+- Optimized image loading with Next.js Image component
+- Incremental Static Regeneration for static content
+
 ## Contributing
 
 1. Fork the repository
@@ -121,6 +166,18 @@ This application can be deployed on [Vercel](https://vercel.com/), the platform 
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [OpenAI](https://openai.com/)
+- [Vercel](https://vercel.com/)
+- [shadcn/ui](https://ui.shadcn.com/)

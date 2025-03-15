@@ -4,6 +4,7 @@ import SummaryCard from '@/components/SummaryCard';
 import Image from 'next/image';
 import { createSupabaseServerClient } from '@/lib/supabaseServer';
 import { unstable_cache } from 'next/cache';
+import ChannelDescription from '@/components/ChannelDescription';
 
 // Define interface for summary object
 interface Summary {
@@ -135,14 +136,14 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
           <div className='flex items-center justify-between flex-wrap gap-4 bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 mb-8'>
             <div className='flex items-center gap-4'>
               {channel.thumbnail && (
-                <div className='relative h-16 w-16 rounded-full overflow-hidden border border-gray-700 bg-gray-800'>
-                  <Image src={channel.thumbnail} alt={channel.name} fill className='object-cover' />
+                <div className='relative h-16 w-16 rounded-full overflow-hidden border border-gray-700 bg-gray-800 flex-shrink-0'>
+                  <Image src={channel.thumbnail} alt={channel.name} fill className='object-cover' sizes="64px" />
                 </div>
               )}
               <div>
                 <h1 className='text-2xl font-bold text-white'>{channel.name}</h1>
                 {channel.description && (
-                  <p className='text-gray-400 mt-1 max-w-2xl'>{channel.description}</p>
+                  <ChannelDescription description={channel.description} />
                 )}
               </div>
             </div>

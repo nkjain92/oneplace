@@ -471,7 +471,7 @@ export default function Home() {
               target='_blank'
               rel='noopener noreferrer'
               className='hover:text-green-400 transition-colors'>
-              Send Feedback
+              Text Feedback
             </a>
           </div>
           <div className='text-xs text-gray-600'>
