@@ -16,21 +16,7 @@ import Link from 'next/link';
 import { Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
 import { GlowButton } from '@/components/ui/glow-button';
 import { ChannelCard } from '@/components/ChannelCard';
-
-// Types
-interface SummaryData {
-  id: string;
-  title: string;
-  summary: string;
-  tags: string[];
-  featured_names: string[];
-  publisher_name: string;
-  publisher_id: string;
-  content_created_at: string;
-  videoId?: string;
-  content_id?: string;
-  status?: string;
-}
+import { formatSummaryData, SummaryData } from '@/lib/utils/formatSummaryData';
 
 interface ChannelData {
   id: string;
@@ -46,23 +32,6 @@ const samplePodcasts = [
   { title: 'Anton Osika Lovable - 20VC', url: 'https://www.youtube.com/watch?v=DHLczPQj9rA' },
   { title: 'Tim Ferriss - Naval Ravikant', url: 'https://www.youtube.com/watch?v=HiYo14wylQw' },
 ];
-
-/**
- * Formats raw summary data into SummaryData type
- */
-const formatSummaryData = (item: Record<string, unknown>): SummaryData => ({
-  id: item.id as string,
-  title: (item.title as string) || 'YouTube Video',
-  summary: (item.summary as string) || 'No summary available',
-  tags: Array.isArray(item.tags) ? item.tags : [],
-  featured_names: Array.isArray(item.featured_names) ? item.featured_names : [],
-  publisher_name: (item.publisher_name as string) || 'Unknown Channel',
-  publisher_id: (item.publisher_id as string) || '',
-  content_created_at: (item.content_created_at as string) || new Date().toISOString(),
-  videoId: (item.content_id as string) || '',
-  content_id: item.content_id as string,
-  status: (item.status as string) || 'unknown',
-});
 
 export default function Home() {
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
@@ -129,7 +98,7 @@ export default function Home() {
       return;
     }
 
-    const formattedSummaries = summaries.map(formatSummaryData);
+    const formattedSummaries = summaries.map(item => formatSummaryData(item));
     setRecentSummaries(formattedSummaries);
 
     // Set summaryData to the most recent user-generated summary if not set
@@ -156,7 +125,7 @@ export default function Home() {
       return;
     }
 
-    const formattedSummaries = data.map(formatSummaryData);
+    const formattedSummaries = data.map(item => formatSummaryData(item));
     setRecentSummaries(formattedSummaries);
 
     if (!summaryData && formattedSummaries.length) {
