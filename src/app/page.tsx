@@ -206,14 +206,11 @@ export default function Home() {
   const handleSubmit = async (url: string) => {
     setIsLoading(true);
     setError(null);
-    setIsGeneratingNew(false);
+    setIsGeneratingNew(true);
 
     try {
       const contentId = extractYouTubeVideoId(url);
-      if (contentId && (await checkExistingSummary(contentId))) return;
-
-      setIsGeneratingNew(true);
-      await generateNewSummary(url, contentId || undefined);
+      await fetchOrGenerateSummary(url, contentId || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setSummaryData(null);
@@ -223,29 +220,8 @@ export default function Home() {
     }
   };
 
-  // Check for existing summary
-  const checkExistingSummary = async (contentId: string): Promise<boolean> => {
-    const { data } = await supabase
-      .from('summaries')
-      .select('*')
-      .eq('content_id', contentId)
-      .single();
-
-    if (data?.status === 'completed') {
-      setSummaryData(formatSummaryData(data));
-      if (!user) {
-        addAnonymousGeneratedContentId(contentId);
-        await fetchRecentSummaries();
-      }
-      setIsLoading(false);
-      return true;
-    }
-    setIsGeneratingNew(true);
-    return false;
-  };
-
-  // Generate new summary
-  const generateNewSummary = async (url: string, contentId?: string) => {
+  // Fetch existing summary or generate a new one
+  const fetchOrGenerateSummary = async (url: string, contentId?: string) => {
     const response = await fetch('/api/summaries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -266,6 +242,7 @@ export default function Home() {
 
     setSummaryData(formattedData);
 
+    // Store content ID for anonymous users and refresh recent summaries
     if (!user && contentId) {
       addAnonymousGeneratedContentId(contentId);
       await fetchRecentSummaries();
