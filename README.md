@@ -2,7 +2,7 @@
 
 OnePlace is a comprehensive YouTube/Podcast Summary Platform that enables users to generate concise summaries for video content, interact with an integrated Q&A system powered by LLM, and manage their content consumption via subscriptions and history. The platform supports both logged-in and anonymous users with persistent sessions and a seamless user experience.
 
-![OnePlace Platform](https://github.com/yourusername/oneplace/assets/yourusername/oneplace-screenshot.png)
+**Inviting contributors:** Feel free to think of enhancements and add a pull request. It will be amazing if we can build an amazing open source consumer product!
 
 ## Features
 
