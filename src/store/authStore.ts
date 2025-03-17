@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabaseClient';
 import { getUserProfile } from '@/lib/auth';
 import { User, Session } from '@supabase/supabase-js';
+import { captureException } from '@/lib/sentry';
 
 interface Profile {
   id: string;
@@ -41,16 +42,26 @@ export const useAuthStore = create<AuthState>(set => ({
       }
 
       supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session) {
-          const profile = await getUserProfile(session.user.id);
-          set({ user: session.user, session, profile, loading: false });
-          console.log('Auth changed - logged in:', session.user.email);
-        } else {
-          set({ user: null, session: null, profile: null, loading: false });
-          console.log('Auth changed - logged out');
+        try {
+          if (session) {
+            const profile = await getUserProfile(session.user.id);
+            set({ user: session.user, session, profile, loading: false });
+            console.log('Auth changed - logged in:', session.user.email);
+          } else {
+            set({ user: null, session: null, profile: null, loading: false });
+            console.log('Auth changed - logged out');
+          }
+        } catch (error) {
+          captureException(error, { 
+            context: 'Auth state change handler',
+            event
+          });
+          console.error('Error during auth state change:', error);
+          set({ loading: false });
         }
       });
     } catch (error) {
+      captureException(error, { context: 'Auth initialization' });
       console.error('Error checking login:', error);
       set({ user: null, session: null, profile: null, loading: false });
     }

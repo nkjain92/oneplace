@@ -7,6 +7,7 @@ import { AuthWrapper } from '@/components/AuthWrapper';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Initialize the Inter font according to styling guidelines
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -48,14 +49,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className='font-sans min-h-screen'>
-        <ThemeProvider>
-          <AuthWrapper>
-            <Navbar />
-            {children}
-          </AuthWrapper>
-          <SpeedInsights />
-          <Analytics />
-        </ThemeProvider>
+        <ErrorBoundary name="root">
+          <ThemeProvider>
+            <AuthWrapper>
+              <Navbar />
+              <ErrorBoundary name="content">
+                {children}
+              </ErrorBoundary>
+            </AuthWrapper>
+            <SpeedInsights />
+            <Analytics />
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
