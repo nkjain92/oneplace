@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Calendar, Tag, Users } from 'lucide-react';
+import { Calendar, Tag, Users, ExternalLink } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
@@ -64,6 +64,7 @@ export default function SummaryCard({
             <Link href={youtubeUrl} target='_blank' className='group inline-flex items-center'>
               <h2 className='text-xl md:text-2xl font-bold dark:text-white text-gray-900 leading-tight tracking-tight group-hover:text-blue-500 transition-colors duration-200'>
                 {title}
+                <ExternalLink size={16} className='ml-2 inline-flex opacity-60 group-hover:opacity-100 transition-opacity' />
               </h2>
             </Link>
           </div>
@@ -136,8 +137,18 @@ export default function SummaryCard({
             )}
           </div>
 
-          {/* Talk to video button */}
-          <div className='mt-2 md:mt-0 self-end'>
+          {/* Action buttons */}
+          <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-2'>
+            <Link href={`/chat/${videoId}?prompt=${encodeURIComponent('Provide a detailed summary of this video with 10-12 key points. Include main arguments, important facts, and any significant conclusions. Organize the information in a clear, structured format.')}`}>
+              <GlowButton
+                glowColors={['#6366f1', '#4f46e5', '#818cf8', '#a5b4fc']}
+                glowMode='breathe'
+                glowBlur='medium'
+                glowScale={1.5}
+                glowDuration={2.5}>
+                Show detailed summary
+              </GlowButton>
+            </Link>
             <Link href={`/chat/${videoId}`}>
               <GlowButton
                 glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
