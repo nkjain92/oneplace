@@ -49,7 +49,7 @@ export default function ChatPage() {
   const isAutoScrollingRef = useRef(true);
 
   // Initialize chat functionality
-  const { messages, handleInputChange, handleSubmit, isLoading, input, setInput } = useChat({
+  const { messages, handleInputChange, handleSubmit, isLoading, setInput } = useChat({
     api: '/api/chat',
     body: { videoId, sessionId },
     onFinish: () => {
