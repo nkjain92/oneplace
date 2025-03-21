@@ -57,10 +57,33 @@ export default function ChatPage() {
     },
   });
 
-  // Initialize session ID and mobile check
+  // Initialize session ID and check for detailed summary flag
   useEffect(() => {
     setSessionId(getChatSessionId());
-  }, []);
+    
+    // Check if we should show a detailed summary
+    if (typeof window !== 'undefined') {
+      const showDetailedSummary = sessionStorage.getItem('showDetailedSummary');
+      if (showDetailedSummary === 'true') {
+        // Clear the flag
+        sessionStorage.removeItem('showDetailedSummary');
+        // Set the detailed prompt
+        const detailedPrompt = "Please provide a detailed summary of this video with 10-12 bullet points covering all the key insights, main arguments, and important takeaways. Include any significant data points, expert opinions, and practical advice mentioned.";
+        setInputValue(detailedPrompt);
+        
+        // Also update the useChat state with the prompt
+        handleInputChange({ target: { value: detailedPrompt } } as React.ChangeEvent<HTMLTextAreaElement>);
+        
+        // Focus the textarea after setting the value and adjust height
+        setTimeout(() => {
+          if (textareaRef.current) {
+            adjustTextareaHeight(detailedPrompt);
+            textareaRef.current.focus();
+          }
+        }, 100);
+      }
+    }
+  }, [handleInputChange]);
 
   // Scroll to bottom function using the end anchor
   const scrollToBottom = useCallback((force = false) => {
@@ -101,6 +124,11 @@ export default function ChatPage() {
       setIsInputTooLong(false);
     }
     handleInputChange(e);
+    adjustTextareaHeight(value);
+  };
+  
+  // Adjust textarea height based on content
+  const adjustTextareaHeight = (value: string) => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
