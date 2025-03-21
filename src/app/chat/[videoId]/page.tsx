@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import SummaryCard from '@/components/SummaryCard';
 import { useChat } from '@ai-sdk/react';
@@ -26,7 +26,6 @@ interface SummaryData {
 
 export default function ChatPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const videoId = params.videoId as string;
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
@@ -35,7 +34,6 @@ export default function ChatPage() {
   const [textareaHeightClass, setTextareaHeightClass] = useState('h-auto');
   const [inputValue, setInputValue] = useState('');
   const [isInputTooLong, setIsInputTooLong] = useState(false);
-  const [hasSubmittedInitialPrompt, setHasSubmittedInitialPrompt] = useState(false);
 
   // Refs for DOM elements
   const messagesEndRef = useRef<HTMLDivElement>(null);
