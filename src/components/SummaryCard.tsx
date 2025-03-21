@@ -4,6 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
 import { Calendar, Tag, Users, ExternalLink } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
@@ -88,6 +89,7 @@ export default function SummaryCard({
             <Link href={youtubeUrl} target='_blank' className='group inline-flex items-center'>
               <h2 className='text-xl md:text-2xl font-bold dark:text-white text-gray-900 leading-tight tracking-tight group-hover:text-blue-500 transition-colors duration-200'>
                 {title}
+                <ExternalLink size={16} className='ml-2 inline-flex opacity-60 group-hover:opacity-100 transition-opacity' />
               </h2>
               <ExternalLink size={16} className='ml-2 opacity-70 dark:text-white text-gray-700 group-hover:opacity-100 group-hover:text-blue-500 transition-colors duration-200' />
             </Link>
@@ -174,6 +176,7 @@ export default function SummaryCard({
                 Show detailed summary
               </GlowButton>
             </DetailedSummaryButton>
+
             <Link href={`/chat/${videoId}`}>
               <GlowButton
                 glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}

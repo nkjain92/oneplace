@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import SummaryCard from '@/components/SummaryCard';
 import { useChat } from '@ai-sdk/react';
@@ -26,6 +26,7 @@ interface SummaryData {
 
 export default function ChatPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const videoId = params.videoId as string;
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
@@ -34,6 +35,7 @@ export default function ChatPage() {
   const [textareaHeightClass, setTextareaHeightClass] = useState('h-auto');
   const [inputValue, setInputValue] = useState('');
   const [isInputTooLong, setIsInputTooLong] = useState(false);
+  const [hasSubmittedInitialPrompt, setHasSubmittedInitialPrompt] = useState(false);
 
   // Refs for DOM elements
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export default function ChatPage() {
   const isAutoScrollingRef = useRef(true);
 
   // Initialize chat functionality
-  const { messages, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, handleInputChange, handleSubmit, isLoading, setInput } = useChat({
     api: '/api/chat',
     body: { videoId, sessionId },
     onFinish: () => {
@@ -59,8 +61,7 @@ export default function ChatPage() {
 
   // Initialize session ID and check for detailed summary flag
   useEffect(() => {
-    setSessionId(getChatSessionId());
-    
+    setSessionId(getChatSessionId());    
     // Check if we should show a detailed summary
     if (typeof window !== 'undefined') {
       const showDetailedSummary = sessionStorage.getItem('showDetailedSummary');
@@ -84,6 +85,7 @@ export default function ChatPage() {
       }
     }
   }, [handleInputChange]);
+
 
   // Scroll to bottom function using the end anchor
   const scrollToBottom = useCallback((force = false) => {
@@ -123,6 +125,7 @@ export default function ChatPage() {
     } else {
       setIsInputTooLong(false);
     }
+    // Ensure both local state and useChat state are in sync
     handleInputChange(e);
     adjustTextareaHeight();
   };
@@ -141,6 +144,21 @@ export default function ChatPage() {
       }
     }
   };
+  
+  // Function to programmatically set input value (for predefined prompts)
+  useEffect(() => {
+    if (inputValue && textareaRef.current) {
+      // Manually trigger resize for predefined prompts
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const maxHeight = 200;
+      if (scrollHeight <= maxHeight) {
+        setTextareaHeightClass(`h-[${scrollHeight}px]`);
+      } else {
+        setTextareaHeightClass(`h-[${maxHeight}px]`);
+      }
+    }
+  }, [inputValue]);
 
   // Fetch summary and transcript data
   useEffect(() => {
@@ -179,12 +197,20 @@ export default function ChatPage() {
 
   // Custom form submission handler
   const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    if (e.preventDefault) {
+      e.preventDefault();
+    }
     if (isInputTooLong || inputValue.trim() === '') return;
+    
     // Reset the textarea height after submission
     setTextareaHeightClass('h-auto');
+    
+    // Submit the message
     handleSubmit(e);
-    setInputValue(''); // Clear input after sending
+    
+    // Clear input after sending (both local state and useChat state)
+    setInputValue('');
+    setInput('');
   };
 
   // Handle keyboard shortcut for sending message
@@ -328,6 +354,7 @@ export default function ChatPage() {
                 onKeyDown={handleKeyPress}
                 placeholder='Ask a question about this video...'
                 className={`w-full resize-none bg-transparent py-3 pl-4 pr-12 dark:text-white text-gray-900 focus:outline-none focus:ring-0 dark:placeholder:text-gray-500 placeholder:text-gray-400 ${textareaHeightClass}`}
+                aria-label="Chat input"
               />
               <button
                 type='submit'
