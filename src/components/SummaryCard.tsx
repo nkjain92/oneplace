@@ -3,6 +3,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { Calendar, Tag, Users, ExternalLink } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
@@ -19,6 +21,29 @@ interface SummaryCardProps {
   peopleMentioned: string[];
   videoId: string;
   isSubscribed?: boolean;
+}
+
+// Custom button component for detailed summary
+interface DetailedSummaryButtonProps {
+  videoId: string;
+  children: React.ReactNode;
+}
+
+function DetailedSummaryButton({ videoId, children }: DetailedSummaryButtonProps) {
+  const router = useRouter();
+  
+  const handleClick = () => {
+    // Store the flag in sessionStorage
+    sessionStorage.setItem('showDetailedSummary', 'true');
+    // Navigate to the chat page
+    router.push(`/chat/${videoId}`);
+  };
+  
+  return (
+    <div onClick={handleClick} className="cursor-pointer">
+      {children}
+    </div>
+  );
 }
 
 export default function SummaryCard({
@@ -66,6 +91,7 @@ export default function SummaryCard({
                 {title}
                 <ExternalLink size={16} className='ml-2 inline-flex opacity-60 group-hover:opacity-100 transition-opacity' />
               </h2>
+              <ExternalLink size={16} className='ml-2 opacity-70 dark:text-white text-gray-700 group-hover:opacity-100 group-hover:text-blue-500 transition-colors duration-200' />
             </Link>
           </div>
           <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -138,24 +164,27 @@ export default function SummaryCard({
           </div>
 
           {/* Action buttons */}
-          <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-2'>
-            <Link href={`/chat/${videoId}?prompt=${encodeURIComponent('Provide a detailed summary of this video with 10-12 key points. Include main arguments, important facts, and any significant conclusions. Organize the information in a clear, structured format.')}`}>
+          <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-3'>
+            <DetailedSummaryButton videoId={videoId}>
               <GlowButton
-                glowColors={['#6366f1', '#4f46e5', '#818cf8', '#a5b4fc']}
+                glowColors={['#10b981', '#059669', '#34d399', '#6ee7b7']}
                 glowMode='breathe'
                 glowBlur='medium'
                 glowScale={1.5}
-                glowDuration={2.5}>
+                glowDuration={2.5}
+                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
                 Show detailed summary
               </GlowButton>
-            </Link>
+            </DetailedSummaryButton>
+
             <Link href={`/chat/${videoId}`}>
               <GlowButton
                 glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
                 glowMode='breathe'
                 glowBlur='medium'
                 glowScale={1.5}
-                glowDuration={2.5}>
+                glowDuration={2.5}
+                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
                 Chat with video
               </GlowButton>
             </Link>

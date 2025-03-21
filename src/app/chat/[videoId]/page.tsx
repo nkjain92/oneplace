@@ -59,43 +59,33 @@ export default function ChatPage() {
     },
   });
 
-  // Initialize session ID and mobile check
+  // Initialize session ID and check for detailed summary flag
   useEffect(() => {
-    setSessionId(getChatSessionId());
-  }, []);
-  
-  // Handle prompt parameter from URL
-  useEffect(() => {
-    // Check for predefined prompt in URL
-    const promptParam = searchParams.get('prompt');
-    
-    // Only proceed if all conditions are met
-    if (promptParam && !loading && summaryData && !hasSubmittedInitialPrompt && !isLoading) {
-      console.log('Preparing to submit prompt:', promptParam);
-      
-      // Set both the local input value and the useChat input value
-      setInputValue(promptParam);
-      setInput(promptParam);
-      
-      // Use a timeout to ensure everything is properly initialized
-      const timer = setTimeout(() => {
-        console.log('Submitting prompt now...');
+    setSessionId(getChatSessionId());    
+    // Check if we should show a detailed summary
+    if (typeof window !== 'undefined') {
+      const showDetailedSummary = sessionStorage.getItem('showDetailedSummary');
+      if (showDetailedSummary === 'true') {
+        // Clear the flag
+        sessionStorage.removeItem('showDetailedSummary');
+        // Set the detailed prompt
+        const detailedPrompt = "Please provide a detailed summary of this video with 10-12 bullet points covering all the key insights, main arguments, and important takeaways. Include any significant data points, expert opinions, and practical advice mentioned.";
+        setInputValue(detailedPrompt);
         
-        // Directly call the useChat's handleSubmit with a mock form event
-        const mockEvent = { preventDefault: () => {} } as React.FormEvent;
-        handleSubmit(mockEvent);
+        // Also update the useChat state with the prompt
+        handleInputChange({ target: { value: detailedPrompt } } as React.ChangeEvent<HTMLTextAreaElement>);
         
-        // Mark as submitted to prevent multiple submissions
-        setHasSubmittedInitialPrompt(true);
-        
-        // Clear the input value after submission
-        setInputValue('');
-      }, 1500);
-      
-      return () => clearTimeout(timer);
+        // Focus the textarea after setting the value and adjust height
+        setTimeout(() => {
+          if (textareaRef.current) {
+            adjustTextareaHeight();
+            textareaRef.current.focus();
+          }
+        }, 100);
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, loading, summaryData, hasSubmittedInitialPrompt, isLoading, setInput]);
+  }, [handleInputChange]);
+
 
   // Scroll to bottom function using the end anchor
   const scrollToBottom = useCallback((force = false) => {
@@ -137,8 +127,11 @@ export default function ChatPage() {
     }
     // Ensure both local state and useChat state are in sync
     handleInputChange(e);
-    setInput(value); // Explicitly update useChat's input state
-    
+    adjustTextareaHeight();
+  };
+  
+  // Adjust textarea height based on content
+  const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
