@@ -77,7 +77,7 @@ export default function ChatPage() {
         // Focus the textarea after setting the value and adjust height
         setTimeout(() => {
           if (textareaRef.current) {
-            adjustTextareaHeight(detailedPrompt);
+            adjustTextareaHeight();
             textareaRef.current.focus();
           }
         }, 100);
@@ -124,11 +124,11 @@ export default function ChatPage() {
       setIsInputTooLong(false);
     }
     handleInputChange(e);
-    adjustTextareaHeight(value);
+    adjustTextareaHeight();
   };
   
   // Adjust textarea height based on content
-  const adjustTextareaHeight = (value: string) => {
+  const adjustTextareaHeight = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
