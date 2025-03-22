@@ -13,7 +13,7 @@ import {
 } from '@/lib/localStorage';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import { Heart, Clock, Bell, Bookmark, ExternalLink } from 'lucide-react';
+import { Heart, Clock, Bell, Bookmark, ExternalLink, MessageCircle, Zap } from 'lucide-react';
 import { GlowButton } from '@/components/ui/glow-button';
 import { ChannelCard } from '@/components/ChannelCard';
 import { formatSummaryData, SummaryData } from '@/lib/utils/formatSummaryData';
@@ -236,18 +236,18 @@ export default function Home() {
         <div className='absolute top-60 right-[10%] w-[35rem] h-[35rem] dark:bg-purple-600 bg-purple-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-20 opacity-15 animate-blob-slow animation-delay-2000'></div>
         <div className='absolute -bottom-60 left-[20%] w-[40rem] h-[40rem] dark:bg-indigo-600 bg-indigo-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-20 opacity-15 animate-blob-slow animation-delay-4000'></div>
         <div className='absolute top-40 left-1/2 -translate-x-1/2 w-[25rem] h-[25rem] dark:bg-cyan-600 bg-cyan-400 rounded-full mix-blend-multiply filter blur-[128px] dark:opacity-15 opacity-10 animate-pulse animation-delay-3000'></div>
-        
+
         {/* Content container - maintains original width and positioning */}
         <div className='relative max-w-5xl mx-auto px-6 z-20'>
-
-        <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold mx-auto text-center dark:text-white text-gray-900 mb-6 tracking-tight'>
-            Podcast Summaries <br className='hidden md:block' />
+          <h1 className='text-4xl md:text-5xl lg:text-6xl font-bold mx-auto text-center dark:text-white text-gray-900 mb-6 tracking-tight'>
+            Podcast Summaries that <br className='hidden md:block' />
             <span className='bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600'>
-              in Your Inbox
+              Make You Smarter, Faster
             </span>
           </h1>
           <p className='text-xl md:text-2xl dark:text-gray-400 text-gray-600 mb-12 max-w-2xl mx-auto text-center'>
-            Summaries of Your Top Channels, Every Day
+            Never miss groundbreaking ideas from your favorite podcasts. Get crystal-clear summaries
+            delivered daily.
           </p>
           <div className='max-w-2xl mb-10 mx-auto'>
             <YoutubeUrlInput onSubmit={handleSubmit} isLoading={isLoading} className='flex-1' />
@@ -352,28 +352,28 @@ export default function Home() {
         <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
 
         <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-16 tracking-tight'>
-          How It Works
+          How You'll Level Up
         </h2>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
           {[
             {
               icon: <ExternalLink size={24} className='text-blue-400' />,
-              title: 'Paste a Link',
-              desc: 'Paste any YouTube podcast link you want to summarize',
+              title: 'Instant Actionable Summaries',
+              desc: 'Transform any YouTube content into knowledge you can use immediately',
               border: 'border-blue-500/30',
               glow: 'before:bg-blue-600/20',
             },
             {
-              icon: <Bookmark size={24} className='text-indigo-400' />,
-              title: 'Get a Summary',
-              desc: 'Receive a concise, detailed summary of the podcast content',
+              icon: <MessageCircle size={24} className='text-indigo-400' />,
+              title: 'Chat With Your Content',
+              desc: 'Get real-time answers to your questions directly from podcast summaries',
               border: 'border-indigo-500/30',
               glow: 'before:bg-indigo-600/20',
             },
             {
               icon: <Bell size={24} className='text-purple-400' />,
-              title: 'Subscribe for Updates',
-              desc: 'Get daily summaries of new content from your favorite channels',
+              title: 'Never Miss Key Insights',
+              desc: 'Daily summaries from your favorite experts delivered right to your inbox',
               border: 'border-purple-500/30',
               glow: 'before:bg-purple-600/20',
             },
@@ -407,10 +407,10 @@ export default function Home() {
         <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-black dark:to-gray-900/80 bg-gradient-to-b from-white to-gray-50 -z-10' />
 
         <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-4 tracking-tight'>
-          Subscribe To Your Channels
+          Supercharge Your Knowledge From Top Creators
         </h2>
         <p className='text-xl dark:text-gray-400 text-gray-600 text-center mb-16'>
-          Get daily summaries from your favorite creators
+          Stay ahead with insights that used to take hours to find
         </p>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-14'>
           {featuredChannels.map(channel => (
@@ -431,7 +431,7 @@ export default function Home() {
               glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
               glowMode='static'
               glowBlur='soft'>
-              Discover More Channels
+              Discover More Thought Leaders
             </GlowButton>
           </Link>
         </div>
@@ -443,26 +443,30 @@ export default function Home() {
         <div className='absolute inset-0 dark:bg-gradient-to-t dark:from-black dark:to-gray-900/60 bg-gradient-to-t from-gray-50 to-white -z-10' />
         <div className='absolute inset-0 dark:bg-grid-small-white/[0.05] bg-grid-small-black/[0.03] -z-10' />
 
+        <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-14 tracking-tight'>
+          How You'll Transform
+        </h2>
+
         <div className='grid grid-cols-1 md:grid-cols-3 gap-12'>
           {[
             {
               icon: <Clock size={28} className='text-amber-400' />,
-              title: 'Save Time',
-              desc: 'Get the key points without listening to hours of content',
+              title: 'Stay Effortlessly Informed',
+              desc: 'Absorb hours of content in just minutes, freeing up time for what matters most',
               bg: 'bg-amber-900/20',
               border: 'border-amber-500/30',
             },
             {
-              icon: <Bell size={28} className='text-emerald-400' />,
-              title: 'Stay Updated',
-              desc: 'Never miss important insights from your favorite creators',
+              icon: <Zap size={28} className='text-emerald-400' />,
+              title: 'Level Up Your Conversations',
+              desc: "Impress others with cutting-edge insights from the world's top thinkers",
               bg: 'bg-emerald-900/20',
               border: 'border-emerald-500/30',
             },
             {
               icon: <Bookmark size={28} className='text-blue-400' />,
-              title: 'Choose What to Hear',
-              desc: 'Decide which episodes are worth your full attention',
+              title: 'Supercharge Your Knowledge',
+              desc: 'Build a powerful mental library of ideas that give you an unfair advantage',
               bg: 'bg-blue-900/20',
               border: 'border-blue-500/30',
             },
@@ -479,76 +483,114 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        <div className='mt-16 text-center'>
+          <h3 className='text-2xl font-bold mb-8 dark:text-white text-gray-900'>
+            Ready to transform your knowledge?
+          </h3>
+          <a
+            href='#top'
+            onClick={e => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}>
+            <GlowButton
+              glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+              glowMode='static'
+              glowBlur='soft'
+              className='text-lg py-3 px-8'>
+              Start Summarizing Now
+            </GlowButton>
+          </a>
+        </div>
       </div>
 
       {/* Footer */}
       <footer className='py-12 px-6 dark:bg-gray-950 bg-gray-100 dark:border-t dark:border-gray-800 border-t border-gray-200'>
-        <div className='max-w-6xl mx-auto text-center'>
-          <p className='dark:text-gray-400 text-gray-600 flex items-center justify-center mb-4'>
-            Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in India
-          </p>
-          <div className='flex items-center justify-center gap-8 text-sm dark:text-gray-500 text-gray-600 mb-6'>
-            <a
-              href='mailto:founder@getoneplace.com'
-              className='dark:hover:text-blue-400 hover:text-blue-600 transition-colors'>
-              Email Feedback
-            </a>
-            <a
-              href='https://wa.me/919820963946'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='dark:hover:text-green-400 hover:text-green-600 transition-colors'>
-              Text Feedback
-            </a>
+        <div className='max-w-6xl mx-auto'>
+          {/* Final CTA section */}
+          <div className='text-center mb-12 pb-12 border-b border-gray-200 dark:border-gray-800'>
+            <h3 className='text-2xl md:text-3xl font-bold mb-6 dark:text-white text-gray-900'>
+              Ready to transform your knowledge?
+            </h3>
+            <p className='text-lg mb-8 dark:text-gray-400 text-gray-600 max-w-xl mx-auto'>
+              Join thousands who get the insights they need without spending hours listening
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className='px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300'>
+              Start Summarizing Now
+            </button>
           </div>
 
-          {/* GitHub Repository Link */}
-          <div className='mb-8 flex justify-center'>
-            <a
-              href='https://github.com/nkjain92/oneplace/'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='group relative flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300 shadow-sm hover:shadow-md'>
-              {/* Background effects */}
-              <div className='absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
-              <div className='absolute inset-0 bg-grid-small-black/[0.02] dark:bg-grid-small-white/[0.05] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
+          <div className='text-center'>
+            <p className='dark:text-gray-400 text-gray-600 flex items-center justify-center mb-4'>
+              Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in
+              India
+            </p>
+            <div className='flex items-center justify-center gap-8 text-sm dark:text-gray-500 text-gray-600 mb-6'>
+              <a
+                href='mailto:founder@getoneplace.com'
+                className='dark:hover:text-blue-400 hover:text-blue-600 transition-colors'>
+                Email Feedback
+              </a>
+              <a
+                href='https://wa.me/919820963946'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='dark:hover:text-green-400 hover:text-green-600 transition-colors'>
+                Text Feedback
+              </a>
+            </div>
 
-              {/* GitHub icon */}
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
-                <path d='M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22'></path>
-              </svg>
+            {/* GitHub Repository Link */}
+            <div className='mb-8 flex justify-center'>
+              <a
+                href='https://github.com/nkjain92/oneplace/'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='group relative flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300 shadow-sm hover:shadow-md'>
+                {/* Background effects */}
+                <div className='absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
+                <div className='absolute inset-0 bg-grid-small-black/[0.02] dark:bg-grid-small-white/[0.05] opacity-0 group-hover:opacity-100 transition-opacity rounded-lg'></div>
 
-              {/* Text */}
-              <span className='relative z-10 font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
-                Open Source on GitHub
-              </span>
+                {/* GitHub icon */}
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                  <path d='M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22'></path>
+                </svg>
 
-              {/* Arrow icon */}
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                className='w-4 h-4 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all'>
-                <path d='M5 12h14'></path>
-                <path d='m12 5 7 7-7 7'></path>
-              </svg>
-            </a>
-          </div>
+                {/* Text */}
+                <span className='relative z-10 font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                  Open Source on GitHub
+                </span>
 
-          <div className='text-xs dark:text-gray-600 text-gray-500'>
-            © {new Date().getFullYear()} OnePlace. All rights reserved.
+                {/* Arrow icon */}
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  className='w-4 h-4 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all'>
+                  <path d='M5 12h14'></path>
+                  <path d='m12 5 7 7-7 7'></path>
+                </svg>
+              </a>
+            </div>
+
+            <div className='text-xs dark:text-gray-600 text-gray-500'>
+              © {new Date().getFullYear()} OnePlace. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>
