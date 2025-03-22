@@ -1,6 +1,66 @@
 // src/lib/auth.ts - Authentication utilities for user management
 import { supabase } from './supabaseClient';
 
+// Define the session type
+interface PersistedSession {
+  access_token: string;
+  refresh_token: string;
+  expires_at?: number;
+  [key: string]: any; // Allow for additional properties
+}
+
+// Persisted session management
+let persistedSession: PersistedSession | null = null;
+
+export function setPersistedSession(session: PersistedSession): void {
+  persistedSession = session;
+  
+  // Also try to store in localStorage for page reloads
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('oneplace_session', JSON.stringify({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at
+      }));
+    } catch (e) {
+      console.error("Failed to persist session to localStorage:", e);
+    }
+  }
+}
+
+export function getPersistedSession(): PersistedSession | null {
+  if (persistedSession) return persistedSession;
+  
+  // Try to retrieve from localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      const storedSession = localStorage.getItem('oneplace_session');
+      if (storedSession) {
+        persistedSession = JSON.parse(storedSession) as PersistedSession;
+        return persistedSession;
+      }
+    } catch (e) {
+      console.error("Failed to retrieve session from localStorage:", e);
+    }
+  }
+  
+  return null;
+}
+
+export function clearPersistedSession(): void {
+  persistedSession = null;
+  
+  // Also clear from localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem('oneplace_session');
+    } catch (e) {
+      console.error("Failed to clear session from localStorage:", e);
+    }
+  }
+}
+
 /**
  * Register a new user and create their profile
  * @param name User's display name
@@ -115,5 +175,109 @@ export async function getUserProfile(userId: string) {
   } catch (error) {
     console.error('Get profile error:', error);
     return null;
+  }
+}
+
+/**
+ * Send a one-time password to the user's email for password reset
+ */
+export async function sendPasswordResetOtp(email: string): Promise<{ data: any; error: Error | null }> {
+  console.log("📧 Sending password reset OTP to:", email);
+  
+  try {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+      }
+    });
+    
+    if (error) {
+      console.error("❌ Failed to send OTP:", error.message);
+      return { data: null, error };
+    }
+    
+    console.log("✅ OTP sent successfully:", data);
+    return { data, error: null };
+  } catch (error) {
+    console.error("🚨 Exception during OTP send:", error);
+    return { 
+      data: null, 
+      error: error instanceof Error ? error : new Error('Unknown error during OTP send') 
+    };
+  }
+}
+
+/**
+ * Verify OTP and update password using direct fetch API
+ */
+export async function verifyOtpAndUpdatePassword(
+  email: string, 
+  otp: string, 
+  password: string
+): Promise<{ data: any; error: Error | null }> {
+  console.log("🔄 Verifying OTP for:", email);
+  
+  try {
+    // Step 1: Verify the OTP
+    const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      },
+      body: JSON.stringify({
+        email,
+        token: otp,
+        type: 'email',
+      }),
+    });
+    
+    const verifyData = await verifyResponse.json();
+    console.log("📊 OTP verification response:", verifyData);
+    
+    if (!verifyResponse.ok) {
+      console.error("❌ OTP verification failed:", verifyData.error, verifyData.error_description);
+      return { 
+        data: null, 
+        error: new Error(verifyData.error_description || verifyData.error || 'OTP verification failed') 
+      };
+    }
+    
+    // Store the session from verification for use in the next step
+    setPersistedSession(verifyData);
+    
+    // Step 2: Update the password
+    const updateResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        'Authorization': `Bearer ${verifyData.access_token}`,
+      },
+      body: JSON.stringify({
+        password,
+      }),
+    });
+    
+    const updateData = await updateResponse.json();
+    console.log("📊 Password update response:", updateData);
+    
+    if (!updateResponse.ok) {
+      console.error("❌ Password update failed:", updateData.error, updateData.error_description);
+      return { 
+        data: null, 
+        error: new Error(updateData.error_description || updateData.error || 'Password update failed') 
+      };
+    }
+    
+    console.log("✅ Password updated successfully");
+    return { data: updateData, error: null };
+  } catch (error) {
+    console.error("🚨 Exception during password reset:", error);
+    return { 
+      data: null, 
+      error: error instanceof Error ? error : new Error('Unknown error during password reset') 
+    };
   }
 }

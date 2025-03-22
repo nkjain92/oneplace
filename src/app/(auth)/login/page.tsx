@@ -29,10 +29,19 @@ export default function Login() {
     }
 
     try {
-      await signIn(email, password);
+      console.log("🔑 Attempting to sign in with:", email);
+      const { data, error } = await signIn(email, password);
+      
+      if (error) {
+        console.error("❌ Sign in failed:", error.message);
+        setError(error.message);
+        return;
+      }
+      
+      console.log("✅ Sign in successful");
       router.push('/');
     } catch (error: unknown) {
-      console.error('Login error:', error);
+      console.error('🚨 Login error:', error);
       setError(error instanceof Error ? error.message : 'Failed to sign in');
     } finally {
       setIsLoading(false);
