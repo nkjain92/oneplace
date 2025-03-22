@@ -483,46 +483,37 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </div>
 
-        <div className='mt-16 text-center'>
-          <h3 className='text-2xl font-bold mb-8 dark:text-white text-gray-900'>
+      {/* Final CTA Section */}
+      <div className='relative w-full py-16 mb-12 overflow-hidden'>
+        {/* Subtle grid overlay */}
+        <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
+
+        {/* Gradient background */}
+        <div className='absolute inset-0 dark:bg-gradient-to-b dark:from-gray-900 dark:to-black bg-gradient-to-b from-gray-100 to-white -z-10' />
+
+        <div className='max-w-6xl mx-auto px-6 text-center'>
+          <h2 className='text-3xl md:text-4xl font-bold mb-8 dark:text-white text-gray-900'>
             Ready to transform your knowledge?
-          </h3>
-          <a
-            href='#top'
-            onClick={e => {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}>
-            <GlowButton
-              glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
-              glowMode='static'
-              glowBlur='soft'
-              className='text-lg py-3 px-8'>
-              Start Summarizing Now
-            </GlowButton>
-          </a>
+          </h2>
+          <div className='flex justify-center'>
+            <a
+              href='#top'
+              onClick={e => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className='inline-block px-10 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-full shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-lg'>
+              Start Summarizing Now <span className='ml-2'>→</span>
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
       <footer className='py-12 px-6 dark:bg-gray-950 bg-gray-100 dark:border-t dark:border-gray-800 border-t border-gray-200'>
         <div className='max-w-6xl mx-auto'>
-          {/* Final CTA section */}
-          <div className='text-center mb-12 pb-12 border-b border-gray-200 dark:border-gray-800'>
-            <h3 className='text-2xl md:text-3xl font-bold mb-6 dark:text-white text-gray-900'>
-              Ready to transform your knowledge?
-            </h3>
-            <p className='text-lg mb-8 dark:text-gray-400 text-gray-600 max-w-xl mx-auto'>
-              Join thousands who get the insights they need without spending hours listening
-            </p>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className='px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300'>
-              Start Summarizing Now
-            </button>
-          </div>
-
           <div className='text-center'>
             <p className='dark:text-gray-400 text-gray-600 flex items-center justify-center mb-4'>
               Made with <Heart size={16} className='text-red-500 mx-1' fill='currentColor' /> in
