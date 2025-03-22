@@ -31,16 +31,16 @@ interface DetailedSummaryButtonProps {
 
 function DetailedSummaryButton({ videoId, children }: DetailedSummaryButtonProps) {
   const router = useRouter();
-  
+
   const handleClick = () => {
     // Store the flag in sessionStorage
     sessionStorage.setItem('showDetailedSummary', 'true');
     // Navigate to the chat page
     router.push(`/chat/${videoId}`);
   };
-  
+
   return (
-    <div onClick={handleClick} className="cursor-pointer">
+    <div onClick={handleClick} className='cursor-pointer'>
       {children}
     </div>
   );
@@ -89,9 +89,11 @@ export default function SummaryCard({
             <Link href={youtubeUrl} target='_blank' className='group inline-flex items-center'>
               <h2 className='text-xl md:text-2xl font-bold dark:text-white text-gray-900 leading-tight tracking-tight group-hover:text-blue-500 transition-colors duration-200'>
                 {title}
-                <ExternalLink size={16} className='ml-2 inline-flex opacity-60 group-hover:opacity-100 transition-opacity' />
               </h2>
-              <ExternalLink size={16} className='ml-2 opacity-70 dark:text-white text-gray-700 group-hover:opacity-100 group-hover:text-blue-500 transition-colors duration-200' />
+              <ExternalLink
+                size={16}
+                className='ml-2 opacity-70 dark:text-white text-gray-700 group-hover:opacity-100 group-hover:text-blue-500 transition-colors duration-200'
+              />
             </Link>
           </div>
           <div className='flex flex-wrap items-center justify-between gap-3'>
