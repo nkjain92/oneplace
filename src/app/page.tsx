@@ -352,7 +352,7 @@ export default function Home() {
         <div className='absolute inset-0 dark:bg-grid-small-white/[0.1] bg-grid-small-black/[0.05] -z-10' />
 
         <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-16 tracking-tight'>
-          How You'll Level Up
+          How You&apos;ll Level Up
         </h2>
         <div className='grid grid-cols-1 md:grid-cols-3 gap-10'>
           {[
@@ -444,7 +444,7 @@ export default function Home() {
         <div className='absolute inset-0 dark:bg-grid-small-white/[0.05] bg-grid-small-black/[0.03] -z-10' />
 
         <h2 className='text-3xl font-bold dark:text-white text-gray-900 text-center mb-14 tracking-tight'>
-          How You'll Transform
+          How You&apos;ll Transform
         </h2>
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-12'>
