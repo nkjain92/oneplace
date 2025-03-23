@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUp } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
-  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,10 +65,10 @@ export default function SignUp() {
               </div>
               <h1 className='text-2xl font-bold dark:text-white text-gray-900 mb-2'>Verification Email Sent</h1>
               <p className='dark:text-gray-400 text-gray-500 mb-2'>
-                We've sent a verification link to <strong>{email}</strong>
+                We&apos;ve sent a verification link to <strong>{email}</strong>
               </p>
               <p className='dark:text-gray-400 text-gray-500 mb-6'>
-                Please check your inbox and follow the link to complete your registration. If you don't see the email, check your spam folder.
+                Please check your inbox and follow the link to complete your registration. If you don&apos;t see the email, check your spam folder.
               </p>
               <div className='mt-6'>
                 <Link href='/login'>

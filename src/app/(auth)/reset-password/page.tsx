@@ -90,7 +90,7 @@ export default function ResetPassword() {
     try {
       console.log("🔄 Verifying OTP and updating password...");
       
-      const { data, error } = await verifyOtpAndUpdatePassword(email, otp, password);
+      const { error } = await verifyOtpAndUpdatePassword(email, otp, password);
       
       if (error) {
         console.error("❌ Password reset failed:", error.message);
@@ -281,7 +281,7 @@ function AuthDebugger() {
     error: string | null;
     accessToken: string;
     expires: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
