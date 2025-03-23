@@ -43,33 +43,59 @@ const MAX_VIDEOS_PER_CHANNEL = 3; // Limit videos processed per channel
 const MAX_SUMMARY_RETRIES = 3; // Maximum number of retries for summary generation
 const RETRY_DELAY_MS = 1000; // Base delay for retry in milliseconds (will be multiplied by 2^retry_count)
 // Summary prompt template - simplified for efficiency
-const SUMMARY_PROMPT = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
+const SUMMARY_PROMPT = `You are an expert content summarizer who creates structured, concise summaries. Analyze the following transcript and create a summary that matches the original's tone and style.
 
-Summary: [summary text]
+OUTPUT FORMAT (STRICTLY FOLLOW THIS):
+Summary:
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
 
-Tags: tag1, tag2, tag3
+[OPTIONAL - Include ONLY if there is a HIGHLY impactful, specific quote that meaningfully represents a key insight. Do NOT include generic statements or routine explanations:]
+> "Direct quote from the content"
+
+Tags: tag1, tag2, tag3, tag4, tag5
 
 People: person1, person2, person3
 
-The summary should be in bullet points and 150-250 words in markdown format with proper highlights for important keywords. The main part of the bullet point should be highlighted and in bold. The summary should incorporate the 5-8 most important and useful points for readers to learn from each video, while still organizing information efficiently. Towards the end of the summary text, also include quotes if you think they are important and novel.
+REQUIREMENTS:
+1. NEVER use phrases like "this video," "the speaker," "in this transcript," etc. Avoid referencing the medium (e.g., 'this video,' 'the speaker').
+2. Match the EXACT tone and language style of the original content.
+3. Each bullet point MUST follow the format: * **Bold main point**: Explanation
+4. Include exactly 5-8 bullet points covering the most important insights.
+5. Keep total summary length between 150-250 words.
+6. Include 5-10 relevant lowercase tags separated by commas.
+7. List all people mentioned, separated by commas. If no specific people are mentioned, write "None" in the People section.
+8. QUOTES: Only include quotes that are genuinely impactful, specific, and central to the content's message. If no strong quotes exist, OMIT the quote section entirely. Never fabricate quotes or include generic statements.
 
-IMPORTANT FORMATTING INSTRUCTIONS:
-1. Start with "Summary:" on its own line, followed by the summary text in bullet points
-2. After the summary, add a blank line, then "Tags:" followed by the comma-separated tags
-3. After the tags, add a blank line, then "People:" followed by the comma-separated people mentioned
-4. Do not include any additional sections or headers
+GOOD EXAMPLE:
+-----
+Summary:
+* **AI Risk Management Framework**: The framework provides a comprehensive approach for organizations to address AI risks while promoting innovation.
+* **Four Core Functions**: The framework is built around four functions: govern, map, measure, and manage.
+* **Customizable Implementation**: Organizations can adapt the framework based on their context, use cases, and risk profiles.
+* **Transparency Requirements**: Companies must document AI systems and communicate clearly about their capabilities and limitations.
+* **Continuous Testing**: Regular evaluation of AI systems helps identify and mitigate potential risks and biases.
 
-Example format:
----
-Summary: This is the summary text. It can contain **bold text**, *italics*, and bullet points:
+Tags: ai ethics, risk management, governance, compliance, technology policy, data security
 
-* **Main point 1**: Explanation
-* **Main point 2**: Explanation
+People: Mark Johnson, Sarah Williams, David Chen
+-----
 
-Tags: technology, ai, coding, tutorial
+BAD EXAMPLE:
+-----
+Summary:
+In this video, the speaker discusses AI risk management. The transcript shows several points about governance and implementation. They talk about four functions and mention transparency.
 
-People: John Doe, Jane Smith
----
+> "We need to be careful with AI" [BAD - this is too generic and not impactful]
+
+Tags: AI, management, video
+People: Johnson, someone else
+-----
+
+Now analyze and summarize the following transcript:
 
 Transcript: {transcript}`;
 // Function to extract YouTube video ID from URL
@@ -211,12 +237,17 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
         model: 'gpt-4o-mini',
         messages: [
           {
+            role: 'system',
+            content: 'You are a professional content summarizer that produces precise, structured summaries in a consistent format. Always match the tone of the original content. Never refer to "this transcript" or "this video". Focus only on the content itself. Follow instructions exactly.'
+          },
+          {
             role: 'user',
             content: prompt,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.3,
         max_tokens: 1000,
+        response_format: { type: "text" },
       }),
     });
     
@@ -240,50 +271,99 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     let tags: string[] = [];
     let people: string[] = [];
     let inSummarySection = false;
+    let inTagsSection = false;
+    let inPeopleSection = false;
     const lines = fullSummary.split('\n');
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
+      
+      // Detect section headers
       if (line.startsWith('Summary:')) {
         inSummarySection = true;
-        // Get the initial part after "Summary:"
-        summary = line.substring('Summary:'.length).trim();
-        continue;
+        inTagsSection = false;
+        inPeopleSection = false;
+        continue; // Skip the header line itself
       } else if (line.startsWith('Tags:')) {
         inSummarySection = false;
+        inTagsSection = true;
+        inPeopleSection = false;
+        
+        // Extract tags from the same line if present
         const tagsString = line.substring('Tags:'.length).trim();
-        tags = tagsString
-          .split(',')
-          .map((tag: string) => tag.trim())
-          .filter((tag: string) => tag.length > 0);
+        if (tagsString.length > 0) {
+          tags = tagsString
+            .split(',')
+            .map((tag: string) => tag.trim())
+            .filter((tag: string) => tag.length > 0);
+        }
+        continue;
       } else if (line.startsWith('People:')) {
         inSummarySection = false;
+        inTagsSection = false;
+        inPeopleSection = true;
+        
+        // Extract people from the same line if present
         const peopleString = line.substring('People:'.length).trim();
-        people = peopleString
-          .split(',')
-          .map((person: string) => person.trim())
-          .filter((person: string) => person.length > 0);
-      } else if (inSummarySection) {
-        // Preserve line breaks in markdown by adding proper newlines
+        if (peopleString.length > 0) {
+          people = peopleString
+            .split(',')
+            .map((person: string) => person.trim())
+            .filter((person: string) => person.length > 0);
+        }
+        continue;
+      }
+      
+      // Process content based on current section
+      if (inSummarySection && line.length > 0) {
         if (summary.length > 0) {
-          // If line is empty, it's a paragraph break in markdown
-          if (line === '') {
-            summary += '\n\n';
-          } else {
-            summary += '\n' + line;
-          }
+          summary += '\n' + line;
         } else {
           summary = line;
         }
+      } else if (inTagsSection && line.length > 0 && tags.length === 0) {
+        // Only process if we haven't extracted tags from the header line
+        tags = line
+          .split(',')
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+      } else if (inPeopleSection && line.length > 0 && people.length === 0) {
+        // Only process if we haven't extracted people from the header line
+        people = line
+          .split(',')
+          .map((person: string) => person.trim())
+          .filter((person: string) => person.length > 0);
       }
     }
+    
+    // Clean up the summary - remove any meta-references
+    summary = summary
+      .replace(/in this transcript/gi, '')
+      .replace(/in this video/gi, '')
+      .replace(/the speaker says/gi, '')
+      .replace(/the speaker mentions/gi, '')
+      .replace(/the video discusses/gi, '')
+      .replace(/the transcript shows/gi, '')
+      .replace(/according to the transcript/gi, '')
+      .replace(/according to the video/gi, '')
+      .trim();
     
     // Validate the parsed results
     if (!summary || summary.length < 10) {
       throw new Error('Parsed summary is too short or empty');
     }
     
-    console.log('Extracted Summary:', summary);
+    // Ensure tags and people are arrays even if empty
+    tags = Array.isArray(tags) ? tags : [];
+    
+    // Handle the case where "None" is specified for people
+    if (people.length === 1 && people[0].toLowerCase() === "none") {
+      people = [];
+    } else {
+      people = Array.isArray(people) ? people : [];
+    }
+    
+    console.log('Extracted Summary:', summary.substring(0, 150) + '...');
     console.log('Extracted Tags:', tags);
     console.log('Extracted People:', people);
     

@@ -1,31 +1,57 @@
 // src/lib/prompts.ts - Collection of prompt templates used for AI generation tasks
-export const SUMMARY_PROMPT = `Generate a summary of the following transcript, followed by tags and people mentioned, in this format:
+export const SUMMARY_PROMPT = `You are an expert content summarizer who creates structured, concise summaries. Analyze the following transcript and create a summary that matches the original's tone and style.
 
-Summary: [summary text]
+OUTPUT FORMAT (STRICTLY FOLLOW THIS):
+Summary:
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
+* **[Main Point]**: [Clear explanation]
 
-Tags: tag1, tag2, tag3
+[OPTIONAL - Include ONLY if there is a HIGHLY impactful, specific quote that meaningfully represents a key insight. Do NOT include generic statements or routine explanations:]
+> "Direct quote from the content"
+
+Tags: tag1, tag2, tag3, tag4, tag5
 
 People: person1, person2, person3
 
-The summary should be in bullet points and 150-250 words in markdown format with proper highlights for important keywords. The main part of the bullet point should be highlighted and in bold. The summary should incorporate the 5-8 most important and useful points for readers to learn from each video, while still organizing information efficiently. Towards the end of the summary text, also include quotes if you think they are important and novel.
+REQUIREMENTS:
+1. NEVER use phrases like "this video," "the speaker," "in this transcript," etc. Avoid referencing the medium (e.g., 'this video,' 'the speaker').
+2. Match the EXACT tone and language style of the original content.
+3. Each bullet point MUST follow the format: * **Bold main point**: Explanation
+4. Include exactly 5-8 bullet points covering the most important insights.
+5. Keep total summary length between 150-250 words.
+6. Include 5-10 relevant lowercase tags separated by commas.
+7. List all people mentioned, separated by commas. If no specific people are mentioned, write "None" in the People section.
+8. QUOTES: Only include quotes that are genuinely impactful, specific, and central to the content's message. If no strong quotes exist, OMIT the quote section entirely. Never fabricate quotes or include generic statements.
 
-IMPORTANT FORMATTING INSTRUCTIONS:
-1. Start with "Summary:" on its own line, followed by the summary text in bullet points
-2. After the summary, add a blank line, then "Tags:" followed by the comma-separated tags
-3. After the tags, add a blank line, then "People:" followed by the comma-separated people mentioned
-4. Do not include any additional sections or headers
+GOOD EXAMPLE:
+-----
+Summary:
+* **AI Risk Management Framework**: The framework provides a comprehensive approach for organizations to address AI risks while promoting innovation.
+* **Four Core Functions**: The framework is built around four functions: govern, map, measure, and manage.
+* **Customizable Implementation**: Organizations can adapt the framework based on their context, use cases, and risk profiles.
+* **Transparency Requirements**: Companies must document AI systems and communicate clearly about their capabilities and limitations.
+* **Continuous Testing**: Regular evaluation of AI systems helps identify and mitigate potential risks and biases.
 
-Example format:
----
-Summary: This is the summary text. It can contain **bold text**, *italics*, and bullet points:
+Tags: ai ethics, risk management, governance, compliance, technology policy, data security
 
-* **Main point 1**: Explanation
-* **Main point 2**: Explanation
+People: Mark Johnson, Sarah Williams, David Chen
+-----
 
-Tags: technology, ai, coding, tutorial
+BAD EXAMPLE:
+-----
+Summary:
+In this video, the speaker discusses AI risk management. The transcript shows several points about governance and implementation. They talk about four functions and mention transparency.
 
-People: John Doe, Jane Smith
----
+> "We need to be careful with AI" [BAD - this is too generic and not impactful]
+
+Tags: AI, management, video
+People: Johnson, someone else
+-----
+
+Now analyze and summarize the following transcript:
 
 Transcript: {transcript}`;
 
