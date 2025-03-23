@@ -388,37 +388,87 @@ function extractVideoLink(entry: any) {
 }
 // Function to calculate total video duration from transcript segments in seconds
 function calculateVideoDuration(transcriptData: any): number {
-  if (!transcriptData || !transcriptData.transcript || !Array.isArray(transcriptData.transcript)) {
-    return 0;
+  // Handle the case where transcriptData might be a string
+  let parsedData;
+  
+  if (typeof transcriptData === 'string') {
+    try {
+      parsedData = JSON.parse(transcriptData);
+    } catch (error) {
+      console.error('Error parsing transcript data string:', error);
+      return 0;
+    }
+  } else {
+    parsedData = transcriptData;
   }
   
-  // If the transcript is empty, return 0
-  if (transcriptData.transcript.length === 0) {
-    return 0;
-  }
-  
-  try {
-    // Get the last segment
-    const lastSegment = transcriptData.transcript[transcriptData.transcript.length - 1];
-    
-    // If the last segment has start and duration properties, use them to calculate total duration
-    if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
-      return Math.round(lastSegment.start + lastSegment.duration);
+  // Handle the transcript_raw format with "success" and "transcript" array
+  if (parsedData && parsedData.success && Array.isArray(parsedData.transcript)) {
+    // If the transcript is empty, return 0
+    if (parsedData.transcript.length === 0) {
+      return 0;
     }
     
-    // Alternative calculation: sum up all durations
-    let totalDuration = 0;
-    for (const segment of transcriptData.transcript) {
-      if (segment.duration !== undefined) {
-        totalDuration += segment.duration;
+    try {
+      // Get the last segment
+      const lastSegment = parsedData.transcript[parsedData.transcript.length - 1];
+      
+      // Check for offset and duration properties (as in the sample format)
+      if (lastSegment.offset !== undefined && lastSegment.duration !== undefined) {
+        const offsetValue = parseFloat(lastSegment.offset);
+        const durationValue = parseFloat(lastSegment.duration);
+        return Math.round(offsetValue + durationValue);
       }
+      
+      // Handle original format with start and duration properties
+      if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
+        return Math.round(lastSegment.start + lastSegment.duration);
+      }
+      
+      // Alternative calculation: sum up all durations
+      let totalDuration = 0;
+      for (const segment of parsedData.transcript) {
+        if (segment.duration !== undefined) {
+          totalDuration += parseFloat(typeof segment.duration === 'string' ? segment.duration : segment.duration);
+        }
+      }
+      
+      return Math.round(totalDuration);
+    } catch (error) {
+      console.error('Error calculating video duration:', error);
+      return 0;
+    }
+  }
+  
+  // Handle legacy format 
+  if (parsedData?.transcript && Array.isArray(parsedData.transcript)) {
+    // Original implementation
+    if (parsedData.transcript.length === 0) {
+      return 0;
     }
     
-    return Math.round(totalDuration);
-  } catch (error) {
-    console.error('Error calculating video duration:', error);
-    return 0;
+    try {
+      const lastSegment = parsedData.transcript[parsedData.transcript.length - 1];
+      
+      if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
+        return Math.round(lastSegment.start + lastSegment.duration);
+      }
+      
+      let totalDuration = 0;
+      for (const segment of parsedData.transcript) {
+        if (segment.duration !== undefined) {
+          totalDuration += segment.duration;
+        }
+      }
+      
+      return Math.round(totalDuration);
+    } catch (error) {
+      console.error('Error calculating video duration from legacy format:', error);
+      return 0;
+    }
   }
+  
+  return 0;
 }
 // Main function to handle the request
 async function handleRequest(req: Request) {
