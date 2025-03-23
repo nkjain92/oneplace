@@ -75,7 +75,7 @@ export async function signUp(name: string, email: string, password: string) {
   }
 
   try {
-    // Create the user in auth.users
+    // Create the user in auth.users with email confirmation enabled
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -83,19 +83,30 @@ export async function signUp(name: string, email: string, password: string) {
         data: {
           name, // Store name in auth metadata for immediate access
         },
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
       },
     });
 
     if (error) throw error;
     if (!data.user) throw new Error('User creation failed');
 
-    // Insert profile into profiles table using the same UUID
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      name,
+    // For client-side profile creation that bypasses RLS
+    // Use a direct server API call to create the profile
+    const profileResponse = await fetch('/api/profiles/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: data.user.id,
+        name,
+      }),
     });
 
-    if (profileError) throw profileError;
+    if (!profileResponse.ok) {
+      const profileError = await profileResponse.json();
+      throw new Error(profileError.message || 'Failed to create user profile');
+    }
 
     return data;
   } catch (error) {
