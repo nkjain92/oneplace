@@ -1,7 +1,7 @@
 // src/app/(auth)/reset-password/page.tsx - Reset password page for setting a new password
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,7 +11,17 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
-export default function ResetPassword() {
+// Wrapper component that doesn't use useSearchParams directly
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-[calc(100vh-64px)]"><p>Loading...</p></div>}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+// Inner component that uses useSearchParams
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
