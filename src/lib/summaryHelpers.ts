@@ -122,47 +122,99 @@ export function parseAiResponse(fullText: string): {
   let summary = '';
   let tags: string[] = [];
   let people: string[] = [];
-  const lines = fullText.split('\n');
   let inSummarySection = false;
-
+  let inTagsSection = false;
+  let inPeopleSection = false;
+  const lines = fullText.split('\n');
+  
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-
+    
+    // Detect section headers
     if (line.startsWith('Summary:')) {
       inSummarySection = true;
-      // Get the initial part after "Summary:"
-      summary = line.substring('Summary:'.length).trim();
-      continue;
+      inTagsSection = false;
+      inPeopleSection = false;
+      continue; // Skip the header line itself
     } else if (line.startsWith('Tags:')) {
       inSummarySection = false;
+      inTagsSection = true;
+      inPeopleSection = false;
+      
+      // Extract tags from the same line if present
       const tagsString = line.substring('Tags:'.length).trim();
-      tags = tagsString
-        .split(',')
-        .map((tag: string) => tag.trim())
-        .filter((tag: string) => tag.length > 0);
+      if (tagsString.length > 0) {
+        tags = tagsString
+          .split(',')
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+      }
+      continue;
     } else if (line.startsWith('People:')) {
       inSummarySection = false;
+      inTagsSection = false;
+      inPeopleSection = true;
+      
+      // Extract people from the same line if present
       const peopleString = line.substring('People:'.length).trim();
-      people = peopleString
-        .split(',')
-        .map((person: string) => person.trim())
-        .filter((person: string) => person.length > 0);
-    } else if (inSummarySection) {
-      // Preserve line breaks in markdown by adding proper newlines
-      // Only add a new line if the summary already has content
+      if (peopleString.length > 0) {
+        people = peopleString
+          .split(',')
+          .map((person: string) => person.trim())
+          .filter((person: string) => person.length > 0);
+      }
+      continue;
+    }
+    
+    // Process content based on current section
+    if (inSummarySection && line.length > 0) {
       if (summary.length > 0) {
-        // If line is empty, it's a paragraph break in markdown
-        if (line === '') {
-          summary += '\n\n';
-        } else {
-          summary += '\n' + line;
-        }
+        summary += '\n' + line;
       } else {
         summary = line;
       }
+    } else if (inTagsSection && line.length > 0 && tags.length === 0) {
+      // Only process if we haven't extracted tags from the header line
+      tags = line
+        .split(',')
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0);
+    } else if (inPeopleSection && line.length > 0 && people.length === 0) {
+      // Only process if we haven't extracted people from the header line
+      people = line
+        .split(',')
+        .map((person: string) => person.trim())
+        .filter((person: string) => person.length > 0);
     }
   }
-
+  
+  // Clean up the summary - remove any meta-references
+  summary = summary
+    .replace(/in this transcript/gi, '')
+    .replace(/in this video/gi, '')
+    .replace(/the speaker says/gi, '')
+    .replace(/the speaker mentions/gi, '')
+    .replace(/the video discusses/gi, '')
+    .replace(/the transcript shows/gi, '')
+    .replace(/according to the transcript/gi, '')
+    .replace(/according to the video/gi, '')
+    .trim();
+  
+  // Validate the parsed results
+  if (!summary || summary.length < 10) {
+    throw new Error('Parsed summary is too short or empty');
+  }
+  
+  // Ensure tags and people are arrays even if empty
+  tags = Array.isArray(tags) ? tags : [];
+  
+  // Handle the case where "None" is specified for people
+  if (people.length === 1 && people[0].toLowerCase() === "none") {
+    people = [];
+  } else {
+    people = Array.isArray(people) ? people : [];
+  }
+  
   return { summary, tags, people };
 }
 
