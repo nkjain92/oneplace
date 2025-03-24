@@ -75,6 +75,9 @@ export async function signUp(name: string, email: string, password: string) {
   }
 
   try {
+    // Get the app domain from environment variables
+    const appDomain = process.env.NEXT_PUBLIC_APP_DOMAIN || window.location.origin;
+    
     // Create the user in auth.users with email confirmation enabled
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -83,7 +86,10 @@ export async function signUp(name: string, email: string, password: string) {
         data: {
           name, // Store name in auth metadata for immediate access
         },
-        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        // Properly format the URL - check if appDomain already includes protocol
+        emailRedirectTo: appDomain.startsWith('http') 
+          ? `${appDomain}/auth/confirm` 
+          : `https://${appDomain}/auth/confirm`,
       },
     });
 
