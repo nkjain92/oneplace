@@ -6,7 +6,7 @@ interface PersistedSession {
   access_token: string;
   refresh_token: string;
   expires_at?: number;
-  [key: string]: any; // Allow for additional properties
+  [key: string]: unknown; // Allow for additional properties
 }
 
 // Persisted session management
@@ -192,7 +192,7 @@ export async function getUserProfile(userId: string) {
 /**
  * Send a one-time password to the user's email for password reset
  */
-export async function sendPasswordResetOtp(email: string): Promise<{ data: any; error: Error | null }> {
+export async function sendPasswordResetOtp(email: string): Promise<{ data: unknown; error: Error | null }> {
   console.log("📧 Sending password reset OTP to:", email);
   
   try {
@@ -226,7 +226,7 @@ export async function verifyOtpAndUpdatePassword(
   email: string, 
   otp: string, 
   password: string
-): Promise<{ data: any; error: Error | null }> {
+): Promise<{ data: unknown; error: Error | null }> {
   console.log("🔄 Verifying OTP for:", email);
   
   try {

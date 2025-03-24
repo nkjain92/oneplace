@@ -31,7 +31,7 @@ export default function ForgotPassword() {
 
     try {
       console.log("📧 Sending password reset OTP to:", email);
-      const { data, error } = await sendPasswordResetOtp(email);
+      const { error } = await sendPasswordResetOtp(email);
       
       if (error) {
         console.error("❌ Failed to send OTP:", error.message);
@@ -148,7 +148,7 @@ export default function ForgotPassword() {
             )}
             
             <div className="text-xs dark:text-gray-400 text-gray-500 text-center">
-              We'll send a 6-digit verification code to your email
+              We&apos;ll send a 6-digit verification code to your email
             </div>
           </form>
 

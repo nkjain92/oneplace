@@ -85,7 +85,7 @@ export default function EmailConfirmation() {
                   <CheckCircle className='h-12 w-12 text-green-500' />
                 </div>
                 <h1 className='text-2xl font-bold dark:text-white text-gray-900 mb-2'>Email Verified Successfully</h1>
-                <p className='dark:text-gray-400 text-gray-500'>Your email has been verified. You'll be redirected to the home page in a few seconds.</p>
+                <p className='dark:text-gray-400 text-gray-500'>Your email has been verified. You&apos;ll be redirected to the home page in a few seconds.</p>
               </>
             )}
 
