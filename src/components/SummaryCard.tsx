@@ -1,15 +1,17 @@
 // src/components/SummaryCard.tsx - Component for displaying video summary information with tags and channel details
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Calendar, Tag, Users, ExternalLink } from 'lucide-react';
+import { Calendar, Tag, Users, ExternalLink, FileText } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
 import { Components } from 'react-markdown';
+import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { supabase } from '@/lib/supabaseClient';
 
 interface SummaryCardProps {
   title: string;
@@ -43,6 +45,123 @@ function DetailedSummaryButton({ videoId, children }: DetailedSummaryButtonProps
     <div onClick={handleClick} className='cursor-pointer'>
       {children}
     </div>
+  );
+}
+
+// Custom button/overlay component for transcript display
+interface TranscriptDialogProps {
+  videoId: string;
+  children: React.ReactNode;
+}
+
+function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
+
+  // Function to decode HTML entities
+  const decodeHtmlEntities = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
+  const handleOpenTranscript = async () => {
+    setIsOpen(true);
+    if (!transcript) {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await supabase
+          .from('summaries')
+          .select('transcript')
+          .eq('content_id', videoId)
+          .single();
+
+        if (error) throw error;
+        
+        if (data?.transcript) {
+          // Store the transcript text directly
+          setTranscript(data.transcript);
+        } else {
+          setError('No transcript data available');
+        }
+      } catch (err) {
+        console.error('Error fetching transcript:', err);
+        setError('Error loading transcript data');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Split transcript into paragraphs (roughly)
+  const formatTranscript = (text: string) => {
+    if (!text) return [];
+    
+    // Decode HTML entities like &#39; (apostrophe)
+    const decodedText = decodeHtmlEntities(text);
+    
+    // Split text into reasonably sized paragraphs (sentences endings or every ~500 chars)
+    const chunks: string[] = [];
+    const sentences = decodedText.split(/(?<=[.!?])\s+/);
+    
+    let currentChunk = '';
+    for (const sentence of sentences) {
+      if (currentChunk.length + sentence.length > 500) {
+        chunks.push(currentChunk);
+        currentChunk = sentence;
+      } else {
+        currentChunk += (currentChunk ? ' ' : '') + sentence;
+      }
+    }
+    
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+    
+    return chunks;
+  };
+
+  return (
+    <>
+      <div onClick={handleOpenTranscript} className='cursor-pointer'>
+        {children}
+      </div>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col dark:bg-gray-950 bg-white">
+          <DialogTitle className="text-xl font-bold dark:text-white text-gray-900">Full Transcript</DialogTitle>
+          <DialogDescription className="dark:text-gray-300 text-gray-600 mt-1">
+            Complete transcript for this content
+          </DialogDescription>
+          <div className="flex-1 overflow-y-auto p-4">
+            {loading ? (
+              <div className="flex items-center justify-center h-40">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 dark:border-blue-500 border-blue-600"></div>
+              </div>
+            ) : error ? (
+              <div className="dark:bg-red-900/20 bg-red-100 dark:text-red-400 text-red-600 p-4 rounded-md dark:border dark:border-red-800 border-red-200">
+                {error}
+              </div>
+            ) : transcript ? (
+              <div className="space-y-4">
+                {formatTranscript(transcript).map((paragraph, index) => (
+                  <p key={index} className="dark:text-white text-gray-900 leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <div className="dark:bg-gray-800/50 bg-gray-100/70 backdrop-blur-sm rounded-xl p-6 dark:border-gray-800 border-gray-300 text-center">
+                <p className="dark:text-gray-400 text-gray-600">Transcript not available for this content.</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -167,6 +286,19 @@ export default function SummaryCard({
 
           {/* Action buttons */}
           <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-3'>
+            <TranscriptDialog videoId={videoId}>
+              <GlowButton
+                glowColors={['#f97316', '#ea580c', '#fb923c', '#fdba74']}
+                glowMode='breathe'
+                glowBlur='medium'
+                glowScale={1.5}
+                glowDuration={2.5}
+                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto flex items-center justify-center gap-1'>
+                <FileText size={16} />
+                <span>Show Transcript</span>
+              </GlowButton>
+            </TranscriptDialog>
+
             <DetailedSummaryButton videoId={videoId}>
               <GlowButton
                 glowColors={['#10b981', '#059669', '#34d399', '#6ee7b7']}
