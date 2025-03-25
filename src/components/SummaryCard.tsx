@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Calendar, Tag, Users, ExternalLink, FileText } from 'lucide-react';
+import { Calendar, Tag, Users, ExternalLink, FileText, MessageCircle, BookOpen } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
@@ -284,44 +284,40 @@ export default function SummaryCard({
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-3'>
-            <TranscriptDialog videoId={videoId}>
-              <GlowButton
-                glowColors={['#f97316', '#ea580c', '#fb923c', '#fdba74']}
-                glowMode='breathe'
-                glowBlur='medium'
-                glowScale={1.5}
-                glowDuration={2.5}
-                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto flex items-center justify-center gap-1'>
-                <FileText size={16} />
-                <span>Show Transcript</span>
-              </GlowButton>
-            </TranscriptDialog>
+          {/* Action buttons - Redesigned layout */}
+          <div className='w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-0 dark:border-gray-800 border-gray-200'>
+            <div className='flex flex-col sm:flex-row gap-2'>
+              {/* Primary action */}
+              <Link href={`/chat/${videoId}`} className='w-full sm:flex-1'>
+                <GlowButton
+                  glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+                  glowMode='breathe'
+                  glowBlur='medium'
+                  glowScale={1.5}
+                  glowDuration={2.5}
+                  className='whitespace-nowrap text-sm w-full px-4 py-2 flex items-center justify-center gap-1'>
+                  <MessageCircle size={16} />
+                  <span>Chat with video</span>
+                </GlowButton>
+              </Link>
+              
+              {/* Secondary actions */}
+              <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
+                <DetailedSummaryButton videoId={videoId}>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                    <BookOpen size={16} className='mr-1' />
+                    <span>Detailed Summary</span>
+                  </button>
+                </DetailedSummaryButton>
 
-            <DetailedSummaryButton videoId={videoId}>
-              <GlowButton
-                glowColors={['#10b981', '#059669', '#34d399', '#6ee7b7']}
-                glowMode='breathe'
-                glowBlur='medium'
-                glowScale={1.5}
-                glowDuration={2.5}
-                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
-                Show detailed summary
-              </GlowButton>
-            </DetailedSummaryButton>
-
-            <Link href={`/chat/${videoId}`}>
-              <GlowButton
-                glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
-                glowMode='breathe'
-                glowBlur='medium'
-                glowScale={1.5}
-                glowDuration={2.5}
-                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
-                Chat with video
-              </GlowButton>
-            </Link>
+                <TranscriptDialog videoId={videoId}>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                    <FileText size={16} className='mr-1' />
+                    <span>Show Transcript</span>
+                  </button>
+                </TranscriptDialog>
+              </div>
+            </div>
           </div>
         </div>
       </div>
