@@ -1,18 +1,17 @@
 // src/components/SummaryCard.tsx - Component for displaying video summary information with tags and channel details
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Calendar, Tag, Users, ExternalLink, FileText, MessageCircle, BookOpen, X } from 'lucide-react';
+import { Calendar, Tag, Users, ExternalLink, FileText, MessageCircle, BookOpen } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
 import { Components } from 'react-markdown';
 import { Dialog, DialogOverlay, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 
 // Custom DialogContent with no X button
@@ -85,66 +84,14 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
   const [formattedChunks, setFormattedChunks] = useState<string[]>([]);
 
   // Function to decode HTML entities
-  const decodeHtmlEntities = (text: string) => {
+  const decodeHtmlEntities = useCallback((text: string) => {
     const textarea = document.createElement('textarea');
     textarea.innerHTML = text;
     return textarea.value;
-  };
-
-  // Pre-fetch transcript data when component mounts
-  React.useEffect(() => {
-    // Start with a small delay to not block other resources
-    const timer = setTimeout(() => {
-      fetchTranscript();
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, [videoId]);
-
-  // Separate fetch function to be reusable
-  const fetchTranscript = async () => {
-    if (transcript) return;
-    
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('summaries')
-        .select('transcript')
-        .eq('content_id', videoId)
-        .single();
-
-      if (error) throw error;
-      
-      if (data?.transcript) {
-        // Store the transcript text directly
-        setTranscript(data.transcript);
-        
-        // Process the transcript in a web worker or at least in the next tick
-        // to avoid blocking the main thread
-        setTimeout(() => {
-          setFormattedChunks(formatTranscript(data.transcript));
-        }, 0);
-      } else {
-        setError('No transcript data available');
-      }
-    } catch (err) {
-      console.error('Error fetching transcript:', err);
-      setError('Error loading transcript data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOpenTranscript = () => {
-    setIsOpen(true);
-    if (!transcript) {
-      fetchTranscript();
-    }
-  };
+  }, []);
 
   // Split transcript into paragraphs (roughly) - optimized version
-  const formatTranscript = (text: string) => {
+  const formatTranscript = useCallback((text: string) => {
     if (!text) return [];
     
     // Decode HTML entities like &#39; (apostrophe)
@@ -178,7 +125,49 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
     }
     
     return chunks;
-  };
+  }, [decodeHtmlEntities]);
+
+  // Fetch transcript when needed via API route
+  const fetchTranscript = useCallback(async () => {
+    // Don't fetch if we already have the transcript
+    if (transcript) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch from our API route instead of directly from Supabase
+      const response = await fetch(`/api/transcript/${videoId}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch transcript');
+      }
+      
+      const data = await response.json();
+      
+      if (data?.transcript) {
+        // Store the transcript text
+        setTranscript(data.transcript);
+        
+        // Process the transcript
+        setFormattedChunks(formatTranscript(data.transcript));
+      } else {
+        setError('No transcript data available');
+      }
+    } catch (err) {
+      console.error('Error fetching transcript:', err);
+      setError(err instanceof Error ? err.message : 'Error loading transcript data');
+    } finally {
+      setLoading(false);
+    }
+  }, [transcript, videoId, formatTranscript]);
+
+  // Handler for opening the transcript dialog
+  const handleOpenTranscript = useCallback(() => {
+    setIsOpen(true);
+    fetchTranscript();
+  }, [fetchTranscript]);
 
   // Memoize the paragraph rendering to avoid unnecessary re-renders
   const paragraphElements = React.useMemo(() => {
@@ -188,6 +177,29 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
       </p>
     ));
   }, [formattedChunks]);
+
+  // Skeleton loader for transcript content
+  const SkeletonLoader = () => (
+    <div className="animate-pulse space-y-4">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -210,9 +222,8 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
             <div className="absolute inset-0 dark:bg-grid-small-white/[0.01] bg-grid-small-black/[0.01] pointer-events-none"></div>
             <div className="relative z-10">
               {loading ? (
-                <div className="flex flex-col items-center justify-center h-40 gap-2">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent border-b-transparent dark:border-blue-500 border-blue-600"></div>
-                  <p className="text-sm dark:text-gray-400 text-gray-500">Loading transcript...</p>
+                <div className="py-2">
+                  <SkeletonLoader />
                 </div>
               ) : error ? (
                 <div className="dark:bg-red-900/20 bg-red-100 dark:text-red-400 text-red-600 p-3 rounded-md dark:border dark:border-red-800 border-red-200">
@@ -370,7 +381,7 @@ export default function SummaryCard({
           </div>
 
           {/* Action buttons - Redesigned layout */}
-          <div className='w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-0 dark:border-gray-800 border-gray-200'>
+          <div className='w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-0 dark:border-gray-800 border-gray-200 md:ml-auto'>
             <div className='flex flex-col sm:flex-row gap-2'>
               {/* Primary action */}
               <Link href={`/chat/${videoId}`} className='w-full sm:flex-1'>
@@ -380,7 +391,7 @@ export default function SummaryCard({
                   glowBlur='medium'
                   glowScale={1.5}
                   glowDuration={2.5}
-                  className='whitespace-nowrap text-sm w-full px-4 py-2 flex items-center justify-center gap-1'>
+                  className='whitespace-nowrap text-sm w-full px-4 py-2 flex items-center justify-center gap-1 dark:bg-blue-600 dark:hover:bg-blue-700 bg-blue-500 hover:bg-blue-600 text-white transition-colors'>
                   <MessageCircle size={16} />
                   <span>Chat with video</span>
                 </GlowButton>
