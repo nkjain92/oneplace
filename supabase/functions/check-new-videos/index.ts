@@ -43,7 +43,7 @@ const MAX_VIDEOS_PER_CHANNEL = 3; // Limit videos processed per channel
 const MAX_SUMMARY_RETRIES = 3; // Maximum number of retries for summary generation
 const RETRY_DELAY_MS = 1000; // Base delay for retry in milliseconds (will be multiplied by 2^retry_count)
 // Summary prompt template - simplified for efficiency
-const SUMMARY_PROMPT = `You are an expert content summarizer who creates structured, concise summaries. Analyze the following transcript and create a summary that matches the original's tone and style.
+const SUMMARY_PROMPT = `You are an expert content summarizer who creates structured, concise summaries. Analyze the following content and create a summary that matches the original's tone and style.
 
 OUTPUT FORMAT (STRICTLY FOLLOW THIS):
 Summary:
@@ -64,10 +64,9 @@ REQUIREMENTS:
 1. NEVER use phrases like "this video," "the speaker," "in this transcript," etc. Avoid referencing the medium (e.g., 'this video,' 'the speaker').
 2. Match the EXACT tone and language style of the original content.
 3. Each bullet point MUST follow the format: * **Bold main point**: Explanation
-4. Include exactly 5-8 bullet points covering the most important insights.
-5. Keep total summary length between 150-250 words.
-6. Include 5-10 relevant lowercase tags separated by commas.
-7. List all people mentioned, separated by commas. If no specific people are mentioned, write "None" in the People section.
+4. Include only bullet points covering the most important insights. Keep it concise.
+5. Include 5-10 relevant lowercase tags separated by commas.
+6. List all people mentioned, separated by commas. If no specific people are mentioned, write "None" in the People section.
 8. QUOTES: Only include quotes that are genuinely impactful, specific, and central to the content's message. If no strong quotes exist, OMIT the quote section entirely. Never fabricate quotes or include generic statements.
 
 GOOD EXAMPLE:
@@ -95,9 +94,9 @@ Tags: AI, management, video
 People: Johnson, someone else
 -----
 
-Now analyze and summarize the following transcript:
+Now analyze and summarize the following content:
 
-Transcript: {transcript}`;
+Content: {transcript}`;
 // Function to extract YouTube video ID from URL
 function extractYouTubeVideoId(url: string) {
   if (!url) return null;
