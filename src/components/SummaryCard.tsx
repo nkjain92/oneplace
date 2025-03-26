@@ -59,6 +59,7 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string | null>(null);
+  const [formattedChunks, setFormattedChunks] = useState<string[]>([]);
 
   // Function to decode HTML entities
   const decodeHtmlEntities = (text: string) => {
@@ -67,53 +68,85 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
     return textarea.value;
   };
 
-  const handleOpenTranscript = async () => {
-    setIsOpen(true);
-    if (!transcript) {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data, error } = await supabase
-          .from('summaries')
-          .select('transcript')
-          .eq('content_id', videoId)
-          .single();
+  // Pre-fetch transcript data when component mounts
+  React.useEffect(() => {
+    // Start with a small delay to not block other resources
+    const timer = setTimeout(() => {
+      fetchTranscript();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [videoId]);
 
-        if (error) throw error;
+  // Separate fetch function to be reusable
+  const fetchTranscript = async () => {
+    if (transcript) return;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('summaries')
+        .select('transcript')
+        .eq('content_id', videoId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data?.transcript) {
+        // Store the transcript text directly
+        setTranscript(data.transcript);
         
-        if (data?.transcript) {
-          // Store the transcript text directly
-          setTranscript(data.transcript);
-        } else {
-          setError('No transcript data available');
-        }
-      } catch (err) {
-        console.error('Error fetching transcript:', err);
-        setError('Error loading transcript data');
-      } finally {
-        setLoading(false);
+        // Process the transcript in a web worker or at least in the next tick
+        // to avoid blocking the main thread
+        setTimeout(() => {
+          setFormattedChunks(formatTranscript(data.transcript));
+        }, 0);
+      } else {
+        setError('No transcript data available');
       }
+    } catch (err) {
+      console.error('Error fetching transcript:', err);
+      setError('Error loading transcript data');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Split transcript into paragraphs (roughly)
+  const handleOpenTranscript = () => {
+    setIsOpen(true);
+    if (!transcript) {
+      fetchTranscript();
+    }
+  };
+
+  // Split transcript into paragraphs (roughly) - optimized version
   const formatTranscript = (text: string) => {
     if (!text) return [];
     
     // Decode HTML entities like &#39; (apostrophe)
     const decodedText = decodeHtmlEntities(text);
     
-    // Split text into reasonably sized paragraphs (sentences endings or every ~500 chars)
+    // Use a more efficient approach to chunking
+    // Split by sentences but create chunks of roughly 500 chars
+    // This avoids excessive regex operations and array manipulations
     const chunks: string[] = [];
+    let currentChunk = '';
+    let currentSize = 0;
+    const chunkSize = 500;
+    
+    // Quick split by common sentence endings
     const sentences = decodedText.split(/(?<=[.!?])\s+/);
     
-    let currentChunk = '';
     for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > 500) {
+      if (currentSize + sentence.length > chunkSize) {
         chunks.push(currentChunk);
         currentChunk = sentence;
+        currentSize = sentence.length;
       } else {
-        currentChunk += (currentChunk ? ' ' : '') + sentence;
+        if (currentChunk) currentChunk += ' ';
+        currentChunk += sentence;
+        currentSize += sentence.length + 1; // +1 for the space
       }
     }
     
@@ -124,6 +157,15 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
     return chunks;
   };
 
+  // Memoize the paragraph rendering to avoid unnecessary re-renders
+  const paragraphElements = React.useMemo(() => {
+    return formattedChunks.map((paragraph, index) => (
+      <p key={index} className="dark:text-white text-gray-900 leading-relaxed">
+        {paragraph}
+      </p>
+    ));
+  }, [formattedChunks]);
+
   return (
     <>
       <div onClick={handleOpenTranscript} className='cursor-pointer'>
@@ -131,7 +173,7 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col dark:bg-gray-950 bg-white">
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] max-h-[90vh] overflow-hidden flex flex-col dark:bg-gray-950 bg-white sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] xl:max-w-[75%] 2xl:max-w-[65%]">
           <DialogTitle className="text-xl font-bold dark:text-white text-gray-900">Full Transcript</DialogTitle>
           <DialogDescription className="dark:text-gray-300 text-gray-600 mt-1">
             Complete transcript for this content
@@ -145,13 +187,15 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
               <div className="dark:bg-red-900/20 bg-red-100 dark:text-red-400 text-red-600 p-4 rounded-md dark:border dark:border-red-800 border-red-200">
                 {error}
               </div>
+            ) : formattedChunks.length > 0 ? (
+              <div className="space-y-4">
+                {paragraphElements}
+              </div>
             ) : transcript ? (
               <div className="space-y-4">
-                {formatTranscript(transcript).map((paragraph, index) => (
-                  <p key={index} className="dark:text-white text-gray-900 leading-relaxed">
-                    {paragraph}
-                  </p>
-                ))}
+                <p className="dark:text-white text-gray-900 leading-relaxed">
+                  {transcript}
+                </p>
               </div>
             ) : (
               <div className="dark:bg-gray-800/50 bg-gray-100/70 backdrop-blur-sm rounded-xl p-6 dark:border-gray-800 border-gray-300 text-center">
