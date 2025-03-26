@@ -1,15 +1,40 @@
 // src/components/SummaryCard.tsx - Component for displaying video summary information with tags and channel details
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Calendar, Tag, Users, ExternalLink } from 'lucide-react';
+import { Calendar, Tag, Users, ExternalLink, FileText, MessageCircle, BookOpen, X } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
 import { Components } from 'react-markdown';
+import { Dialog, DialogOverlay, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
+
+// Custom DialogContent with no X button
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPrimitive.Portal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "bg-background fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  </DialogPrimitive.Portal>
+));
+DialogContent.displayName = 'DialogContent';
 
 interface SummaryCardProps {
   title: string;
@@ -43,6 +68,185 @@ function DetailedSummaryButton({ videoId, children }: DetailedSummaryButtonProps
     <div onClick={handleClick} className='cursor-pointer'>
       {children}
     </div>
+  );
+}
+
+// Custom button/overlay component for transcript display
+interface TranscriptDialogProps {
+  videoId: string;
+  children: React.ReactNode;
+}
+
+function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
+  const [formattedChunks, setFormattedChunks] = useState<string[]>([]);
+
+  // Function to decode HTML entities
+  const decodeHtmlEntities = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
+  // Pre-fetch transcript data when component mounts
+  React.useEffect(() => {
+    // Start with a small delay to not block other resources
+    const timer = setTimeout(() => {
+      fetchTranscript();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [videoId]);
+
+  // Separate fetch function to be reusable
+  const fetchTranscript = async () => {
+    if (transcript) return;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase
+        .from('summaries')
+        .select('transcript')
+        .eq('content_id', videoId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data?.transcript) {
+        // Store the transcript text directly
+        setTranscript(data.transcript);
+        
+        // Process the transcript in a web worker or at least in the next tick
+        // to avoid blocking the main thread
+        setTimeout(() => {
+          setFormattedChunks(formatTranscript(data.transcript));
+        }, 0);
+      } else {
+        setError('No transcript data available');
+      }
+    } catch (err) {
+      console.error('Error fetching transcript:', err);
+      setError('Error loading transcript data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenTranscript = () => {
+    setIsOpen(true);
+    if (!transcript) {
+      fetchTranscript();
+    }
+  };
+
+  // Split transcript into paragraphs (roughly) - optimized version
+  const formatTranscript = (text: string) => {
+    if (!text) return [];
+    
+    // Decode HTML entities like &#39; (apostrophe)
+    const decodedText = decodeHtmlEntities(text);
+    
+    // Use a more efficient approach to chunking
+    // Split by sentences but create chunks of roughly 500 chars
+    // This avoids excessive regex operations and array manipulations
+    const chunks: string[] = [];
+    let currentChunk = '';
+    let currentSize = 0;
+    const chunkSize = 500;
+    
+    // Quick split by common sentence endings
+    const sentences = decodedText.split(/(?<=[.!?])\s+/);
+    
+    for (const sentence of sentences) {
+      if (currentSize + sentence.length > chunkSize) {
+        chunks.push(currentChunk);
+        currentChunk = sentence;
+        currentSize = sentence.length;
+      } else {
+        if (currentChunk) currentChunk += ' ';
+        currentChunk += sentence;
+        currentSize += sentence.length + 1; // +1 for the space
+      }
+    }
+    
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+    
+    return chunks;
+  };
+
+  // Memoize the paragraph rendering to avoid unnecessary re-renders
+  const paragraphElements = React.useMemo(() => {
+    return formattedChunks.map((paragraph, index) => (
+      <p key={index} className="dark:text-white text-gray-900 leading-relaxed">
+        {paragraph}
+      </p>
+    ));
+  }, [formattedChunks]);
+
+  return (
+    <>
+      <div onClick={handleOpenTranscript} className='cursor-pointer'>
+        {children}
+      </div>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] max-h-[90vh] overflow-hidden flex flex-col dark:bg-gray-950 bg-white sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] xl:max-w-[75%] 2xl:max-w-[65%] border dark:border-gray-800/60 border-gray-200/90 shadow-xl">
+          {/* Simplified header */}
+          <div className="border-b dark:border-gray-800/40 border-gray-200/60 px-4 py-3">
+            <DialogTitle className="text-lg font-bold dark:text-white text-gray-900">Full Transcript</DialogTitle>
+            <DialogDescription className="dark:text-gray-300 text-gray-600 mt-0.5 text-sm">
+              Complete transcript for this content
+            </DialogDescription>
+          </div>
+          
+          {/* Content with reduced padding */}
+          <div className="flex-1 overflow-y-auto p-4 relative">
+            <div className="absolute inset-0 dark:bg-grid-small-white/[0.01] bg-grid-small-black/[0.01] pointer-events-none"></div>
+            <div className="relative z-10">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center h-40 gap-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent border-b-transparent dark:border-blue-500 border-blue-600"></div>
+                  <p className="text-sm dark:text-gray-400 text-gray-500">Loading transcript...</p>
+                </div>
+              ) : error ? (
+                <div className="dark:bg-red-900/20 bg-red-100 dark:text-red-400 text-red-600 p-3 rounded-md dark:border dark:border-red-800 border-red-200">
+                  {error}
+                </div>
+              ) : formattedChunks.length > 0 ? (
+                <div className="space-y-3">
+                  {paragraphElements}
+                </div>
+              ) : transcript ? (
+                <div className="space-y-3">
+                  <p className="dark:text-white text-gray-900 leading-relaxed">
+                    {transcript}
+                  </p>
+                </div>
+              ) : (
+                <div className="dark:bg-gray-800/50 bg-gray-100/70 rounded-lg p-4 dark:border-gray-800 border-gray-300 text-center">
+                  <p className="dark:text-gray-400 text-gray-600">Transcript not available for this content.</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Simplified footer */}
+          <div className="border-t dark:border-gray-800/40 border-gray-200/60 px-4 py-2 flex justify-end">
+            <DialogClose asChild>
+              <button className="rounded-md text-sm px-4 py-2 flex items-center justify-center bg-gradient-to-r dark:from-blue-900/80 dark:to-indigo-900/80 from-blue-500 to-indigo-500 text-white font-medium border dark:border-blue-800/50 border-blue-400/50 hover:opacity-90 transition-all duration-200 shadow-sm">
+                Close
+              </button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -165,31 +369,40 @@ export default function SummaryCard({
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className='mt-2 md:mt-0 self-end flex flex-col sm:flex-row gap-3'>
-            <DetailedSummaryButton videoId={videoId}>
-              <GlowButton
-                glowColors={['#10b981', '#059669', '#34d399', '#6ee7b7']}
-                glowMode='breathe'
-                glowBlur='medium'
-                glowScale={1.5}
-                glowDuration={2.5}
-                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
-                Show detailed summary
-              </GlowButton>
-            </DetailedSummaryButton>
+          {/* Action buttons - Redesigned layout */}
+          <div className='w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-0 dark:border-gray-800 border-gray-200'>
+            <div className='flex flex-col sm:flex-row gap-2'>
+              {/* Primary action */}
+              <Link href={`/chat/${videoId}`} className='w-full sm:flex-1'>
+                <GlowButton
+                  glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
+                  glowMode='breathe'
+                  glowBlur='medium'
+                  glowScale={1.5}
+                  glowDuration={2.5}
+                  className='whitespace-nowrap text-sm w-full px-4 py-2 flex items-center justify-center gap-1'>
+                  <MessageCircle size={16} />
+                  <span>Chat with video</span>
+                </GlowButton>
+              </Link>
+              
+              {/* Secondary actions */}
+              <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
+                <DetailedSummaryButton videoId={videoId}>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                    <BookOpen size={16} className='mr-1' />
+                    <span>Detailed Summary</span>
+                  </button>
+                </DetailedSummaryButton>
 
-            <Link href={`/chat/${videoId}`}>
-              <GlowButton
-                glowColors={['#4263eb', '#3b5bdb', '#5c7cfa', '#748ffc']}
-                glowMode='breathe'
-                glowBlur='medium'
-                glowScale={1.5}
-                glowDuration={2.5}
-                className='whitespace-nowrap text-sm sm:text-base w-full sm:w-auto'>
-                Chat with video
-              </GlowButton>
-            </Link>
+                <TranscriptDialog videoId={videoId}>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                    <FileText size={16} className='mr-1' />
+                    <span>Show Transcript</span>
+                  </button>
+                </TranscriptDialog>
+              </div>
+            </div>
           </div>
         </div>
       </div>
