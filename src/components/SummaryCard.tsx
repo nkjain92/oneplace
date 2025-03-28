@@ -82,6 +82,7 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string | null>(null);
   const [formattedChunks, setFormattedChunks] = useState<string[]>([]);
+  const [copied, setCopied] = useState(false);
 
   // Function to decode HTML entities
   const decodeHtmlEntities = useCallback((text: string) => {
@@ -169,6 +170,20 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
     fetchTranscript();
   }, [fetchTranscript]);
 
+  // Function to copy transcript to clipboard
+  const copyTranscriptToClipboard = useCallback(() => {
+    if (!transcript) return;
+    
+    try {
+      navigator.clipboard.writeText(transcript);
+      // Show feedback and auto-reset after 2 seconds
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy transcript:', err);
+    }
+  }, [transcript]);
+
   // Memoize the paragraph rendering to avoid unnecessary re-renders
   const paragraphElements = React.useMemo(() => {
     return formattedChunks.map((paragraph, index) => (
@@ -247,10 +262,31 @@ function TranscriptDialog({ videoId, children }: TranscriptDialogProps) {
             </div>
           </div>
           
-          {/* Simplified footer */}
-          <div className="border-t dark:border-gray-800/40 border-gray-200/60 px-4 py-2 flex justify-end">
+          {/* Footer with copy and close buttons */}
+          <div className="border-t dark:border-gray-800/40 border-gray-200/60 px-4 py-2 flex justify-between">
+            <button 
+              onClick={copyTranscriptToClipboard} 
+              disabled={!transcript || loading}
+              className="rounded-md text-sm px-4 py-2 flex items-center justify-center bg-gradient-to-r dark:from-green-900/80 dark:to-emerald-900/80 from-green-500 to-emerald-500 text-white font-medium border dark:border-green-800/50 border-green-400/50 hover:opacity-90 transition-all duration-200 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              {copied ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                    <path d="M20 6 9 17l-5-5"/>
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                  </svg>
+                  Copy Transcript
+                </>
+              )}
+            </button>
             <DialogClose asChild>
-              <button className="rounded-md text-sm px-4 py-2 flex items-center justify-center bg-gradient-to-r dark:from-blue-900/80 dark:to-indigo-900/80 from-blue-500 to-indigo-500 text-white font-medium border dark:border-blue-800/50 border-blue-400/50 hover:opacity-90 transition-all duration-200 shadow-sm">
+              <button className="rounded-md text-sm px-4 py-2 flex items-center justify-center bg-gradient-to-r dark:from-blue-900/80 dark:to-indigo-900/80 from-blue-500 to-indigo-500 text-white font-medium border dark:border-blue-800/50 border-blue-400/50 hover:opacity-90 transition-all duration-200 shadow-sm cursor-pointer">
                 Close
               </button>
             </DialogClose>
@@ -400,14 +436,14 @@ export default function SummaryCard({
               {/* Secondary actions */}
               <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
                 <DetailedSummaryButton videoId={videoId}>
-                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap cursor-pointer'>
                     <BookOpen size={16} className='mr-1' />
                     <span>Detailed Summary</span>
                   </button>
                 </DetailedSummaryButton>
 
                 <TranscriptDialog videoId={videoId}>
-                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap'>
+                  <button className='rounded-md text-sm px-3 py-2 flex items-center justify-center dark:bg-gray-800 bg-gray-100 dark:text-gray-200 text-gray-700 border dark:border-gray-700 border-gray-300 hover:dark:bg-gray-700 hover:bg-gray-200 transition-colors w-full whitespace-nowrap cursor-pointer'>
                     <FileText size={16} className='mr-1' />
                     <span>Show Transcript</span>
                   </button>
