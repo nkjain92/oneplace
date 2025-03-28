@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       model: openai('gpt-4o-mini'),
       messages: fullMessages,
       temperature: 0.7, // Add some creativity but keep responses focused
-      maxTokens: 1000, // Limit response length for faster streaming
+      maxTokens: 3000, // Limit response length for faster streaming
       onFinish: async completeAnswer => {
         // After streaming is complete, update the record with the full answer
         if (recordId) {
