@@ -1,5 +1,5 @@
 // src/components/SubscribeButton.tsx - Button component for subscribing to channels with authentication handling
-'use client'
+'use client';
 import { useState, memo, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
@@ -21,25 +21,32 @@ interface SubscribeButtonProps {
 
 const SubscribeButton = memo(({ channelId, initialIsSubscribed = false }: SubscribeButtonProps) => {
   const { user } = useAuthStore();
-  const { subscribedChannels, subscribe, unsubscribe, isChannelLoading, error, fetchSubscriptions } =
-    useSubscriptionStore();
+  const {
+    subscribedChannels,
+    subscribe,
+    unsubscribe,
+    isChannelLoading,
+    error,
+    fetchSubscriptions,
+    isFetching,
+  } = useSubscriptionStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(initialIsSubscribed);
   const isLoading = isChannelLoading(channelId);
-  
+
   // Initialize subscription state from both props and store
   useEffect(() => {
     // Update local state based on either the initialIsSubscribed prop or the store state
     setIsSubscribed(initialIsSubscribed || subscribedChannels.includes(channelId));
   }, [channelId, initialIsSubscribed, subscribedChannels]);
-  
+
   // Fetch subscriptions only once when the component mounts and user exists
   useEffect(() => {
-    // Only fetch if user is logged in and we haven't already fetched
-    if (user && subscribedChannels.length === 0) {
+    // Only fetch if user is logged in, we haven't already fetched, and we're not currently fetching
+    if (user && subscribedChannels.length === 0 && !isFetching) {
       fetchSubscriptions();
     }
-  }, [user, subscribedChannels.length, fetchSubscriptions]);
+  }, [user, subscribedChannels.length, fetchSubscriptions, isFetching]);
 
   const handleClick = async () => {
     if (!user) {
