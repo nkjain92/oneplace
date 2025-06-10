@@ -14,8 +14,6 @@ interface Summary {
   publisher_id: string;
   summary: string;
   content_id: string;
-  tags?: string[];
-  featured_names?: string[];
 }
 
 // Helper function to safely validate a summary object
@@ -126,8 +124,6 @@ export default function AnonymousHistoryLoader() {
           channelName={summary.publisher_name}
           channelId={summary.publisher_id}
           summary={summary.summary}
-          tags={summary.tags || []}
-          peopleMentioned={summary.featured_names || []}
           videoId={summary.content_id}
         />
       ))}
