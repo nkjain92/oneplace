@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const { data, error } = await dbClient
       .from('summaries')
       .select(
-        'id, title, summary, tags, featured_names, publisher_name, content_created_at, duration_in_seconds, transcript_raw, content_id',
+        'id, title, summary, publisher_name, content_created_at, duration_in_seconds, transcript_raw, content_id',
       )
       .eq('content_id', videoId)
       .single();

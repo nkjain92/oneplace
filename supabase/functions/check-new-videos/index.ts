@@ -43,60 +43,10 @@ const MAX_VIDEOS_PER_CHANNEL = 3; // Limit videos processed per channel
 const MAX_SUMMARY_RETRIES = 3; // Maximum number of retries for summary generation
 const RETRY_DELAY_MS = 1000; // Base delay for retry in milliseconds (will be multiplied by 2^retry_count)
 // Summary prompt template - simplified for efficiency
-const SUMMARY_PROMPT = `You are an expert content summarizer who creates structured, concise summaries. Analyze the following content and create a summary that matches the original's tone and style.
+const SUMMARY_PROMPT = `You are an expert summarizer. Using the transcript below, craft a thorough summary that captures all of the important parts of the video or podcast. Format the response in Markdown with short paragraphs and bullet points, using **bold** text to highlight key ideas. Do not mention the transcript or the video. Return only the summary.
 
-OUTPUT FORMAT (STRICTLY FOLLOW THIS):
-Summary:
-* **[Main Point]**: [Clear explanation]
-* **[Main Point]**: [Clear explanation]
-* **[Main Point]**: [Clear explanation]
-* **[Main Point]**: [Clear explanation]
-* **[Main Point]**: [Clear explanation]
-
-[OPTIONAL - Include ONLY if there is a HIGHLY impactful, specific quote that meaningfully represents a key insight. Do NOT include generic statements or routine explanations:]
-> "Direct quote from the content"
-
-Tags: tag1, tag2, tag3, tag4, tag5
-
-People: person1, person2, person3
-
-REQUIREMENTS:
-1. NEVER use phrases like "this video," "the speaker," "in this transcript," etc. Avoid referencing the medium (e.g., 'this video,' 'the speaker').
-2. Match the EXACT tone and language style of the original content.
-3. Each bullet point MUST follow the format: * **Bold main point**: Explanation
-4. Include only bullet points covering the most important insights. Keep it concise.
-5. Include 5-10 relevant lowercase tags separated by commas.
-6. List all people mentioned, separated by commas. If no specific people are mentioned, write "None" in the People section.
-8. QUOTES: Only include quotes that are genuinely impactful, specific, and central to the content's message. If no strong quotes exist, OMIT the quote section entirely. Never fabricate quotes or include generic statements.
-
-GOOD EXAMPLE:
------
-Summary:
-* **AI Risk Management Framework**: The framework provides a comprehensive approach for organizations to address AI risks while promoting innovation.
-* **Four Core Functions**: The framework is built around four functions: govern, map, measure, and manage.
-* **Customizable Implementation**: Organizations can adapt the framework based on their context, use cases, and risk profiles.
-* **Transparency Requirements**: Companies must document AI systems and communicate clearly about their capabilities and limitations.
-* **Continuous Testing**: Regular evaluation of AI systems helps identify and mitigate potential risks and biases.
-
-Tags: ai ethics, risk management, governance, compliance, technology policy, data security
-
-People: Mark Johnson, Sarah Williams, David Chen
------
-
-BAD EXAMPLE:
------
-Summary:
-In this video, the speaker discusses AI risk management. The transcript shows several points about governance and implementation. They talk about four functions and mention transparency.
-
-> "We need to be careful with AI" [BAD - this is too generic and not impactful]
-
-Tags: AI, management, video
-People: Johnson, someone else
------
-
-Now analyze and summarize the following content:
-
-Content: {transcript}`;
+Transcript:
+{transcript}`;
 // Function to extract YouTube video ID from URL
 function extractYouTubeVideoId(url: string) {
   if (!url) return null;
@@ -216,7 +166,7 @@ async function fetchYouTubeTranscript(videoId: string) {
   }
 }
 // Function to generate summary using OpenAI with retry mechanism
-async function generateSummary(transcript: string, retryCount = 0): Promise<{ summary: string; tags: string[]; people: string[] }> {
+async function generateSummary(transcript: string, retryCount = 0): Promise<{ summary: string }> {
   if (!OPENAI_API_KEY) {
     console.error('OPENAI_API_KEY environment variable is not set or empty');
     throw new Error('OPENAI_API_KEY environment variable is not set or empty');
@@ -226,14 +176,14 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     const prompt = SUMMARY_PROMPT.replace('{transcript}', transcript);
     console.log(`Calling AI model to generate summary (attempt ${retryCount + 1}/${MAX_SUMMARY_RETRIES + 1})...`);
     
-    const response = await fetchWithTimeout('https://api.openai.com/v1/chat/completions', {
+    const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'o3',
         messages: [
           {
             role: 'system',
@@ -257,7 +207,7 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     }
     
     const data = await response.json();
-    const fullSummary = data.choices[0]?.message?.content || '';
+    const fullSummary = data.response?.text || data.choices?.[0]?.message?.content || '';
     
     if (!fullSummary || fullSummary.length < 10) {
       throw new Error('Generated summary is too short or empty');
@@ -265,112 +215,15 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     
     console.log(`Successfully generated summary (${fullSummary.length} characters)`);
     
-    // Parse the response to extract summary, tags, and people using improved parsing
-    let summary = '';
-    let tags: string[] = [];
-    let people: string[] = [];
-    let inSummarySection = false;
-    let inTagsSection = false;
-    let inPeopleSection = false;
-    const lines = fullSummary.split('\n');
+    const summary = fullSummary.trim();
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Detect section headers
-      if (line.startsWith('Summary:')) {
-        inSummarySection = true;
-        inTagsSection = false;
-        inPeopleSection = false;
-        continue; // Skip the header line itself
-      } else if (line.startsWith('Tags:')) {
-        inSummarySection = false;
-        inTagsSection = true;
-        inPeopleSection = false;
-        
-        // Extract tags from the same line if present
-        const tagsString = line.substring('Tags:'.length).trim();
-        if (tagsString.length > 0) {
-          tags = tagsString
-            .split(',')
-            .map((tag: string) => tag.trim())
-            .filter((tag: string) => tag.length > 0);
-        }
-        continue;
-      } else if (line.startsWith('People:')) {
-        inSummarySection = false;
-        inTagsSection = false;
-        inPeopleSection = true;
-        
-        // Extract people from the same line if present
-        const peopleString = line.substring('People:'.length).trim();
-        if (peopleString.length > 0) {
-          people = peopleString
-            .split(',')
-            .map((person: string) => person.trim())
-            .filter((person: string) => person.length > 0);
-        }
-        continue;
-      }
-      
-      // Process content based on current section
-      if (inSummarySection && line.length > 0) {
-        if (summary.length > 0) {
-          summary += '\n' + line;
-        } else {
-          summary = line;
-        }
-      } else if (inTagsSection && line.length > 0 && tags.length === 0) {
-        // Only process if we haven't extracted tags from the header line
-        tags = line
-          .split(',')
-          .map((tag: string) => tag.trim())
-          .filter((tag: string) => tag.length > 0);
-      } else if (inPeopleSection && line.length > 0 && people.length === 0) {
-        // Only process if we haven't extracted people from the header line
-        people = line
-          .split(',')
-          .map((person: string) => person.trim())
-          .filter((person: string) => person.length > 0);
-      }
-    }
-    
-    // Clean up the summary - remove any meta-references
-    summary = summary
-      .replace(/in this transcript/gi, '')
-      .replace(/in this video/gi, '')
-      .replace(/the speaker says/gi, '')
-      .replace(/the speaker mentions/gi, '')
-      .replace(/the video discusses/gi, '')
-      .replace(/the transcript shows/gi, '')
-      .replace(/according to the transcript/gi, '')
-      .replace(/according to the video/gi, '')
-      .trim();
-    
-    // Validate the parsed results
     if (!summary || summary.length < 10) {
       throw new Error('Parsed summary is too short or empty');
     }
-    
-    // Ensure tags and people are arrays even if empty
-    tags = Array.isArray(tags) ? tags : [];
-    
-    // Handle the case where "None" is specified for people
-    if (people.length === 1 && people[0].toLowerCase() === "none") {
-      people = [];
-    } else {
-      people = Array.isArray(people) ? people : [];
-    }
-    
+
     console.log('Extracted Summary:', summary.substring(0, 150) + '...');
-    console.log('Extracted Tags:', tags);
-    console.log('Extracted People:', people);
-    
-    return {
-      summary,
-      tags,
-      people,
-    };
+
+    return { summary };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error generating summary (attempt ${retryCount + 1}/${MAX_SUMMARY_RETRIES + 1}): ${errorMessage}`);
@@ -785,7 +638,7 @@ async function handleRequest(req: Request) {
             const { data: existingSummary, error: summaryCheckError } = await supabase
               .from('summaries')
               .select(
-                'id, title, summary, tags, featured_names, publisher_name, content_created_at, duration_in_seconds, transcript_raw',
+                'id, title, summary, publisher_name, content_created_at, duration_in_seconds, transcript_raw',
               )
               .eq('content_id', currentVideoId)
               .maybeSingle();
@@ -859,7 +712,7 @@ async function handleRequest(req: Request) {
                 console.log(`Attempting to generate summary for video ${currentVideoId}`);
                 try {
                   // Generate a summary using OpenAI with retry mechanism
-                  const { summary, tags, people } = await generateSummary(transcript);
+                  const { summary } = await generateSummary(transcript);
                   console.log('Summary generated successfully');
                   
                   // Now that we have a successful summary, insert a record into the summaries table
@@ -879,8 +732,8 @@ async function handleRequest(req: Request) {
                         transcript_raw: transcriptRaw,
                         duration_in_seconds: Math.round(videoDurationSeconds),
                         summary: summary,
-                        tags: tags,
-                        featured_names: people,
+                        tags: [],
+                        featured_names: [],
                         status: 'completed',
                       },
                     ])

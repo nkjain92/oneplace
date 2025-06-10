@@ -15,8 +15,6 @@ interface SummaryData {
   id: string;
   title: string;
   summary: string;
-  tags?: string[];
-  featured_names?: string[];
   publisher_name: string;
   publisher_id: string;
   content_created_at: string;

@@ -46,8 +46,6 @@ interface Summary {
   summary: string;
   content_created_at: string;
   created_at: string;
-  tags?: string[];
-  featured_names?: string[];
   source_url?: string;
 }
 
@@ -224,32 +222,6 @@ async function sendEmail(data: EmailData): Promise<boolean> {
             .summary-content li {
               margin-bottom: 8px;
             }
-            .people-section {
-              margin-top: 16px;
-              text-align: left;
-              position: relative;
-              z-index: 1;
-              padding-top: 16px;
-              border-top: 1px solid #e2e8f0;
-            }
-            .people-label {
-              font-weight: 600;
-              color: #64748b;
-              margin-right: 8px;
-              font-size: 14px;
-            }
-            .person {
-              display: inline-block;
-              background-color: rgba(92, 124, 250, 0.1);
-              color: #4263eb;
-              padding: 4px 8px;
-              border-radius: 4px;
-              font-size: 12px;
-              margin-right: 6px;
-              margin-bottom: 6px;
-              font-weight: 500;
-              border: 1px solid rgba(92, 124, 250, 0.2);
-            }
             .chat-button-container {
               margin-top: 16px;
               text-align: center;
@@ -325,7 +297,6 @@ async function sendEmail(data: EmailData): Promise<boolean> {
       groupedSummaries[channelId].forEach(summary => {
         const formattedDate = formatDate(summary.content_created_at || summary.created_at);
         const summaryHtml = markdownToHtml(summary.summary);
-        const people = summary.featured_names || [];
         const titleLink = summary.source_url ? 
           `<a href="${summary.source_url}" target="_blank">${summary.title || 'Untitled Summary'}</a>` : 
           `${summary.title || 'Untitled Summary'}`;
@@ -347,14 +318,6 @@ async function sendEmail(data: EmailData): Promise<boolean> {
               </div>
         `;
 
-        if (people.length > 0) {
-          htmlContent += `
-            <div class="people-section">
-              <span class="people-label">People:</span>
-              ${people.map(person => `<span class="person">${person}</span>`).join('')}
-            </div>
-          `;
-        }
 
         // Add the Chat with Video button with Outlook VML support
         htmlContent += `
@@ -575,7 +538,7 @@ async function handleRequest(req: Request) {
         // Get new summaries from subscribed channels - now including source_url
         const { data: summaries, error: summariesError } = await supabase
           .from("summaries")
-          .select("id, content_id, title, publisher_id, publisher_name, summary, content_created_at, created_at, tags, featured_names, source_url")
+          .select("id, content_id, title, publisher_id, publisher_name, summary, content_created_at, created_at, source_url")
           .in("publisher_id", channelIds)
           .gt("content_created_at", cutoffDate.toISOString())
           .order("content_created_at", { ascending: false });
