@@ -294,8 +294,6 @@ export default function Home() {
             channelName={summaryData.publisher_name}
             channelId={summaryData.publisher_id}
             summary={summaryData.summary}
-            tags={summaryData.tags}
-            peopleMentioned={summaryData.featured_names}
             videoId={summaryData.videoId || summaryData.content_id || ''}
           />
         </div>
@@ -323,8 +321,6 @@ export default function Home() {
                     channelName={summary.publisher_name}
                     channelId={summary.publisher_id}
                     summary={summary.summary}
-                    tags={summary.tags}
-                    peopleMentioned={summary.featured_names}
                     videoId={summary.videoId || summary.content_id || ''}
                   />
                 ))}

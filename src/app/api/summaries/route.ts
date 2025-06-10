@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const { data, error } = await dbClient
       .from('summaries')
       .select(
-        'id, title, summary, tags, featured_names, publisher_name, content_created_at, duration_in_seconds, transcript_raw, content_id',
+        'id, title, summary, publisher_name, content_created_at, duration_in_seconds, transcript_raw, content_id',
       )
       .eq('content_id', videoId)
       .single();
@@ -202,7 +202,7 @@ export async function POST(request: Request) {
       console.log('Calling AI model to generate summary...');
       // Call the AI model to generate the summary
       const result = await generateText({
-        model: openai('gpt-4o-mini'),
+        model: openai('o3'),
         messages: [
           {
             role: 'system',
@@ -220,26 +220,21 @@ export async function POST(request: Request) {
       const fullSummary = result.text || '';
       console.log('Full AI response:', fullSummary);
 
-      // Parse the response to extract summary, tags, and people
-      const { summary, tags, people } = parseAiResponse(fullSummary);
+      // Parse the response to get the summary text
+      const { summary } = parseAiResponse(fullSummary);
 
       console.log('Extracted Summary:', summary);
-      console.log('Extracted Tags:', tags);
-      console.log('Extracted People:', people);
 
-      // Update the record with the generated summary, tags, and people
+      // Update the record with the generated summary
       console.log('Updating record with generated summary...');
       console.log('Summary ID:', summaryId);
-      console.log('Summary:', summary);
-      console.log('Tags:', tags);
-      console.log('People:', people);
 
       const { error: updateError } = await dbClient
         .from('summaries')
         .update({
           summary: summary,
-          tags: tags,
-          featured_names: people,
+          tags: [],
+          featured_names: [],
           status: 'completed',
         })
         .eq('id', summaryId);
@@ -255,8 +250,8 @@ export async function POST(request: Request) {
         id: summaryId,
         title: videoTitle,
         summary: summary,
-        tags: tags,
-        featured_names: people,
+        tags: [],
+        featured_names: [],
         publisher_id: channelId,
         publisher_name: name,
         content_created_at: publishedAt,

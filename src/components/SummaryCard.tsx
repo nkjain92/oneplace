@@ -1,11 +1,11 @@
-// src/components/SummaryCard.tsx - Component for displaying video summary information with tags and channel details
+// src/components/SummaryCard.tsx - Component for displaying video summary information with channel details
 'use client';
 
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Calendar, Tag, Users, ExternalLink, FileText, MessageCircle, BookOpen } from 'lucide-react';
+import { Calendar, ExternalLink, FileText, MessageCircle, BookOpen } from 'lucide-react';
 import { SubscribeButton } from '@/components/SubscribeButton';
 import ReactMarkdown from 'react-markdown';
 import { GlowButton } from '@/components/ui/glow-button';
@@ -41,8 +41,6 @@ interface SummaryCardProps {
   channelName: string;
   channelId: string;
   summary: string;
-  tags: string[];
-  peopleMentioned: string[];
   videoId: string;
   isSubscribed?: boolean;
 }
@@ -303,8 +301,6 @@ export default function SummaryCard({
   channelName,
   channelId,
   summary,
-  tags = [],
-  peopleMentioned = [],
   videoId,
   isSubscribed = false,
 }: SummaryCardProps) {
@@ -376,46 +372,6 @@ export default function SummaryCard({
 
         {/* Footer section */}
         <div className='flex flex-wrap items-start justify-between gap-4'>
-          <div className='space-y-3 w-full md:w-auto'>
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm dark:text-gray-400 text-gray-600 mr-1'>
-                  <Tag size={14} className='mr-1' />
-                  Topics:
-                </span>
-                <div className='flex flex-wrap gap-1.5'>
-                  {tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className='text-xs dark:bg-blue-900/30 bg-blue-100 dark:text-blue-300 text-blue-700 px-2.5 py-1 rounded-md border dark:border-blue-800/50 border-blue-200 font-medium transition-colors duration-200 dark:hover:bg-blue-800/40 hover:bg-blue-200 dark:hover:border-blue-700/50 hover:border-blue-300 cursor-default'>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* People mentioned */}
-            {peopleMentioned.length > 0 && (
-              <div className='flex flex-wrap items-center gap-2'>
-                <span className='flex items-center text-sm dark:text-gray-400 text-gray-600 mr-1'>
-                  <Users size={14} className='mr-1' />
-                  People:
-                </span>
-                <div className='flex flex-wrap gap-1.5'>
-                  {peopleMentioned.map((person, index) => (
-                    <span
-                      key={index}
-                      className='text-xs dark:bg-purple-900/30 bg-purple-100 dark:text-purple-300 text-purple-700 px-2.5 py-1 rounded-md border dark:border-purple-800/50 border-purple-200 font-medium transition-colors duration-200 dark:hover:bg-purple-800/40 hover:bg-purple-200 dark:hover:border-purple-700/50 hover:border-purple-300 cursor-default'>
-                      {person}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Action buttons - Redesigned layout */}
           <div className='w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-0 dark:border-gray-800 border-gray-200 md:ml-auto'>
             <div className='flex flex-col sm:flex-row gap-2'>

@@ -15,8 +15,6 @@ interface SummaryData {
   id: string;
   title: string;
   summary: string;
-  tags: string[];
-  featured_names: string[];
   publisher_name: string;
   publisher_id: string;
   content_created_at: string;
@@ -175,8 +173,6 @@ export default function ChatPage() {
           id: data.id,
           title: data.title || 'Untitled Video',
           summary: data.summary || 'No summary available',
-          tags: Array.isArray(data.tags) ? data.tags : [],
-          featured_names: Array.isArray(data.featured_names) ? data.featured_names : [],
           publisher_name: data.publisher_name || 'Unknown Channel',
           publisher_id: data.publisher_id || '',
           content_created_at: data.content_created_at || new Date().toISOString(),
@@ -281,8 +277,6 @@ export default function ChatPage() {
             channelName={summaryData.publisher_name}
             channelId={summaryData.publisher_id}
             summary={summaryData.summary}
-            tags={summaryData.tags}
-            peopleMentioned={summaryData.featured_names}
             videoId={summaryData.videoId}
           />
         )}

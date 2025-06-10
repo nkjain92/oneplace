@@ -15,8 +15,6 @@ interface Summary {
   publisher_id: string;
   summary: string;
   content_id: string;
-  tags?: string[];
-  featured_names?: string[];
 }
 
 interface ChannelDetails {
@@ -162,8 +160,6 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
                   channelName={summary.publisher_name}
                   channelId={summary.publisher_id}
                   summary={summary.summary}
-                  tags={summary.tags || []}
-                  peopleMentioned={summary.featured_names || []}
                   videoId={summary.content_id}
                 />
               ))}
