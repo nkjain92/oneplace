@@ -41,8 +41,6 @@ interface SummaryCardProps {
   channelName: string;
   channelId: string;
   summary: string;
-  tags?: string[];
-  peopleMentioned?: string[];
   videoId: string;
   isSubscribed?: boolean;
 }

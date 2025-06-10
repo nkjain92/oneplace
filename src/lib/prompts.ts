@@ -1,5 +1,5 @@
 // src/lib/prompts.ts - Collection of prompt templates used for AI generation tasks
-export const SUMMARY_PROMPT = `You are an expert summarizer. Using the transcript below, produce a concise but comprehensive summary capturing all important points. Use markdown paragraphs and bullet points for clarity. Do not reference the transcript or the video. Return only the summary.
+export const SUMMARY_PROMPT = `You are an expert summarizer. Using the transcript below, craft a clear and complete summary capturing all key points. Format the response in Markdown with paragraphs and bullet points, using **bold** text to highlight important ideas. Do not mention the transcript or the video. Return only the summary.
 
 Transcript:
 {transcript}`;
