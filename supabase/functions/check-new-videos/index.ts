@@ -140,7 +140,7 @@ async function fetchYouTubeTranscript(videoId: string) {
     }
     // Store the raw transcript data
     const rawTranscript = data;
-    
+
     // Combine all transcript segments into a single string
     const transcriptText = data.transcript
       .map((segment: { text: string }) => segment.text)
@@ -150,7 +150,7 @@ async function fetchYouTubeTranscript(videoId: string) {
     );
     return {
       text: transcriptText,
-      raw: rawTranscript
+      raw: rawTranscript,
     };
   } catch (error) {
     console.error(
@@ -171,11 +171,15 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     console.error('OPENAI_API_KEY environment variable is not set or empty');
     throw new Error('OPENAI_API_KEY environment variable is not set or empty');
   }
-  
+
   try {
     const prompt = SUMMARY_PROMPT.replace('{transcript}', transcript);
-    console.log(`Calling AI model to generate summary (attempt ${retryCount + 1}/${MAX_SUMMARY_RETRIES + 1})...`);
-    
+    console.log(
+      `Calling AI model to generate summary (attempt ${retryCount + 1}/${
+        MAX_SUMMARY_RETRIES + 1
+      })...`,
+    );
+
     const response = await fetchWithTimeout('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -183,11 +187,12 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
         Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'o3',
+        model: 'gpt-4.1',
         messages: [
           {
             role: 'system',
-            content: 'You are a professional content summarizer that produces precise, structured summaries in a consistent format. Always match the tone of the original content. Never refer to "this transcript" or "this video". Focus only on the content itself. Follow instructions exactly.'
+            content:
+              'You are a professional content summarizer that produces precise, structured summaries in a consistent format. Always match the tone of the original content. Never refer to "this transcript" or "this video". Focus only on the content itself. Follow instructions exactly.',
           },
           {
             role: 'user',
@@ -196,27 +201,27 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
         ],
         temperature: 0.3,
         max_tokens: 1000,
-        response_format: { type: "text" },
+        response_format: { type: 'text' },
       }),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.text();
       console.error(`OpenAI API error: ${response.status} - ${errorData}`);
       throw new Error(`OpenAI API error: ${response.status} - ${errorData}`);
     }
-    
+
     const data = await response.json();
     const fullSummary = data.response?.text || data.choices?.[0]?.message?.content || '';
-    
+
     if (!fullSummary || fullSummary.length < 10) {
       throw new Error('Generated summary is too short or empty');
     }
-    
+
     console.log(`Successfully generated summary (${fullSummary.length} characters)`);
-    
+
     const summary = fullSummary.trim();
-    
+
     if (!summary || summary.length < 10) {
       throw new Error('Parsed summary is too short or empty');
     }
@@ -226,23 +231,33 @@ async function generateSummary(transcript: string, retryCount = 0): Promise<{ su
     return { summary };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error generating summary (attempt ${retryCount + 1}/${MAX_SUMMARY_RETRIES + 1}): ${errorMessage}`);
-    
+    console.error(
+      `Error generating summary (attempt ${retryCount + 1}/${
+        MAX_SUMMARY_RETRIES + 1
+      }): ${errorMessage}`,
+    );
+
     // Check if we should retry
     if (retryCount < MAX_SUMMARY_RETRIES) {
       // Calculate exponential backoff delay
       const delay = RETRY_DELAY_MS * Math.pow(2, retryCount);
-      console.log(`Retrying summary generation in ${delay}ms (attempt ${retryCount + 1}/${MAX_SUMMARY_RETRIES})...`);
-      
+      console.log(
+        `Retrying summary generation in ${delay}ms (attempt ${
+          retryCount + 1
+        }/${MAX_SUMMARY_RETRIES})...`,
+      );
+
       // Wait for the delay
       await new Promise(resolve => setTimeout(resolve, delay));
-      
+
       // Retry with incremented retry count
       return generateSummary(transcript, retryCount + 1);
     }
-    
+
     // If we've exhausted all retries, throw the error
-    throw new Error(`Failed to generate summary after ${MAX_SUMMARY_RETRIES + 1} attempts: ${errorMessage}`);
+    throw new Error(
+      `Failed to generate summary after ${MAX_SUMMARY_RETRIES + 1} attempts: ${errorMessage}`,
+    );
   }
 }
 // Helper function to safely extract text content from XML node
@@ -322,7 +337,7 @@ function extractVideoLink(entry: any) {
 function calculateVideoDuration(transcriptData: any): number {
   // Handle the case where transcriptData might be a string
   let parsedData;
-  
+
   if (typeof transcriptData === 'string') {
     try {
       parsedData = JSON.parse(transcriptData);
@@ -333,73 +348,75 @@ function calculateVideoDuration(transcriptData: any): number {
   } else {
     parsedData = transcriptData;
   }
-  
+
   // Handle the transcript_raw format with "success" and "transcript" array
   if (parsedData && parsedData.success && Array.isArray(parsedData.transcript)) {
     // If the transcript is empty, return 0
     if (parsedData.transcript.length === 0) {
       return 0;
     }
-    
+
     try {
       // Get the last segment
       const lastSegment = parsedData.transcript[parsedData.transcript.length - 1];
-      
+
       // Check for offset and duration properties (as in the sample format)
       if (lastSegment.offset !== undefined && lastSegment.duration !== undefined) {
         const offsetValue = parseFloat(lastSegment.offset);
         const durationValue = parseFloat(lastSegment.duration);
         return Math.round(offsetValue + durationValue);
       }
-      
+
       // Handle original format with start and duration properties
       if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
         return Math.round(lastSegment.start + lastSegment.duration);
       }
-      
+
       // Alternative calculation: sum up all durations
       let totalDuration = 0;
       for (const segment of parsedData.transcript) {
         if (segment.duration !== undefined) {
-          totalDuration += parseFloat(typeof segment.duration === 'string' ? segment.duration : segment.duration);
+          totalDuration += parseFloat(
+            typeof segment.duration === 'string' ? segment.duration : segment.duration,
+          );
         }
       }
-      
+
       return Math.round(totalDuration);
     } catch (error) {
       console.error('Error calculating video duration:', error);
       return 0;
     }
   }
-  
-  // Handle legacy format 
+
+  // Handle legacy format
   if (parsedData?.transcript && Array.isArray(parsedData.transcript)) {
     // Original implementation
     if (parsedData.transcript.length === 0) {
       return 0;
     }
-    
+
     try {
       const lastSegment = parsedData.transcript[parsedData.transcript.length - 1];
-      
+
       if (lastSegment.start !== undefined && lastSegment.duration !== undefined) {
         return Math.round(lastSegment.start + lastSegment.duration);
       }
-      
+
       let totalDuration = 0;
       for (const segment of parsedData.transcript) {
         if (segment.duration !== undefined) {
           totalDuration += segment.duration;
         }
       }
-      
+
       return Math.round(totalDuration);
     } catch (error) {
       console.error('Error calculating video duration from legacy format:', error);
       return 0;
     }
   }
-  
+
   return 0;
 }
 // Main function to handle the request
@@ -439,19 +456,19 @@ async function handleRequest(req: Request) {
         );
       }
     }
-    
+
     // Get channels that have at least one subscriber
     console.log('Fetching channels with at least one subscriber');
     const { data: subscribedChannelIds, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('channel_id')
       .order('channel_id');
-    
+
     if (subscriptionError) {
       clearTimeout(timeoutId);
       throw new Error(`Error fetching subscribed channels: ${subscriptionError.message}`);
     }
-    
+
     if (!subscribedChannelIds || subscribedChannelIds.length === 0) {
       console.log('No subscribed channels found');
       clearTimeout(timeoutId);
@@ -467,11 +484,11 @@ async function handleRequest(req: Request) {
         },
       );
     }
-    
+
     // Extract unique channel IDs from subscriptions
     const uniqueChannelIds = [...new Set(subscribedChannelIds.map(sub => sub.channel_id))];
     console.log(`Found ${uniqueChannelIds.length} unique subscribed channels`);
-    
+
     // Get channels from the database that have subscribers, ordered by last_checked
     const { data: allChannels, error: channelsError } = await supabase
       .from('channels')
@@ -481,12 +498,12 @@ async function handleRequest(req: Request) {
         ascending: true,
         nullsFirst: true,
       });
-    
+
     if (channelsError) {
       clearTimeout(timeoutId);
       throw new Error(`Error fetching channels: ${channelsError.message}`);
     }
-    
+
     if (!allChannels || allChannels.length === 0) {
       console.log('No subscribed channels found in channels table');
       clearTimeout(timeoutId);
@@ -651,33 +668,44 @@ async function handleRequest(req: Request) {
             }
             if (existingSummary) {
               console.log(`Video ${currentVideoId} already has summary ID: ${existingSummary.id}`);
-              
+
               // Check if duration_in_seconds is missing but we have transcript_raw
-              if ((!existingSummary.duration_in_seconds || existingSummary.duration_in_seconds === 0) && 
-                  existingSummary.transcript_raw) {
+              if (
+                (!existingSummary.duration_in_seconds ||
+                  existingSummary.duration_in_seconds === 0) &&
+                existingSummary.transcript_raw
+              ) {
                 try {
                   // Calculate duration from existing transcript_raw
                   const calculatedDuration = calculateVideoDuration(existingSummary.transcript_raw);
-                  console.log(`Calculated duration for existing summary: ${calculatedDuration} seconds`);
-                  
+                  console.log(
+                    `Calculated duration for existing summary: ${calculatedDuration} seconds`,
+                  );
+
                   if (calculatedDuration > 0) {
                     // Update the summary with the calculated duration (as integer)
                     const { error: updateDurationError } = await supabase
                       .from('summaries')
                       .update({ duration_in_seconds: Math.round(calculatedDuration) })
                       .eq('id', existingSummary.id);
-                      
+
                     if (updateDurationError) {
                       console.error(`Error updating duration: ${updateDurationError.message}`);
                     } else {
-                      console.log(`Updated duration for summary ${existingSummary.id} to ${Math.round(calculatedDuration)} seconds`);
+                      console.log(
+                        `Updated duration for summary ${existingSummary.id} to ${Math.round(
+                          calculatedDuration,
+                        )} seconds`,
+                      );
                     }
                   }
                 } catch (durationError) {
-                  console.error(`Error calculating duration for existing summary: ${durationError}`);
+                  console.error(
+                    `Error calculating duration for existing summary: ${durationError}`,
+                  );
                 }
               }
-              
+
               videoEntry.status = 'already_summarized';
               videoEntry.summary_id = existingSummary.id;
               continue;
@@ -694,19 +722,21 @@ async function handleRequest(req: Request) {
               const transcript = transcriptResult.text;
               const transcriptRaw = transcriptResult.raw;
               console.log(`Transcript fetched (${transcript.length} characters)`);
-              
+
               // Calculate video duration in seconds
               const videoDurationSeconds = Math.round(calculateVideoDuration(transcriptRaw));
               console.log(`Video duration: ${videoDurationSeconds} seconds`);
-              
+
               // Skip videos shorter than 180 seconds (3 minutes)
               if (videoDurationSeconds < 180) {
-                console.log(`Skipping video ${currentVideoId}: Duration (${videoDurationSeconds}s) is less than 3 minutes`);
+                console.log(
+                  `Skipping video ${currentVideoId}: Duration (${videoDurationSeconds}s) is less than 3 minutes`,
+                );
                 videoEntry.status = 'skipped_short_video';
                 videoEntry.duration = videoDurationSeconds;
                 continue;
               }
-              
+
               if (transcript.length > 0) {
                 // First try to generate a summary before creating a database entry
                 console.log(`Attempting to generate summary for video ${currentVideoId}`);
@@ -714,7 +744,7 @@ async function handleRequest(req: Request) {
                   // Generate a summary using OpenAI with retry mechanism
                   const { summary } = await generateSummary(transcript);
                   console.log('Summary generated successfully');
-                  
+
                   // Now that we have a successful summary, insert a record into the summaries table
                   console.log('Inserting summary record into database');
                   const { data: insertedData, error: summaryInsertError } = await supabase
@@ -738,32 +768,31 @@ async function handleRequest(req: Request) {
                       },
                     ])
                     .select('id');
-                    
+
                   if (summaryInsertError) {
                     console.error(`Error storing summary: ${summaryInsertError.message}`);
                     videoEntry.status = 'error';
                     videoEntry.error = `Error storing summary: ${summaryInsertError.message}`;
                     continue;
                   }
-                  
+
                   if (!insertedData || insertedData.length === 0) {
                     console.error('Failed to get ID of inserted summary');
                     videoEntry.status = 'error';
                     videoEntry.error = 'Failed to get ID of inserted summary';
                     continue;
                   }
-                  
+
                   const summaryId = insertedData[0].id;
                   console.log(`Summary record created with ID: ${summaryId}`);
                   videoEntry.summary_id = summaryId;
                   videoEntry.status = 'summarized';
                   results.summaries_generated++;
-                  
                 } catch (summaryError) {
                   const errorMessage =
                     summaryError instanceof Error ? summaryError.message : String(summaryError);
                   console.error(`Error generating summary after all retries: ${errorMessage}`);
-                  
+
                   // Don't create a database entry, just log the error
                   videoEntry.status = 'summary_failed';
                   videoEntry.error = `Error generating summary after all retries: ${errorMessage}`;
