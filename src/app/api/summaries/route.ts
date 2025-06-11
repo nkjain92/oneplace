@@ -202,16 +202,17 @@ export async function POST(request: Request) {
       console.log('Calling AI model to generate summary...');
       // Call the AI model to generate the summary
       const result = await generateText({
-        model: openai('o3'),
+        model: openai('gpt-4.1'),
         messages: [
           {
             role: 'system',
-            content: 'You are a professional content summarizer that produces precise, structured summaries in a consistent format. Always match the tone of the original content. Never refer to "this transcript" or "this video". Focus only on the content itself. Follow instructions exactly.'
+            content:
+              'You are a professional content summarizer that produces precise, structured summaries in a consistent format. Always match the tone of the original content. Never refer to "this transcript" or "this video". Focus only on the content itself. Follow instructions exactly.',
           },
-          { 
-            role: 'user', 
-            content: prompt 
-          }
+          {
+            role: 'user',
+            content: prompt,
+          },
         ],
         temperature: 0.3, // Lower temperature for more consistent results
       });
