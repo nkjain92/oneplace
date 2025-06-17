@@ -17,8 +17,8 @@ export async function POST(request: Request) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
     controller.abort();
-    console.error('Request timed out after 18 seconds');
-  }, 18000); // 18 second timeout (less than the 20s maxDuration)
+    console.error('Request timed out after 38 seconds');
+  }, 38000); // 18 second timeout (less than the 40s maxDuration)
 
   try {
     console.log('Starting summary generation process...');
