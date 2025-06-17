@@ -11,7 +11,7 @@ import { SUMMARY_PROMPT } from '@/lib/prompts';
 import { calculateVideoDuration, parseAiResponse, handleChannelInDB } from '@/lib/summaryHelpers';
 
 // Allow longer processing time for summary generation
-export const maxDuration = 20;
+export const maxDuration = 40;
 
 export async function POST(request: Request) {
   const controller = new AbortController();
