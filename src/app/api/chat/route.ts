@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   // Stream the response to the client with improved error handling and performance
   try {
     const result = await streamText({
-      model: openai('gpt-4.1'),
+      model: openai('gpt-4.1-mini'),
       messages: fullMessages,
       temperature: 0.7, // Add some creativity but keep responses focused
       maxTokens: 3000, // Limit response length for faster streaming

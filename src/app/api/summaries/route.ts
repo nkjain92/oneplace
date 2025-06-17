@@ -202,7 +202,7 @@ export async function POST(request: Request) {
       console.log('Calling AI model to generate summary...');
       // Call the AI model to generate the summary
       const result = await generateText({
-        model: openai('gpt-4.1'),
+        model: openai('gpt-4.1-mini'),
         messages: [
           {
             role: 'system',
